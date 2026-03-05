@@ -1,0 +1,110 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&display=swap');
+
+@import "tailwindcss";
+
+
+@custom-variant dark {&:where(.dark, .dark *)}
+
+/* index.css */
+
+/* 1. Force the main background to be black to avoid white flashes */
+body, html {
+  background-color: #000000;
+  
+  margin: 0;
+  padding: 0;
+}
+
+/* 2. Style the Scrollbar to match your Dark Theme */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0b0b0b; /* Matches your dark background */
+}
+
+::-webkit-scrollbar-thumb {
+  background: #333; /* Dark grey handle */
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
+*{
+   font-family: "Manrope", sans-serif;
+   font-weight: 500;
+
+}
+.transparent-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.transparent-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.transparent-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 9999px;
+}
+
+.transparent-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Firefox */
+.transparent-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.15) transparent;
+}
+
+
+
+
+@theme{
+  --color-primary: #5044E5;
+}
+
+.dm-sans {
+  font-family: "DM Sans", sans-serif;
+  font-optical-sizing: auto;
+
+}
+.dm-sans2 {
+  font-family: "DM Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 600;
+
+}
+body {
+  overflow-x: hidden;
+}
+
+
+.dm-sans3 {
+  font-family: "DM Sans", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: 500;
+}
+
+.discount-badge {
+  width: 85px;
+  height: 35px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  border-radius: 21px;
+  background: #EC1C65;
+}
+
+.discount-text {
+  color: white;
+  font-weight: bold;
+  font-size: 12px;
+}
