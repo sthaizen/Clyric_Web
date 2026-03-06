@@ -45,6 +45,7 @@ import growth from './growth.png'
 import hp from './headphone.png'
 import vid2 from './tf.mp4'
 import tanvi from './Clyric2.png'
+import call from './dudh.png'
 import facebook from './facebook.png'
 import map from './map.png'
 import next1 from './bafra.png'
@@ -82,6 +83,7 @@ const assets = {
   next2,
   facebook,
   coinbase_logo,
+  call,
   shield,
   tanvi,
   vid2,

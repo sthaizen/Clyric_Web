@@ -71,7 +71,6 @@ const App = () => {
                   
                   <Chatbot />
                   <Whychoose />
-                  <Bentogrid />
                   <Testimonials />
                   <Easewith />
                   <CirculaFeaturesSection />
