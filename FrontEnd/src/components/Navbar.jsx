@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import assets from "../assets/assets";
-
+import { SignInButton, SignedOut, SignedIn, SignOutButton, UserButton } from "@clerk/clerk-react";
 const Navbar = () => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
@@ -233,10 +233,18 @@ const Navbar = () => {
                             </svg>
                             <span className="text-[13px] font-medium">en</span>
                         </button>
-
-                        <Link to="/connection" className="text-[13px] font-medium hover:opacity-60 transition-opacity">
+                                                        
+                       <SignedOut>
+                        <SignInButton mode="modal">
+                            <button className="text-[13px] font-medium hover:opacity-60 transition-opacity">
                             Login
-                        </Link>
+                            </button>
+                        </SignInButton>
+                        </SignedOut>
+
+                        <SignedIn>
+                        <UserButton afterSignOutUrl="/" />
+                        </SignedIn>
 
                         <Link 
                             to="/coding" 

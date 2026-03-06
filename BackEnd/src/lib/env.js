@@ -1,6 +1,6 @@
 import dotenv from "dotenv"
 
-dotenv.config(); 
+dotenv.config({quiet: true}); //removes the warning
 
 export const ENV={
     PORT: process.env.PORT,
