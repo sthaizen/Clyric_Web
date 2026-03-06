@@ -5,7 +5,7 @@ import {serve} from "inngest/express"
 
 import {ENV} from "./lib/env.js" 
 import { connectDB } from "./lib/db.js";
-import { inngest, functions } from "./lib/innjest.js";
+import { inngest, functions } from "./lib/inngest.js";
 
 const app = express();
 
@@ -32,7 +32,7 @@ if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "../FrontEnd/dist")));
 
   app.get("/{any}", (req, res) => {
-    res.sendFile(path.join(__dirname, "../FrontEnd/dist/index.html "));
+    res.sendFile(path.join(__dirname, "../FrontEnd/dist/index.html"));
   });
 }
 
