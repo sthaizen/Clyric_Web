@@ -26,7 +26,7 @@ app.use("/api/inngest",serve({client: inngest, functions}))
 
 app.use("/api/chat",chatRoutes)
 
-app.get("/health", (req, res) => {
+app.get("/health", (req, res) => {  
 
   res.status(200).json({ msg: "success api is running" });
 });
@@ -34,10 +34,10 @@ app.get("/health", (req, res) => {
 
 // if the NODE_ENV is in production then only the frontend part gets activated 
 if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "../FrontEnd/dist")));
+  app.use(express.static(path.join(__dirname, "../../FrontEnd/dist")));
 
-  app.get("/{any}", (req, res) => {
-    res.sendFile(path.join(__dirname, "../FrontEnd/dist/index.html"));
+  app.get("*", (req, res) => {
+    res.sendFile(path.join(__dirname, "../../FrontEnd/dist/index.html"));
   });
 }
 
