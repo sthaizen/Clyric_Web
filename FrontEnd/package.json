@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@clerk/clerk-react": "^5.61.3",
+    "@clerk/react": "^6.0.1",
     "@fortawesome/free-brands-svg-icons": "^7.1.0",
     "@fortawesome/react-fontawesome": "^3.1.1",
     "@google/generative-ai": "^0.24.1",
