@@ -6,7 +6,6 @@ import ReactLenis from 'lenis/react';
 // Component Imports
 import Navbar from './components/Navbar';
 import Whychoose from './components/Whychoose';
-import Bentogrid from './components/Bentogrid';
 import Testimonials from './components/Testimonials';
 import CAT from './components/CAT';
 import Footer from './components/Footer';
