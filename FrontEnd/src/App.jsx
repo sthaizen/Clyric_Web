@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import { motion, useScroll, useTransform, useMotionTemplate } from 'framer-motion';
 import ReactLenis from 'lenis/react';
+import { Toaster } from "react-hot-toast"
 
 // Component Imports
 import Navbar from './components/Navbar';
@@ -89,6 +90,7 @@ const App = () => {
           </Routes>
         </div>
       </Router>
+      <Toaster />
     </ReactLenis>
   );
 };
