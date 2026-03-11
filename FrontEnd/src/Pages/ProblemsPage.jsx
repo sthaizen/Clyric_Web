@@ -1,9 +1,9 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { PROBLEMS } from '../data/problem';
 import {
   Search, ChevronLeft, ChevronRight, LayoutList, CheckCircle2,
-  Lock, Settings, Shuffle, ChevronDown, ArrowUpDown, SlidersHorizontal,
+  Lock, Settings, Shuffle, ChevronDown, ChevronUp, ArrowUpDown, SlidersHorizontal,
   Target, GraduationCap, User
 } from 'lucide-react';
 
@@ -17,18 +17,84 @@ const COMPANIES = [
   { name: "Goldman Sachs", count: 283 }, { name: "Citadel", count: 95 },
   { name: "Salesforce", count: 193 }, { name: "tcs", count: 217 },
   { name: "Nvidia", count: 138 },
+  
 ];
 
-const CAL_DAYS = ['S','M','T','W','T','F','S'];
-
-const calDays = [null, null, null, null, null, null, 1,
-  2,3,4,5,6,7,8,9,10,11,12,13,14,15,
-  16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31];
+const CAL_DAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
 export default function LeetCodeClone() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeDifficulty, setActiveDifficulty] = useState('All');
+  const [activeCategory, setActiveCategory] = useState(null);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [sortOrder, setSortOrder] = useState('asc');
 
+  // --- RIGHT SIDEBAR STATES ---
+  const [viewDate, setViewDate] = useState(new Date());
+  const [timeLeft, setTimeLeft] = useState('00:00:00');
+  const [activeWeek, setActiveWeek] = useState(1); // W1 = 0, W2 = 1, etc.
+  const [companySearch, setCompanySearch] = useState('');
+  const [companyPage, setCompanyPage] = useState(0);
+
+  const today = new Date();
+
+  // --- TIMER LOGIC ---
+  useEffect(() => {
+    const timer = setInterval(() => {
+      const now = new Date();
+      const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
+      const diff = tomorrow - now;
+      
+      const h = String(Math.floor((diff / (1000 * 60 * 60)) % 24)).padStart(2, '0');
+      const m = String(Math.floor((diff / 1000 / 60) % 60)).padStart(2, '0');
+      const s = String(Math.floor((diff / 1000) % 60)).padStart(2, '0');
+      
+      setTimeLeft(`${h}:${m}:${s} left`);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  // --- CALENDAR LOGIC ---
+  const daysInMonth = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0).getDate();
+  const firstDayOfMonth = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1).getDay();
+  
+  const calendarGrid = [
+    ...Array(firstDayOfMonth).fill(null),
+    ...Array.from({ length: daysInMonth }, (_, i) => i + 1)
+  ];
+
+  const handlePrevMonth = () => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() - 1, 1));
+  const handleNextMonth = () => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1));
+
+  const isToday = (day) => {
+    return day === today.getDate() && 
+           viewDate.getMonth() === today.getMonth() && 
+           viewDate.getFullYear() === today.getFullYear();
+  };
+
+  // --- COMPANIES PAGINATION & SEARCH LOGIC ---
+  const COMPANIES_PER_PAGE = 10;
+  
+  const filteredCompanies = useMemo(() => {
+    return COMPANIES.filter(c => c.name.toLowerCase().includes(companySearch.toLowerCase()));
+  }, [companySearch]);
+
+  const totalCompanyPages = Math.ceil(filteredCompanies.length / COMPANIES_PER_PAGE);
+  
+  const visibleCompanies = useMemo(() => {
+    return filteredCompanies.slice(
+      companyPage * COMPANIES_PER_PAGE, 
+      (companyPage + 1) * COMPANIES_PER_PAGE
+    );
+  }, [filteredCompanies, companyPage]);
+
+  // Reset pagination if search changes
+  useEffect(() => setCompanyPage(0), [companySearch]);
+
+  const handlePrevCompanyPage = () => setCompanyPage(p => Math.max(0, p - 1));
+  const handleNextCompanyPage = () => setCompanyPage(p => Math.min(totalCompanyPages - 1, p + 1));
+
+  // --- PROBLEM LIST LOGIC ---
   const allProblems = Object.values(PROBLEMS);
 
   const dynamicTopics = useMemo(() => {
@@ -49,18 +115,23 @@ export default function LeetCodeClone() {
   }), [allProblems]);
 
   const filteredProblems = useMemo(() => {
-    return allProblems.filter((p) => {
+    let filtered = allProblems.filter((p) => {
       const matchesDiff = activeDifficulty === 'All' || p.difficulty === activeDifficulty;
       const matchesSearch = p.title.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesDiff && matchesSearch;
+      const matchesCategory = activeCategory === null || p.category === activeCategory;
+      return matchesDiff && matchesSearch && matchesCategory;
     });
-  }, [allProblems, activeDifficulty, searchQuery]);
 
-  const diffColor = (d) =>
-    d === 'Easy' ? '#00b8a3' : d === 'Medium' ? '#ffc01e' : d === 'Hard' ? '#ef4743' : '#9ca3af';
+    filtered.sort((a, b) => {
+      if (sortOrder === 'asc') return a.title.localeCompare(b.title);
+      return b.title.localeCompare(a.title);
+    });
 
-  const diffBg = (d) =>
-    d === 'Easy' ? 'rgba(0,184,163,0.15)' : d === 'Medium' ? 'rgba(255,192,30,0.15)' : 'rgba(239,71,67,0.15)';
+    return filtered;
+  }, [allProblems, activeDifficulty, searchQuery, activeCategory, sortOrder]); 
+
+  const diffColor = (d) => d === 'Easy' ? '#00b8a3' : d === 'Medium' ? '#ffc01e' : d === 'Hard' ? '#ef4743' : '#9ca3af';
+  const diffBg = (d) => d === 'Easy' ? 'rgba(0,184,163,0.15)' : d === 'Medium' ? 'rgba(255,192,30,0.15)' : 'rgba(239,71,67,0.15)';
 
   const Bars = () => (
     <div style={{ display:'flex', alignItems:'flex-end', gap:2, height:14, opacity:0.55 }}>
@@ -77,19 +148,30 @@ export default function LeetCodeClone() {
     { id: 'Hard',   label: 'Hard',       count: counts.Hard },
   ];
 
+  const visibleTopics = isExpanded ? dynamicTopics : dynamicTopics.slice(0, 8);
+
   return (
-    <div style={{ minHeight:'100vh', background:'#1a1a1a', color:'#eff1f6', fontFamily:'"Segoe UI", system-ui, sans-serif', display:'flex', flexDirection:'column', fontSize:14 }}>
+    <div style={{ minHeight:'100vh', background:'#111113', color:'#eff1f6', fontFamily:'"Segoe UI", system-ui, sans-serif', display:'flex', flexDirection:'column', fontSize:14 }}>
 
       {/* NAV */}
-      <nav style={{ height:56, background:'#282828', borderBottom:'1px solid #3a3a3a', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 16px', position:'sticky', top:0, zIndex:100, flexShrink:0 }}>
+      <nav style={{ height:56, background:'#1b1b1f', borderBottom:'1px solid #2c2c35', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 16px', position:'sticky', top:0, zIndex:100, flexShrink:0 }}>
         <div style={{ display:'flex', alignItems:'center' }}>
           <div style={{ display:'flex', alignItems:'center', gap:6, marginRight:20, cursor:'pointer' }}>
-            <svg width="20" height="20" viewBox="0 0 50 50" fill="none">
-              <path d="M32 8L12 28l8 8 20-20-8-8z" fill="#ffa116"/>
-              <path d="M20 36l-8-8-6 14 14-6z" fill="#ffa116"/>
-            </svg>
+            {/* Logo */}
+            <div className="flex flex-col gap-[2px]">
+              <div className="w-[16px] h-[4px] rounded-[2px] rounded-tl-sm bg-[#F3F3EF]"></div>
+              <div className="flex gap-[2px]">
+                <div className="w-[4px] h-[4px] rounded-[2px] bg-[#F3F3EF]"></div>
+                <div className="w-[12px] h-[4px] rounded-[2px] bg-[#fba120]"></div>
+              </div>
+              <div className="flex gap-[2px]">
+                <div className="w-[10px] h-[4px] bg-transparent"></div>
+                <div className="w-[6px] h-[6px] rounded-[2px] rounded-br-sm bg-[#F3F3EF]"></div>
+              </div>
+            </div>
             <span style={{ color:'#fff', fontWeight:700, fontSize:17, letterSpacing:'-0.2px' }}>Clyric</span>
           </div>
+          
           {[
             { label:'Explore' },
             { label:'Problems', active:true },
@@ -101,7 +183,7 @@ export default function LeetCodeClone() {
             <div key={label} style={{
               height:56, display:'flex', alignItems:'center', padding:'0 12px', cursor:'pointer',
               color: active ? '#fff' : gold ? '#ffa116' : '#9ca3af',
-              borderBottom: active ? '2px solid #fff' : '2px solid transparent',
+              borderBottom: active ? '2px solid #8a6bfe' : '2px solid transparent',
               fontSize:13.5, fontWeight: active ? 500 : 400, gap:4,
             }}>
               {label}{caret && <ChevronDown size={13}/>}
@@ -109,24 +191,21 @@ export default function LeetCodeClone() {
           ))}
         </div>
         <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-          <div style={{ display:'flex', alignItems:'center', background:'#3a3a3a', borderRadius:8, padding:'6px 12px', gap:8, width:200 }}>
+          <div style={{ display:'flex', alignItems:'center', background:'#2c2c35', borderRadius:8, padding:'6px 12px', gap:8, width:200 }}>
             <Search size={14} color="#6b7280"/>
             <input placeholder="Search" style={{ background:'transparent', border:'none', outline:'none', color:'#d1d5db', fontSize:13, width:'100%' }}/>
           </div>
-          <span style={{ color:'#9ca3af', fontSize:13, cursor:'pointer' }}>Register</span>
-          <span style={{ color:'#6b7280', fontSize:13 }}>or</span>
-          <span style={{ color:'#9ca3af', fontSize:13, cursor:'pointer' }}>Log in</span>
-          <button style={{ background:'#ffa116', color:'#000', border:'none', borderRadius:6, padding:'6px 14px', fontWeight:600, fontSize:13, cursor:'pointer' }}>
+          <button style={{ background:'#524026', color:'#fba121', border:'none', borderRadius:6, padding:'6px 14px', fontWeight:600, fontSize:13, cursor:'pointer' }}>
             Premium
           </button>
         </div>
       </nav>
 
       {/* BODY */}
-      <div style={{ display:'flex', flex:1, maxWidth:1600, margin:'0 auto', width:'100%', overflow:'hidden' }}>
+      <div style={{ display:'flex', flex:1, maxWidth:1700, margin:'0 auto', width:'100%', overflow:'hidden' }}>
 
         {/* LEFT SIDEBAR */}
-        <aside style={{ width:200, borderRight:'1px solid #3a3a3a', padding:'16px 8px', display:'flex', flexDirection:'column', gap:2, flexShrink:0, overflowY:'auto' }}>
+        <aside style={{ width:200, borderRight:'1px solid #2c2c35', padding:'16px 8px', display:'flex', flexDirection:'column', gap:2, flexShrink:0, overflowY:'auto' }}>
           {[
             { icon:<LayoutList size={16}/>, label:'Library', active:true },
             { icon:<Target size={16}/>, label:'Quest', badge:'New' },
@@ -134,7 +213,7 @@ export default function LeetCodeClone() {
           ].map(({icon, label, active, badge}) => (
             <button key={label} style={{
               display:'flex', alignItems:'center', gap:10, padding:'8px 12px', borderRadius:6,
-              background: active ? '#3a3a3a' : 'transparent', border:'none', cursor:'pointer',
+              background: active ? '#2c2c35' : 'transparent', border:'none', cursor:'pointer',
               color: active ? '#fff' : '#9ca3af', fontSize:13.5, fontWeight: active ? 500 : 400,
               justifyContent:'space-between', width:'100%'
             }}>
@@ -142,9 +221,9 @@ export default function LeetCodeClone() {
               {badge && <span style={{ background:'#2563eb', color:'#fff', fontSize:10, padding:'1px 6px', borderRadius:999, fontWeight:700 }}>{badge}</span>}
             </button>
           ))}
-          <div style={{ marginTop:24, paddingTop:16, borderTop:'1px solid #3a3a3a', display:'flex', flexDirection:'column', alignItems:'center', gap:12 }}>
+          <div style={{ marginTop:24, paddingTop:16, borderTop:'1px solid #2c2c35', display:'flex', flexDirection:'column', alignItems:'center', gap:12 }}>
             <p style={{ color:'#6b7280', fontSize:12, textAlign:'center', lineHeight:1.5 }}>Sign in to view lists and track study progress.</p>
-            <button style={{ display:'flex', alignItems:'center', gap:8, background:'#fff', color:'#111', border:'none', borderRadius:999, padding:'7px 18px', fontWeight:600, fontSize:13, cursor:'pointer', width:'100%', justifyContent:'center' }}>
+            <button style={{ display:'flex', alignItems:'center', gap:8, background:'#8a6bfe', color:'#fff', border:'none', borderRadius:999, padding:'7px 18px', fontWeight:600, fontSize:13, cursor:'pointer', width:'100%', justifyContent:'center' }}>
               <User size={15}/> Sign in
             </button>
           </div>
@@ -170,23 +249,36 @@ export default function LeetCodeClone() {
           </div>
 
           {/* Topics row */}
-          <div style={{ display:'flex', flexWrap:'wrap', gap:16, marginBottom:18, fontSize:13, color:'#9ca3af' }}>
-            {dynamicTopics.slice(0,8).map(t => (
-              <span key={t.name} style={{ display:'flex', alignItems:'center', gap:5, cursor:'pointer' }}
-                onMouseEnter={e=>e.currentTarget.style.color='#fff'}
-                onMouseLeave={e=>e.currentTarget.style.color='#9ca3af'}>
-                {t.name}
-                <span style={{ background:'#282828', padding:'1px 7px', borderRadius:999, fontSize:11, color:'#6b7280' }}>{t.count}</span>
-              </span>
-            ))}
+          <div style={{ display:'flex', flexWrap:'wrap', gap:16, marginBottom:18, fontSize:13, color:'#9ca3af', alignItems: 'center' }}>
+            {visibleTopics.map(t => {
+              const isActive = activeCategory === t.name;
+              return (
+                <span key={t.name} onClick={() => setActiveCategory(isActive ? null : t.name)}
+                  style={{ 
+                    display:'flex', alignItems:'center', gap:5, cursor:'pointer',
+                    color: isActive ? '#fff' : '#9ca3af', background: isActive ? '#3a3a47' : 'transparent',
+                    padding: isActive ? '4px 10px' : '4px 2px', borderRadius: 999, transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={e => { if (!isActive) e.currentTarget.style.color='#fff' }}
+                  onMouseLeave={e => { if (!isActive) e.currentTarget.style.color='#9ca3af' }}>
+                  {t.name}
+                  <span style={{ background: isActive ? '#4a4a59' : '#2c2c35', padding:'1px 7px', borderRadius:999, fontSize:11, color: isActive ? '#fff' : '#6b7280' }}>
+                    {t.count}
+                  </span>
+                </span>
+              );
+            })}
             {dynamicTopics.length > 8 && (
-              <span style={{ color:'#6b7280', cursor:'pointer', display:'flex', alignItems:'center', gap:2 }}>
-                Expand <ChevronDown size={13}/>
+              <span onClick={() => setIsExpanded(!isExpanded)}
+                style={{ color:'#6b7280', cursor:'pointer', display:'flex', alignItems:'center', gap:2, padding: '4px 2px' }}
+                onMouseEnter={e => e.currentTarget.style.color='#fff'}
+                onMouseLeave={e => e.currentTarget.style.color='#6b7280'}>
+                {isExpanded ? 'Show Less' : 'Expand'} {isExpanded ? <ChevronUp size={13}/> : <ChevronDown size={13}/>}
               </span>
             )}
           </div>
 
-          {/* ── DIFFICULTY FILTER TABS ── */}
+          {/* DIFFICULTY FILTER TABS */}
           <div style={{ display:'flex', gap:8, marginBottom:20, flexWrap:'wrap' }}>
             {DIFF_TABS.map(tab => {
               const isAll = tab.id === 'All';
@@ -194,42 +286,20 @@ export default function LeetCodeClone() {
               const color = isAll ? null : diffColor(tab.id);
               const bg = isAll ? null : diffBg(tab.id);
               return (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveDifficulty(tab.id)}
+                <button key={tab.id} onClick={() => setActiveDifficulty(tab.id)}
                   style={{
-                    display:'flex', alignItems:'center', gap:8,
-                    padding:'7px 16px', borderRadius:999, cursor:'pointer',
-                    fontSize:13, fontWeight: isActive ? 600 : 400,
-                    transition:'all 0.15s',
-                    border: isActive
-                      ? (isAll ? 'none' : `1px solid ${color}`)
-                      : '1px solid #3a3a3a',
-                    background: isActive
-                      ? (isAll ? '#fff' : bg)
-                      : '#282828',
-                    color: isActive
-                      ? (isAll ? '#000' : color)
-                      : (isAll ? '#d1d5db' : '#9ca3af'),
-                  }}
-                >
+                    display:'flex', alignItems:'center', gap:8, padding:'7px 16px', borderRadius:999, cursor:'pointer',
+                    fontSize:13, fontWeight: isActive ? 600 : 400, transition:'all 0.15s',
+                    border: isActive ? (isAll ? 'none' : `1px solid ${color}`) : '1px solid #2c2c35',
+                    background: isActive ? (isAll ? '#fff' : bg) : '#1b1b1f',
+                    color: isActive ? (isAll ? '#000' : color) : (isAll ? '#d1d5db' : '#9ca3af'),
+                  }}>
                   {!isAll && (
-                    <span style={{
-                      width:8, height:8, borderRadius:'50%',
-                      background: isActive ? color : '#6b7280',
-                      display:'inline-block', flexShrink:0,
-                      transition:'background 0.15s'
-                    }}/>
+                    <span style={{ width:8, height:8, borderRadius:'50%', background: isActive ? color : '#6b7280', display:'inline-block', flexShrink:0, transition:'background 0.15s' }}/>
                   )}
-                  {!isAll && <LayoutList size={14} style={{ display:'none' }}/>}
                   {isAll && <LayoutList size={14}/>}
                   {tab.label}
-                  <span style={{
-                    fontSize:11, padding:'1px 7px', borderRadius:999,
-                    background: isActive ? (isAll ? '#00000015' : 'rgba(0,0,0,0.2)') : '#3a3a3a',
-                    color: isActive ? (isAll ? '#000' : color) : '#6b7280',
-                    fontWeight:600
-                  }}>
+                  <span style={{ fontSize:11, padding:'1px 7px', borderRadius:999, background: isActive ? (isAll ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.15)') : '#2c2c35', color: isActive ? (isAll ? '#000' : color) : '#6b7280', fontWeight:600 }}>
                     {tab.count}
                   </span>
                 </button>
@@ -243,22 +313,24 @@ export default function LeetCodeClone() {
               <div style={{ position:'relative', display:'flex', alignItems:'center' }}>
                 <Search size={14} color="#6b7280" style={{ position:'absolute', left:10 }}/>
                 <input
-                  placeholder="Search questions"
-                  value={searchQuery}
-                  onChange={e=>setSearchQuery(e.target.value)}
-                  style={{ background:'#282828', border:'1px solid #3a3a3a', borderRadius:6, padding:'7px 10px 7px 32px', color:'#fff', fontSize:13, outline:'none', width:220 }}
+                  placeholder="Search questions" value={searchQuery} onChange={e=>setSearchQuery(e.target.value)}
+                  style={{ background:'#111113', border:'1px solid #2c2c35', borderRadius:6, padding:'7px 10px 7px 32px', color:'#fff', fontSize:13, outline:'none', width:220 }}
                 />
               </div>
-              <button style={{ background:'#282828', border:'1px solid #3a3a3a', borderRadius:6, padding:'7px 10px', color:'#9ca3af', cursor:'pointer', display:'flex', alignItems:'center' }}>
+              
+              <button onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                style={{ background: sortOrder === 'desc' ? '#3a3a47' : '#1b1b1f', border:'1px solid #2c2c35', borderRadius:6, padding:'7px 10px', color: sortOrder === 'desc' ? '#fff' : '#9ca3af', cursor:'pointer', display:'flex', alignItems:'center', transition: 'all 0.2s' }}
+                title={sortOrder === 'asc' ? "Sort Descending" : "Sort Ascending"}>
                 <ArrowUpDown size={15}/>
               </button>
-              <button style={{ background:'#282828', border:'1px solid #3a3a3a', borderRadius:6, padding:'7px 10px', color:'#9ca3af', cursor:'pointer', display:'flex', alignItems:'center' }}>
+
+              <button style={{ background:'#1b1b1f', border:'1px solid #2c2c35', borderRadius:6, padding:'7px 10px', color:'#9ca3af', cursor:'pointer', display:'flex', alignItems:'center' }}>
                 <SlidersHorizontal size={15}/>
               </button>
             </div>
             <div style={{ display:'flex', alignItems:'center', gap:16, fontSize:13, color:'#6b7280' }}>
               <span style={{ display:'flex', alignItems:'center', gap:6 }}>
-                <CheckCircle2 size={15} color="#3a3a3a"/> 0/{allProblems.length} Solved
+                <CheckCircle2 size={15} color="#2c2c35"/> 0/{allProblems.length} Solved
               </span>
               <Shuffle size={15} color="#00b8a3" style={{ cursor:'pointer' }}/>
             </div>
@@ -266,7 +338,7 @@ export default function LeetCodeClone() {
 
           {/* Problem List */}
           <div>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 80px 70px 80px', padding:'8px 12px', fontSize:12, color:'#6b7280', borderBottom:'1px solid #3a3a3a', marginBottom:4 }}>
+            <div style={{ display:'grid', gridTemplateColumns:'1fr 80px 70px 80px', padding:'8px 12px', fontSize:12, color:'#6b7280', borderBottom:'1px solid #2c2c35', marginBottom:4 }}>
               <span>Title</span>
               <span style={{ textAlign:'right' }}>Acceptance</span>
               <span style={{ textAlign:'right' }}>Difficulty</span>
@@ -274,20 +346,15 @@ export default function LeetCodeClone() {
             </div>
 
             {filteredProblems.length === 0 ? (
-              <div style={{ padding:40, textAlign:'center', color:'#6b7280' }}>No problems found.</div>
+              <div style={{ padding:40, textAlign:'center', color:'#6b7280' }}>No problems found matching your filters.</div>
             ) : filteredProblems.map((problem, idx) => (
-              <Link
-                key={problem.id}
-                to={`/problem/${problem.id}`}
+              <Link key={problem.id} to={`/problem/${problem.id}`}
                 style={{
-                  display:'grid', gridTemplateColumns:'1fr 80px 70px 80px',
-                  padding:'10px 12px', borderRadius:6, textDecoration:'none',
-                  background: idx % 2 !== 0 ? '#232323' : 'transparent',
-                  alignItems:'center', transition:'background 0.1s'
+                  display:'grid', gridTemplateColumns:'1fr 80px 70px 80px', padding:'10px 12px', borderRadius:6, textDecoration:'none',
+                  background: idx % 2 !== 0 ? '#16161a' : 'transparent', alignItems:'center', transition:'background 0.1s'
                 }}
-                onMouseEnter={e=>e.currentTarget.style.background='#2a2a2a'}
-                onMouseLeave={e=>e.currentTarget.style.background=idx%2!==0?'#232323':'transparent'}
-              >
+                onMouseEnter={e=>e.currentTarget.style.background='#1f1f24'}
+                onMouseLeave={e=>e.currentTarget.style.background=idx%2!==0?'#16161a':'transparent'}>
                 <span style={{ color:'#eff1f6', fontSize:13.5 }}>
                   {idx + 1}. {problem.title}
                 </span>
@@ -306,56 +373,59 @@ export default function LeetCodeClone() {
           </div>
         </main>
 
-        {/* RIGHT SIDEBAR */}
-        <aside style={{ width:300, borderLeft:'1px solid #3a3a3a', padding:'16px', display:'flex', flexDirection:'column', gap:16, flexShrink:0, overflowY:'auto' }}>
+        {/* --- RIGHT SIDEBAR (NOW FULLY FUNCTIONAL) --- */}
+        <aside style={{ width:300, borderLeft:'1px solid #2c2c35', padding:'16px', display:'flex', flexDirection:'column', gap:16, flexShrink:0, overflowY:'auto' }}>
 
-          <div style={{ display:'flex', justifyContent:'flex-end' }}>
-            <div style={{ background:'linear-gradient(135deg,#1f4d2a,#2d6a3f)', borderRadius:12, padding:'6px 12px', display:'flex', alignItems:'center', gap:6 }}>
-              <span style={{ color:'#4ade80', fontWeight:700, fontSize:13 }}>3</span>
-              <span style={{ fontSize:12 }}>🔥</span>
-            </div>
-          </div>
-
-          {/* Calendar */}
-          <div style={{ background:'#282828', borderRadius:10, padding:16, border:'1px solid #3a3a3a' }}>
+          {/* Calendar Section */}
+          <div style={{ background:'#1b1b1f', borderRadius:10, padding:16, border:'1px solid #2c2c35' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12 }}>
-              <span style={{ fontSize:13, color:'#d1d5db' }}>
-                Day 10 <span style={{ color:'#6b7280', fontSize:11 }}>06:32:13 left</span>
+              <span style={{ fontSize:13, color:'#fcfdff', display: 'flex', alignItems: 'center', gap: 6 }}>
+                Day {today.getDate()} <span style={{ color:'#d1d5db', fontSize:11 }}>{timeLeft}</span>
               </span>
               <div style={{ display:'flex', gap:8 }}>
-                <ChevronLeft size={15} color="#9ca3af" style={{ cursor:'pointer' }}/>
-                <ChevronRight size={15} color="#9ca3af" style={{ cursor:'pointer' }}/>
+                <ChevronLeft onClick={handlePrevMonth} size={15} color="#9ca3af" style={{ cursor:'pointer' }}/>
+                <ChevronRight onClick={handleNextMonth} size={15} color="#9ca3af" style={{ cursor:'pointer' }}/>
               </div>
             </div>
+            
+            <div style={{ textAlign: 'center', color: '#9ca3af', fontSize: 12, marginBottom: 8, fontWeight: 500 }}>
+                {viewDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
+            </div>
+
             <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:2, marginBottom:6 }}>
               {CAL_DAYS.map((d,i) => (
                 <div key={i} style={{ textAlign:'center', fontSize:11, color:'#6b7280', fontWeight:500, padding:'2px 0' }}>{d}</div>
               ))}
             </div>
             <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:2 }}>
-              {calDays.map((day, i) => (
+              {calendarGrid.map((day, i) => (
                 <div key={i} style={{
                   textAlign:'center', fontSize:12, borderRadius:999,
-                  background: day === 10 ? '#00b8a3' : 'transparent',
-                  color: day === 10 ? '#000' : day ? '#9ca3af' : 'transparent',
-                  fontWeight: day === 10 ? 700 : 400,
+                  background: isToday(day) ? '#eb5a56' : 'transparent',
+                  color: isToday(day) ? '#000' : day ? '#9ca3af' : 'transparent',
+                  fontWeight: isToday(day) ? 700 : 400,
                   cursor: day ? 'pointer' : 'default', lineHeight:'24px', height:24
                 }}>{day}</div>
               ))}
             </div>
-            <div style={{ marginTop:14, background:'#1e1e1e', border:'1px solid #3a2a0a', borderRadius:8, padding:'10px 12px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+            
+            <div style={{ marginTop:14, background:'#3e3427', border:'1px solid #2c2c35', borderRadius:8, padding:'10px 12px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
               <div style={{ display:'flex', alignItems:'center', gap:4 }}>
                 <span style={{ color:'#ffa116', fontSize:12, fontWeight:600 }}>Weekly Premium</span>
                 <Lock size={11} color="#ffa116"/>
               </div>
               <span style={{ color:'#6b7280', fontSize:11 }}>4 days left</span>
             </div>
+            
+            {/* Week Selector */}
             <div style={{ display:'flex', gap:6, marginTop:10 }}>
               {['W1','W2','W3','W4','W5'].map((w,i) => (
-                <div key={w} style={{
+                <div key={w} onClick={() => setActiveWeek(i)} style={{
                   flex:1, textAlign:'center', padding:'4px 0', borderRadius:6, fontSize:11,
-                  background: i===1 ? '#ffa116' : '#3a3a3a',
-                  color: i===1 ? '#000' : '#9ca3af', fontWeight: i===1 ? 700 : 400, cursor:'pointer'
+                  background: activeWeek === i ? '#ef5a55' : '#2c2c35',
+                  color: activeWeek === i ? '#000' : '#9ca3af', 
+                  fontWeight: activeWeek === i ? 700 : 400, 
+                  cursor:'pointer', transition: 'all 0.2s'
                 }}>{w}</div>
               ))}
             </div>
@@ -363,41 +433,50 @@ export default function LeetCodeClone() {
               <div style={{ display:'flex', alignItems:'center', gap:6 }}>
                 <span style={{ color:'#4ade80', fontSize:16 }}>⬡</span>
                 <span style={{ color:'#fff', fontWeight:700 }}>0</span>
-                <span style={{ color:'#3b82f6', fontSize:12, cursor:'pointer' }}>Redeem</span>
               </div>
               <span style={{ color:'#6b7280', fontSize:11, cursor:'pointer' }}>Rules</span>
             </div>
           </div>
 
-          {/* Trending Companies */}
-          <div style={{ background:'#282828', borderRadius:10, padding:16, border:'1px solid #3a3a3a' }}>
+          {/* Trending Companies Section */}
+          <div style={{ background:'#1b1b1f', borderRadius:10, padding:16, border:'1px solid #2c2c35' }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
               <span style={{ color:'#fff', fontWeight:600, fontSize:14 }}>Trending Companies</span>
               <div style={{ display:'flex', gap:6 }}>
-                <ChevronLeft size={15} color="#9ca3af" style={{ cursor:'pointer' }}/>
-                <ChevronRight size={15} color="#9ca3af" style={{ cursor:'pointer' }}/>
+                <ChevronLeft onClick={handlePrevCompanyPage} size={15} color={companyPage > 0 ? "#fff" : "#6b7280"} style={{ cursor: companyPage > 0 ? 'pointer' : 'default' }}/>
+                <ChevronRight onClick={handleNextCompanyPage} size={15} color={companyPage < totalCompanyPages - 1 ? "#fff" : "#6b7280"} style={{ cursor: companyPage < totalCompanyPages - 1 ? 'pointer' : 'default' }}/>
               </div>
             </div>
             <div style={{ position:'relative', marginBottom:12 }}>
               <Search size={13} color="#6b7280" style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)' }}/>
-              <input placeholder="Search for a company..." style={{
-                background:'#3a3a3a', border:'none', borderRadius:6, padding:'7px 10px 7px 30px',
-                color:'#d1d5db', fontSize:12, outline:'none', width:'100%'
-              }}/>
-            </div>
-            <div style={{ display:'flex', flexWrap:'wrap', gap:8 }}>
-              {COMPANIES.map(c => (
-                <div key={c.name} style={{
-                  display:'flex', alignItems:'center', gap:6, background:'#3a3a3a',
-                  borderRadius:999, padding:'5px 10px', cursor:'pointer', fontSize:12, transition:'background 0.15s'
+              <input 
+                placeholder="Search for a company..." 
+                value={companySearch}
+                onChange={(e) => setCompanySearch(e.target.value)}
+                style={{
+                  background:'#2c2c35', border:'none', borderRadius:6, padding:'7px 10px 7px 30px',
+                  color:'#d1d5db', fontSize:12, outline:'none', width:'100%'
                 }}
-                  onMouseEnter={e=>e.currentTarget.style.background='#4a4a4a'}
-                  onMouseLeave={e=>e.currentTarget.style.background='#3a3a3a'}>
-                  <span style={{ color:'#d1d5db' }}>{c.name}</span>
-                  <span style={{ background:'#ffa116', color:'#000', fontSize:10, padding:'1px 6px', borderRadius:999, fontWeight:700 }}>{c.count}</span>
-                </div>
-              ))}
+              />
             </div>
+            
+            {visibleCompanies.length === 0 ? (
+                <div style={{ color: '#6b7280', fontSize: 12, textAlign: 'center', padding: '10px 0' }}>No companies found.</div>
+            ) : (
+                <div style={{ display:'flex', flexWrap:'wrap', gap:8, minHeight: 90, alignContent: 'flex-start' }}>
+                {visibleCompanies.map(c => (
+                    <div key={c.name} style={{
+                    display:'flex', alignItems:'center', gap:6, background:'#2c2c35',
+                    borderRadius:999, padding:'5px 10px', cursor:'pointer', fontSize:12, transition:'background 0.15s'
+                    }}
+                    onMouseEnter={e=>e.currentTarget.style.background='#3a3a47'}
+                    onMouseLeave={e=>e.currentTarget.style.background='#2c2c35'}>
+                    <span style={{ color:'#d1d5db' }}>{c.name}</span>
+                    <span style={{ background:'#ffa116', color:'#000', fontSize:10, padding:'1px 6px', borderRadius:999, fontWeight:700 }}>{c.count}</span>
+                    </div>
+                ))}
+                </div>
+            )}
           </div>
 
         </aside>

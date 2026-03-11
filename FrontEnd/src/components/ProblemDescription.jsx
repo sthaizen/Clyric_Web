@@ -9,10 +9,10 @@ function ProblemDescription({ problem, currentProblemId, onProblemChange, allPro
   };
 
   return (
-    <div className="h-full flex flex-col bg-[#282828] text-gray-300">
+    <div className="h-full flex flex-col bg-[#1b1b1f] text-gray-300">
       {/* TABS HEADER */}
-      <div className="flex items-center bg-[#282828] border-b border-[#3e3e42] text-[13px] font-medium text-gray-400 overflow-x-auto">
-        <div className="flex items-center gap-1.5 text-white px-4 py-2 bg-[#3e3e42]/40 border-t-2 border-t-transparent cursor-pointer">
+      <div className="flex items-center bg-[#1b1b1f] border-b border-[#111113] text-[13px] font-medium text-gray-400 overflow-x-auto">
+        <div className="flex items-center gap-1.5 text-white px-4 py-2 bg-[#111113] border-t-2 border-t-transparent cursor-pointer">
           <FileText className="w-4 h-4 text-blue-400" /> Description
         </div>
         <div className="flex items-center gap-1.5 px-4 py-2 hover:text-gray-200 cursor-pointer">
@@ -31,7 +31,7 @@ function ProblemDescription({ problem, currentProblemId, onProblemChange, allPro
         
         {/* Title & Actions */}
         <h1 className="text-xl font-bold text-white mb-3">
-          1. {problem.title}
+           {problem.title}
         </h1>
 
         {/* Badges */}
@@ -39,13 +39,13 @@ function ProblemDescription({ problem, currentProblemId, onProblemChange, allPro
           <span className={`${getDifficultyColor(problem.difficulty)} px-2.5 py-1 rounded-full`}>
             {problem.difficulty}
           </span>
-          <span className="flex items-center gap-1 text-gray-400 hover:text-gray-300 hover:bg-[#3e3e42] bg-[#3e3e42]/40 px-2.5 py-1 rounded-full cursor-pointer transition-colors">
+          <span className="flex items-center gap-1 text-gray-400 hover:text-gray-300 hover:bg-[#8a6bfe]/20 bg-[#111113] px-2.5 py-1 rounded-full cursor-pointer transition-colors">
               Topics
           </span>
-          <span className="flex items-center gap-1 text-gray-400 hover:text-gray-300 hover:bg-[#3e3e42] bg-[#3e3e42]/40 px-2.5 py-1 rounded-full cursor-pointer transition-colors">
+          <span className="flex items-center gap-1 text-gray-400 hover:text-gray-300 hover:bg-[#8a6bfe]/20 bg-[#111113] px-2.5 py-1 rounded-full cursor-pointer transition-colors">
             <BookOpen className="w-3.5 h-3.5 text-orange-400" /> Companies
           </span>
-          <span className="flex items-center gap-1 text-gray-400 hover:text-gray-300 hover:bg-[#3e3e42] bg-[#3e3e42]/40 px-2.5 py-1 rounded-full cursor-pointer transition-colors">
+          <span className="flex items-center gap-1 text-gray-400 hover:text-gray-300 hover:bg-[#8a6bfe]/20 bg-[#111113] px-2.5 py-1 rounded-full cursor-pointer transition-colors">
             <Lightbulb className="w-3.5 h-3.5" /> Hint
           </span>
         </div>
@@ -63,7 +63,7 @@ function ProblemDescription({ problem, currentProblemId, onProblemChange, allPro
           {problem.examples.map((example, idx) => (
             <div key={idx}>
               <p className="font-semibold text-white mb-3 text-sm">Example {idx + 1}:</p>
-              <div className="border-l-2 border-[#3e3e42] pl-3 py-1 ml-1 text-sm font-mono space-y-1.5">
+              <div className="border-l-2 border-[#f1a120] bg-[#111113] px-3 py-2 ml-1 text-sm font-mono space-y-1.5 rounded-r-md">
                 <div><span className="font-bold text-white">Input:</span> nums = {example.input.split("target")[0]}, target {example.input.split("target")[1]}</div>
                 <div><span className="font-bold text-white">Output:</span> {example.output}</div>
                 {example.explanation && (
@@ -80,16 +80,16 @@ function ProblemDescription({ problem, currentProblemId, onProblemChange, allPro
           <ul className="space-y-2 text-sm list-disc pl-5">
             {problem.constraints.map((constraint, idx) => (
               <li key={idx} className="marker:text-gray-500">
-                <code className="bg-[#3e3e42]/50 text-gray-300 px-1.5 py-0.5 rounded text-[13px]">{constraint}</code>
+                <code className="bg-[#111113] text-gray-300 px-1.5 py-0.5 rounded text-[13px]">{constraint}</code>
               </li>
             ))}
           </ul>
         </div>
 
         {/* Follow-up */}
-        <div className="text-sm border-b border-[#3e3e42] pb-8 mb-4">
+        <div className="text-sm border-b border-[#111113] pb-8 mb-4">
           <span className="font-bold text-white">Follow-up: </span>
-          Can you come up with an algorithm that is less than <code className="bg-[#3e3e42]/50 text-gray-300 px-1.5 py-0.5 rounded text-[13px]">O(n<sup>2</sup>)</code> time complexity?
+          Can you come up with an algorithm that is less than <code className="bg-[#111113] text-gray-300 px-1.5 py-0.5 rounded text-[13px]">O(n<sup>2</sup>)</code> time complexity?
         </div>
 
         {/* Footer Metrics & Accordions */}
@@ -98,7 +98,7 @@ function ProblemDescription({ problem, currentProblemId, onProblemChange, allPro
           <div>Acceptance Rate <span className="text-white font-semibold">57.2%</span></div>
         </div>
 
-        <div className="space-y-0.5 border-t border-[#3e3e42] pt-2">
+        <div className="space-y-0.5 border-t border-[#111113] pt-2">
            {[ "Topics", "Companies", "Hint 1", "Hint 2", "Hint 3", "Similar Questions"].map((item) => (
              <div key={item} className="flex items-center justify-between py-2.5 text-sm hover:text-white cursor-pointer group">
                 <div className="flex items-center gap-2">
@@ -121,7 +121,7 @@ function ProblemDescription({ problem, currentProblemId, onProblemChange, allPro
       </div>
 
       {/* Bottom Action Bar */}
-      <div className="flex items-center justify-between px-5 py-3 bg-[#282828] border-t border-[#3e3e42] text-xs text-gray-400">
+      <div className="flex items-center justify-between px-5 py-3 bg-[#1b1b1f] border-t border-[#111113] text-xs text-gray-400">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1.5 cursor-pointer hover:text-white"><ThumbsUp className="w-3.5 h-3.5" /> 68K</div>
           <div className="flex items-center gap-1.5 cursor-pointer hover:text-white"><ThumbsDown className="w-3.5 h-3.5" /></div>
