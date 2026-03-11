@@ -6,8 +6,9 @@
     "node": "22.x"
   },
   "scripts": {
+    "dev": "concurrently \"npm run dev --prefix BackEnd\" \"npm run dev --prefix FrontEnd\"",
     "build": "npm install --prefix BackEnd && npm install --prefix FrontEnd && npm run build --prefix FrontEnd",
-    "start": "npm run start --prefix BackEnd"
+    "start": "set NODE_ENV=production&& npm run start --prefix BackEnd"
   },
   "keywords": [],
   "author": "",
@@ -16,5 +17,8 @@
   "dependencies": {
     "axios": "^1.12.2",
     "inngest": "^3.52.6"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1"
   }
 }

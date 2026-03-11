@@ -1,0 +1,2 @@
+This directory is used to sandbox individual code executions.
+Files inside here are automatically managed and cleaned up by `cleanupHelper.js`.
