@@ -28,7 +28,8 @@ import {
   CloudUpload,
   Loader2,
   X,
-  EyeOff
+  EyeOff,
+  LayoutTemplate
 } from "lucide-react";
 
 function ProblemPage() {
@@ -59,6 +60,10 @@ function ProblemPage() {
 
   // Problem List Sidebar State
   const [isProblemListOpen, setIsProblemListOpen] = useState(false);
+
+  // --- LAYOUT STATES ---
+  const [isLayoutMenuOpen, setIsLayoutMenuOpen] = useState(false);
+  const [layoutMode, setLayoutMode] = useState("default"); // 'default' | 'columns' | 'focus'
 
   const currentProblem = PROBLEMS[currentProblemId] ?? null;
 
@@ -161,6 +166,34 @@ function ProblemPage() {
 
   const handleProblemChange = (newProblemId) => navigate(`/problem/${newProblemId}`);
 
+  // --- NAVIGATION LOGIC ---
+  const problemIds = Object.keys(PROBLEMS);
+  const currentIndex = problemIds.indexOf(currentProblemId);
+  const isFirstProblem = currentIndex === 0;
+  const isLastProblem = currentIndex === problemIds.length - 1;
+
+  const handlePrevProblem = () => {
+    if (!isFirstProblem) {
+      handleProblemChange(problemIds[currentIndex - 1]);
+    }
+  };
+
+  const handleNextProblem = () => {
+    if (!isLastProblem) {
+      handleProblemChange(problemIds[currentIndex + 1]);
+    }
+  };
+
+  const handleRandomProblem = () => {
+    if (problemIds.length <= 1) return;
+    let randomIndex;
+    do {
+      randomIndex = Math.floor(Math.random() * problemIds.length);
+    } while (randomIndex === currentIndex);
+    
+    handleProblemChange(problemIds[randomIndex]);
+  };
+
   const triggerConfetti = () => {
     confetti({ particleCount: 80, spread: 250, origin: { x: 0.2, y: 0.6 } });
     confetti({ particleCount: 80, spread: 250, origin: { x: 0.8, y: 0.6 } });
@@ -218,7 +251,7 @@ function ProblemPage() {
 
   if (!currentProblem) {
     return (
-      <div className="h-screen bg-[#1a1a1a] flex flex-col">
+      <div className="h-screen bg-[#111113] flex flex-col">
         <div className="flex-1 flex flex-col items-center justify-center gap-4">
           <h1 className="text-3xl font-bold text-white">Problem Not Found</h1>
           <p className="text-gray-400">The problem &ldquo;{id}&rdquo; does not exist.</p>
@@ -235,18 +268,27 @@ function ProblemPage() {
   const currentNavTime = timerMode === 'stopwatch' ? formatTime(timeElapsed) : formatTime(timeRemaining);
 
   return (
-    <div className="h-screen bg-[#1a1a1a] flex flex-col overflow-hidden">
+    <div className="h-screen bg-[#111113] flex flex-col overflow-hidden">
 
       {/* INLINE LEETCODE NAVBAR */}
-      <nav className="flex items-center justify-between h-[50px] px-4 bg-[#282828] text-gray-400 text-sm border-b border-[#3e3e42]">
+      <nav className="flex items-center justify-between h-[50px] px-4 bg-[#1b1b1f] text-gray-400 text-sm border-b border-[#111113]">
 
         {/* --- LEFT SECTION --- */}
         <div className="flex items-center h-full w-[30%]">
-          <Link to="/" className="flex items-center justify-center w-6 h-6 mr-4 hover:opacity-80 transition-opacity">
-            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
-              <path d="M13 18.6667L19 15.3333V8.66667L13 5.33333V18.6667Z" stroke="#FFA116" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M11 5.33333L5 8.66667V15.3333L11 18.6667V5.33333Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
+          <Link to="/problems" className="flex items-center justify-center h-6 mr-4 hover:opacity-80 transition-opacity">
+            <div className="flex flex-col gap-[2px] ">
+              <div className="w-[16px] h-[4px] rounded-[2px] rounded-tl-sm bg-[#F3F3EF]"></div>
+              <div className="flex gap-[2px]">
+                <div className="w-[4px] h-[4px] rounded-[2px] bg-[#F3F3EF]"></div>
+                <div className="w-[12px] h-[4px] rounded-[2px] bg-[#fba120]"></div>
+              </div>
+              <div className="flex gap-[2px]">
+                <div className="w-[10px] h-[4px] bg-transparent"></div>
+                <div className="w-[6px] h-[6px] rounded-[2px] rounded-br-sm bg-[#F3F3EF]"></div>
+              </div>
+            </div>
+            <span className="p-2"style={{ color:'#fff', fontWeight:700, fontSize:17, letterSpacing:'-0.2px' }}>Clyric</span>
+            
           </Link>
 
           {/* Toggle Problem List Sidebar */}
@@ -259,13 +301,27 @@ function ProblemPage() {
           </div>
 
           <div className="flex items-center gap-1">
-            <button className="p-1 hover:bg-[#3e3e42] hover:text-white rounded cursor-pointer transition-colors">
+            <button 
+              onClick={handlePrevProblem}
+              disabled={isFirstProblem}
+              className="p-1 hover:bg-[#3e3e42] hover:text-white rounded cursor-pointer transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              title="Previous Question"
+            >
               <ChevronLeft className="w-5 h-5" />
             </button>
-            <button className="p-1 hover:bg-[#3e3e42] hover:text-white rounded cursor-pointer transition-colors">
+            <button 
+              onClick={handleNextProblem}
+              disabled={isLastProblem}
+              className="p-1 hover:bg-[#3e3e42] hover:text-white rounded cursor-pointer transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+              title="Next Question"
+            >
               <ChevronRight className="w-5 h-5" />
             </button>
-            <button className="p-1 hover:bg-[#3e3e42] hover:text-white rounded cursor-pointer transition-colors ml-1">
+            <button 
+              onClick={handleRandomProblem}
+              className="p-1 hover:bg-[#3e3e42] hover:text-white rounded cursor-pointer transition-colors ml-1"
+              title="Pick One"
+            >
               <Shuffle className="w-4 h-4" />
             </button>
           </div>
@@ -289,7 +345,7 @@ function ProblemPage() {
           <button
             onClick={handleSubmitCode}
             disabled={isRunning || isSubmitting}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#282828] hover:bg-[#3e3e42] text-[#2cbb5d] font-medium text-[13px] rounded-md transition-colors disabled:opacity-50"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1b1b1f] hover:bg-[#3e3e42] text-[#2cbb5d] font-medium text-[13px] rounded-md transition-colors disabled:opacity-50"
           >
             {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <CloudUpload className="w-4 h-4" />}
             Submit
@@ -297,8 +353,70 @@ function ProblemPage() {
         </div>
 
         {/* --- RIGHT SECTION --- */}
-        <div className="flex items-center justify-end gap-5 h-full w-[30%]">
+        <div className="flex items-center justify-end gap-5 h-full w-[30%] relative">
           <div className="flex items-center gap-4">
+            
+            {/* LAYOUT BUTTON & DROPDOWN */}
+            <div className="relative flex items-center">
+              <button 
+                onClick={() => setIsLayoutMenuOpen(!isLayoutMenuOpen)}
+                className={`p-1.5 rounded-lg transition-colors flex items-center justify-center ${isLayoutMenuOpen ? 'bg-[#3e3e42] text-white' : 'text-gray-400 hover:text-white hover:bg-[#3e3e42]'}`}
+              >
+                <LayoutTemplate className="w-4 h-4" />
+              </button>
+
+              {isLayoutMenuOpen && (
+                <div className="absolute top-[42px] right-0 w-[260px] bg-[#1b1b1f] border border-[#3e3e42] rounded-xl shadow-2xl p-4 z-50 flex flex-col gap-3">
+                  <div className="flex justify-between items-center mb-1">
+                    <span className="text-[14px] font-semibold text-gray-200">Layouts</span>
+                    <LayoutTemplate className="w-4 h-4 text-gray-400" />
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Default Layout Option */}
+                    <div 
+                      onClick={() => { setLayoutMode('default'); setIsLayoutMenuOpen(false); }}
+                      className={`flex flex-col gap-2 cursor-pointer p-2 rounded-lg border transition-all ${layoutMode === 'default' ? 'border-[#2cbb5d] bg-[#2cbb5d]/10' : 'border-transparent hover:bg-[#3e3e42]/50'}`}
+                    >
+                      <div className="h-[40px] flex gap-1 w-full opacity-80">
+                        <div className="w-[45%] bg-[#3e3e42] rounded-sm"></div>
+                        <div className="w-[55%] flex flex-col gap-1">
+                          <div className="h-[60%] bg-[#3e3e42] rounded-sm"></div>
+                          <div className="h-[40%] bg-[#3e3e42] rounded-sm"></div>
+                        </div>
+                      </div>
+                      <span className="text-[12px] text-center font-medium text-gray-300">Default</span>
+                    </div>
+
+                    {/* Columns Layout Option */}
+                    <div 
+                      onClick={() => { setLayoutMode('columns'); setIsLayoutMenuOpen(false); }}
+                      className={`flex flex-col gap-2 cursor-pointer p-2 rounded-lg border transition-all ${layoutMode === 'columns' ? 'border-[#2cbb5d] bg-[#2cbb5d]/10' : 'border-transparent hover:bg-[#3e3e42]/50'}`}
+                    >
+                      <div className="h-[40px] flex gap-1 w-full opacity-80">
+                        <div className="w-1/3 bg-[#3e3e42] rounded-sm"></div>
+                        <div className="w-1/3 bg-[#3e3e42] rounded-sm"></div>
+                        <div className="w-1/3 bg-[#3e3e42] rounded-sm"></div>
+                      </div>
+                      <span className="text-[12px] text-center font-medium text-gray-300">3 Columns</span>
+                    </div>
+
+                    {/* Focus Layout Option */}
+                    <div 
+                      onClick={() => { setLayoutMode('focus'); setIsLayoutMenuOpen(false); }}
+                      className={`flex flex-col gap-2 cursor-pointer p-2 rounded-lg border transition-all ${layoutMode === 'focus' ? 'border-[#ffa116] bg-[#ffa116]/10' : 'border-transparent hover:bg-[#3e3e42]/50'} col-span-2`}
+                    >
+                       <div className="h-[40px] flex flex-col gap-1 w-full opacity-80">
+                          <div className="h-[70%] bg-[#3e3e42] rounded-sm flex items-center justify-center"><span className="text-[8px] font-bold text-gray-500">EDITOR</span></div>
+                          <div className="h-[30%] bg-[#3e3e42] rounded-sm"></div>
+                       </div>
+                       <span className="text-[12px] text-center font-medium text-[#ffa116]">Focus Mode</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+            
             <Settings className="w-4 h-4 hover:text-white cursor-pointer transition-colors" />
 
             {/* TIMER FEATURE CONTAINER */}
@@ -313,7 +431,7 @@ function ProblemPage() {
 
               {/* TIMER DROPDOWN MENU */}
               {isTimerOpen && (
-                <div className="absolute top-[42px] right-0 w-[290px] bg-[#282828] border border-[#3e3e42] rounded-xl shadow-2xl p-3 z-50 flex flex-col gap-3">
+                <div className="absolute top-[42px] right-0 w-[290px] bg-[#1b1b1f] border border-[#111113] rounded-xl shadow-2xl p-3 z-50 flex flex-col gap-3">
                   <div className="flex gap-2 h-[110px]">
 
                     {/* Stopwatch Card */}
@@ -415,7 +533,7 @@ function ProblemPage() {
             />
 
             {/* Sidebar Overlay Flush to Left */}
-            <div className="absolute left-0 top-0 bottom-0 z-50 w-[380px] bg-[#1a1a1a] flex flex-col overflow-hidden shadow-2xl animate-in slide-in-from-left-8 duration-200 border-r border-[#3e3e42]">
+            <div className="absolute left-0 top-0 bottom-0 z-50 w-[380px] bg-[#111113] flex flex-col overflow-hidden shadow-2xl animate-in slide-in-from-left-8 duration-200 border-r border-[#111113]">
 
               {/* Sidebar Header */}
               <div className="flex items-center justify-between p-4">
@@ -434,7 +552,7 @@ function ProblemPage() {
 
               {/* Tag Button Area */}
               <div className="flex justify-end px-4 pb-3">
-                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-[#282828] hover:bg-[#3e3e42] text-gray-400 hover:text-gray-300 text-[11px] font-medium rounded-full border border-[#3e3e42] transition-colors">
+                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-[#1b1b1f] hover:bg-[#3e3e42] text-gray-400 hover:text-gray-300 text-[11px] font-medium rounded-full border border-[#111113] transition-colors">
                   <EyeOff className="w-3.5 h-3.5" /> Tag
                 </button>
               </div>
@@ -452,7 +570,7 @@ function ProblemPage() {
                       }}
                       className={`flex items-center justify-between px-4 py-3 cursor-pointer text-[13px] rounded-lg transition-colors ${isActive
                           ? 'bg-[#3e3e42] text-white'
-                          : 'bg-[#282828] text-gray-300 hover:bg-[#3e3e42]/80'
+                          : 'bg-[#1b1b1f] text-gray-300 hover:bg-[#3e3e42]/80'
                         }`}
                     >
                       <span className={`truncate pr-4 ${isActive ? 'font-medium' : ''}`}>
@@ -473,49 +591,55 @@ function ProblemPage() {
           </>
         )}
 
-        {/* Existing Resizable Panel Group */}
-        <PanelGroup direction="horizontal" className="flex-1">
-          {/* Left Panel - Problem Description */}
-          <Panel defaultSize={50} minSize={30} className="bg-[#282828] rounded-lg border border-[#3e3e42] flex flex-col overflow-hidden">
-            <ProblemDescription
-              problem={currentProblem}
-              currentProblemId={currentProblemId}
-              onProblemChange={handleProblemChange}
-              allProblems={Object.values(PROBLEMS)}
-            />
-          </Panel>
+        {/* Dynamic Resizable Panel Groups based on Layout Mode */}
+        
+        {layoutMode === 'default' && (
+          <PanelGroup direction="horizontal" className="flex-1">
+            <Panel defaultSize={50} minSize={30} className="bg-[#1b1b1f] rounded-lg border border-[#111113] flex flex-col overflow-hidden">
+              <ProblemDescription problem={currentProblem} currentProblemId={currentProblemId} onProblemChange={handleProblemChange} allProblems={Object.values(PROBLEMS)} />
+            </Panel>
+            <PanelResizeHandle className="w-2 cursor-col-resize hover:bg-[#3e3e42]/50 transition-colors" />
+            <Panel defaultSize={50} minSize={30} className="flex flex-col">
+              <PanelGroup direction="vertical">
+                <Panel defaultSize={60} minSize={30} className="bg-[#1b1b1f] rounded-lg border border-[#111113] flex flex-col overflow-hidden">
+                  <CodeEditorPanel selectedLanguage={selectedLanguage} code={currentCode} isRunning={isRunning} isSubmitting={isSubmitting} onLanguageChange={handleLanguageChange} onCodeChange={handleCodeChange} onRunCode={handleRunCode} onResetCode={handleResetCode} />
+                </Panel>
+                <PanelResizeHandle className="h-2 cursor-row-resize hover:bg-[#3e3e42]/50 transition-colors" />
+                <Panel defaultSize={40} minSize={30} className="bg-[#1b1b1f] rounded-lg border border-[#111113] flex flex-col overflow-hidden">
+                  <OutputPanel output={output} sampleTestcase={currentProblem.examples[0]} />
+                </Panel>
+              </PanelGroup>
+            </Panel>
+          </PanelGroup>
+        )}
 
-          <PanelResizeHandle className="w-2 cursor-col-resize hover:bg-[#3e3e42]/50 transition-colors" />
+        {layoutMode === 'columns' && (
+          <PanelGroup direction="horizontal" className="flex-1">
+            <Panel defaultSize={33} minSize={20} className="bg-[#1b1b1f] rounded-lg border border-[#111113] flex flex-col overflow-hidden">
+              <ProblemDescription problem={currentProblem} currentProblemId={currentProblemId} onProblemChange={handleProblemChange} allProblems={Object.values(PROBLEMS)} />
+            </Panel>
+            <PanelResizeHandle className="w-2 cursor-col-resize hover:bg-[#3e3e42]/50 transition-colors" />
+            <Panel defaultSize={33} minSize={20} className="bg-[#1b1b1f] rounded-lg border border-[#111113] flex flex-col overflow-hidden">
+              <CodeEditorPanel selectedLanguage={selectedLanguage} code={currentCode} isRunning={isRunning} isSubmitting={isSubmitting} onLanguageChange={handleLanguageChange} onCodeChange={handleCodeChange} onRunCode={handleRunCode} onResetCode={handleResetCode} />
+            </Panel>
+            <PanelResizeHandle className="w-2 cursor-col-resize hover:bg-[#3e3e42]/50 transition-colors" />
+            <Panel defaultSize={34} minSize={20} className="bg-[#1b1b1f] rounded-lg border border-[#111113] flex flex-col overflow-hidden">
+               <OutputPanel output={output} sampleTestcase={currentProblem.examples[0]} />
+            </Panel>
+          </PanelGroup>
+        )}
 
-          {/* Right Panel - Code Editor & Output */}
-          <Panel defaultSize={50} minSize={30} className="flex flex-col">
-            <PanelGroup direction="vertical">
-              {/* Top Right Panel - Editor */}
-              <Panel defaultSize={60} minSize={30} className="bg-[#282828] rounded-lg border border-[#3e3e42] flex flex-col overflow-hidden">
-                <CodeEditorPanel
-                  selectedLanguage={selectedLanguage}
-                  code={currentCode}
-                  isRunning={isRunning}
-                  isSubmitting={isSubmitting}
-                  onLanguageChange={handleLanguageChange}
-                  onCodeChange={handleCodeChange}
-                  onRunCode={handleRunCode}
-                  onResetCode={handleResetCode}
-                />
-              </Panel>
-
-              <PanelResizeHandle className="h-2 cursor-row-resize hover:bg-[#3e3e42]/50 transition-colors" />
-
-              {/* Bottom Right Panel - Dynamic Output panel */}
-              <Panel defaultSize={40} minSize={30} className="bg-[#282828] rounded-lg border border-[#3e3e42] flex flex-col overflow-hidden">
-                <OutputPanel
-                  output={output}
-                  sampleTestcase={currentProblem.examples[0]}
-                />
-              </Panel>
-            </PanelGroup>
-          </Panel>
-        </PanelGroup>
+        {layoutMode === 'focus' && (
+          <PanelGroup direction="vertical" className="flex-1">
+             <Panel defaultSize={70} minSize={30} className="bg-[#1b1b1f] rounded-lg border border-[#111113] flex flex-col overflow-hidden shadow-2xl">
+               <CodeEditorPanel selectedLanguage={selectedLanguage} code={currentCode} isRunning={isRunning} isSubmitting={isSubmitting} onLanguageChange={handleLanguageChange} onCodeChange={handleCodeChange} onRunCode={handleRunCode} onResetCode={handleResetCode} />
+             </Panel>
+             <PanelResizeHandle className="h-2 cursor-row-resize hover:bg-[#3e3e42]/50 transition-colors" />
+             <Panel defaultSize={30} minSize={20} className="bg-[#1b1b1f] rounded-lg border border-[#111113] flex flex-col overflow-hidden shadow-xl">
+               <OutputPanel output={output} sampleTestcase={currentProblem.examples[0]} />
+             </Panel>
+          </PanelGroup>
+        )}
 
       </div>
     </div>

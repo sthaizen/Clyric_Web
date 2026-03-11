@@ -42,14 +42,14 @@ function OutputPanel({ output, sampleTestcase }) {
 
   // Helper for UI display logic to mimic picture
   const splitInput = sampleTestcase?.input?.includes("target") 
-     ? sampleTestcase.input.split("target") 
-     : null;
+      ? sampleTestcase.input.split("target") 
+      : null;
 
   return (
-    <div className="h-full flex flex-col bg-[#282828] text-gray-300 relative">
+    <div className="h-full flex flex-col bg-[#1b1b1f] text-gray-300 relative">
       
       {/* TABS HEADER */}
-      <div className="flex items-center gap-6 px-4 bg-[#282828] border-b border-[#3e3e42] text-[13px]">
+      <div className="flex items-center gap-6 px-4 bg-[#1b1b1f] border-b border-[#111113] text-[13px]">
         <div 
           onClick={() => setActiveTab("testcase")}
           className={`flex items-center gap-2 py-3 cursor-pointer relative ${
@@ -79,7 +79,7 @@ function OutputPanel({ output, sampleTestcase }) {
               : "text-gray-400 hover:text-gray-300"
           }`}
         >
-          <Code className={`w-4 h-4 ${activeTab === 'output' ? 'text-purple-500' : ''}`} /> Output
+          <Code className={`w-4 h-4 ${activeTab === 'output' ? 'text-[#8a6bfe]' : ''}`} /> Output
         </div>
       </div>
 
@@ -90,14 +90,11 @@ function OutputPanel({ output, sampleTestcase }) {
         {activeTab === "testcase" && (
           <>
             <div className="flex items-center gap-2 mb-6">
-              <button className="px-3 py-1.5 bg-[#3e3e42]/60 hover:bg-[#3e3e42] text-gray-200 text-xs font-medium rounded-lg transition-colors">
+              <button className="px-3 py-1.5 bg-[#8a6bfe]/20 hover:bg-[#8a6bfe]/30 text-gray-200 text-xs font-medium rounded-lg transition-colors">
                 Case 1
               </button>
-              <button className="px-3 py-1.5 hover:bg-[#3e3e42] text-gray-400 text-xs font-medium rounded-lg transition-colors">
+              <button className="px-3 py-1.5 hover:bg-[#111113] text-gray-400 text-xs font-medium rounded-lg transition-colors">
                 Case 2
-              </button>
-              <button className="px-3 py-1.5 bg-[#3e3e42]/60 hover:bg-[#3e3e42] text-gray-200 text-xs font-medium rounded-lg transition-colors">
-                Case 3
               </button>
               <button className="px-2 py-1 text-gray-400 hover:text-white">
                 +
@@ -110,7 +107,7 @@ function OutputPanel({ output, sampleTestcase }) {
                   <div>
                     <div className="text-xs text-gray-400 mb-2">nums =</div>
                     <textarea 
-                      className="w-full bg-[#3e3e42]/40 text-gray-300 text-[13px] font-mono p-3 rounded-lg border border-[#3e3e42]/50 resize-none outline-none"
+                      className="w-full bg-[#111113] text-gray-300 text-[13px] font-mono p-3 rounded-lg border border-[#111113] resize-none outline-none"
                       value={splitInput[0].replace(/[^0-9,[\]-]/g, '')}
                       readOnly
                       rows={1}
@@ -119,7 +116,7 @@ function OutputPanel({ output, sampleTestcase }) {
                   <div>
                     <div className="text-xs text-gray-400 mb-2">target =</div>
                     <textarea 
-                      className="w-full bg-[#3e3e42]/40 text-gray-300 text-[13px] font-mono p-3 rounded-lg border border-[#3e3e42]/50 resize-none outline-none"
+                      className="w-full bg-[#111113] text-gray-300 text-[13px] font-mono p-3 rounded-lg border border-[#111113] resize-none outline-none"
                       value={splitInput[1].replace(/[^0-9-]/g, '')}
                       readOnly
                       rows={1}
@@ -130,7 +127,7 @@ function OutputPanel({ output, sampleTestcase }) {
                 <div>
                   <div className="text-xs text-gray-400 mb-2">Input Data:</div>
                   <textarea 
-                    className="w-full bg-[#3e3e42]/40 text-gray-300 text-[13px] font-mono p-3 rounded-lg border border-[#3e3e42]/50 resize-none h-24 outline-none"
+                    className="w-full bg-[#111113] text-gray-300 text-[13px] font-mono p-3 rounded-lg border border-[#111113] resize-none h-24 outline-none"
                     defaultValue={sampleTestcase?.input || ""}
                     readOnly
                   />
@@ -160,7 +157,7 @@ function OutputPanel({ output, sampleTestcase }) {
               <div className="animate-in fade-in duration-300 flex flex-col gap-4">
                 
                 {/* Header: Verdict & Time */}
-                <div className="flex items-center justify-between border-b border-[#3e3e42] pb-3">
+                <div className="flex items-center justify-between border-b border-[#111113] pb-3">
                   <div className="flex items-center gap-2">
                     {getVerdictIcon(output.verdict)}
                     <span className={`text-lg font-bold ${getVerdictColor(output.verdict)}`}>
@@ -176,7 +173,7 @@ function OutputPanel({ output, sampleTestcase }) {
 
                 {/* Submissions showing TestCase progress */}
                 {output.type === "submit" && output.totalTestCases > 0 && (
-                  <div className="bg-[#3e3e42]/30 p-3 rounded-md border border-[#3e3e42]">
+                  <div className="bg-[#111113] p-3 rounded-md border border-[#111113]">
                     <div className="text-sm">
                       <span className="text-gray-400">Testcases Passed: </span>
                       <span className="font-bold text-white">{output.testCasesPassed}</span>
@@ -209,7 +206,7 @@ function OutputPanel({ output, sampleTestcase }) {
                     {(!output.compileError && !output.runtimeError) && (
                       <div className="mt-2">
                         <div className="text-xs font-medium text-gray-400 mb-1">Stdout:</div>
-                        <pre className="text-sm font-mono text-gray-200 bg-[#1e1e1e] p-3 rounded-md whitespace-pre-wrap border border-[#3e3e42] min-h-[40px]">
+                        <pre className="text-sm font-mono text-gray-200 bg-[#111113] p-3 rounded-md whitespace-pre-wrap border border-[#111113] min-h-[40px]">
                           {output.stdout || "No output generated"}
                         </pre>
                       </div>
@@ -221,7 +218,7 @@ function OutputPanel({ output, sampleTestcase }) {
                 {output.type === "submit" && output.verdict === "Wrong Answer" && output.results && (
                   <div className="mt-2 space-y-4">
                     {output.results.filter(r => r.status === "Wrong Answer").map((res, i) => (
-                      <div key={i} className="bg-[#1e1e1e] border border-red-900/50 rounded-md p-3">
+                      <div key={i} className="bg-[#111113] border border-red-900/50 rounded-md p-3">
                         <div className="text-sm font-semibold text-red-500 mb-3 border-b border-red-900/30 pb-2">
                           Failed on Testcase #{res.case}
                         </div>
@@ -229,13 +226,13 @@ function OutputPanel({ output, sampleTestcase }) {
                         <div className="space-y-3">
                           <div>
                             <div className="text-xs text-gray-500 mb-1">Actual Output:</div>
-                            <pre className="text-sm font-mono text-red-400 bg-[#282828] p-2 rounded whitespace-pre-wrap">
+                            <pre className="text-sm font-mono text-red-400 bg-[#1b1b1f] p-2 rounded whitespace-pre-wrap">
                               {res.actual || "Empty string"}
                             </pre>
                           </div>
                           <div>
                             <div className="text-xs text-gray-500 mb-1">Expected Output:</div>
-                            <pre className="text-sm font-mono text-green-400 bg-[#282828] p-2 rounded whitespace-pre-wrap">
+                            <pre className="text-sm font-mono text-green-400 bg-[#1b1b1f] p-2 rounded whitespace-pre-wrap">
                               {res.expected}
                             </pre>
                           </div>
@@ -272,7 +269,7 @@ function OutputPanel({ output, sampleTestcase }) {
               <div className="animate-in fade-in duration-300 space-y-4">
                 <div>
                   <div className="text-xs text-gray-400 mb-1.5">Standard Output:</div>
-                  <pre className="text-sm font-mono text-gray-200 bg-[#1e1e1e] p-3 rounded-md whitespace-pre-wrap border border-[#3e3e42] min-h-[100px]">
+                  <pre className="text-sm font-mono text-gray-200 bg-[#111113] p-3 rounded-md whitespace-pre-wrap border border-[#111113] min-h-[100px]">
                     {output.stdout || "No output generated"}
                   </pre>
                 </div>
@@ -291,7 +288,7 @@ function OutputPanel({ output, sampleTestcase }) {
       </div>
 
       {/* FOOTER SOURCE LINK */}
-      <div className="px-4 py-2 border-t border-[#3e3e42] flex items-center gap-1.5 text-[13px] text-gray-400 hover:text-white cursor-pointer transition-colors bg-[#282828] mt-auto">
+      <div className="px-4 py-2 border-t border-[#111113] flex items-center gap-1.5 text-[13px] text-gray-400 hover:text-white cursor-pointer transition-colors bg-[#1b1b1f] mt-auto">
         <Code className="w-4 h-4" /> Source
       </div>
       
