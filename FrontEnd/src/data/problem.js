@@ -1,4 +1,97 @@
 export const PROBLEMS = {
+  "two-sum": {
+    id: "two-sum",
+    title: "Two Sum",
+    difficulty: "Easy",
+    category: "Array • Hash Table",
+    description: {
+      text: "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.",
+      notes: [
+        "You may assume that each input has exactly one solution.",
+        "You may not use the same element twice.",
+        "You can return the answer in any order."
+      ]
+    },
+    examples: [
+      {
+        input: "nums = [2,7,11,15], target = 9",
+        output: "[0,1]",
+        explanation: "Because nums[0] + nums[1] == 9, we return [0,1]."
+      },
+      {
+        input: "nums = [3,2,4], target = 6",
+        output: "[1,2]"
+      }
+    ],
+    constraints: [
+      "2 ≤ nums.length ≤ 10^4",
+      "-10^9 ≤ nums[i] ≤ 10^9",
+      "-10^9 ≤ target ≤ 10^9",
+      "Only one valid answer exists."
+    ],
+    starterCode: {
+      javascript: `function twoSum(nums, target) {
+  // Write your solution here
+  
+}
+
+// Test cases
+console.log(twoSum([2,7,11,15], 9)); // Expected: [0,1]
+console.log(twoSum([3,2,4], 6)); // Expected: [1,2]`,
+      python: `def twoSum(nums, target):
+    # Write your solution here
+    pass
+
+# Test cases
+print(twoSum([2,7,11,15], 9))  # Expected: [0, 1]
+print(twoSum([3,2,4], 6))  # Expected: [1, 2]`,
+      java: `import java.util.Arrays;
+import java.util.HashMap;
+
+class Solution {
+    public static int[] twoSum(int[] nums, int target) {
+        // Write your solution here
+        return new int[]{};
+    }
+
+    public static void main(String[] args) {
+        System.out.println(Arrays.toString(twoSum(new int[]{2,7,11,15}, 9))); // Expected: [0, 1]
+        System.out.println(Arrays.toString(twoSum(new int[]{3,2,4}, 6))); // Expected: [1, 2]
+    }
+}`,
+      cpp: `#include <iostream>
+#include <vector>
+using namespace std;
+
+class Solution {
+public:
+    vector<int> twoSum(vector<int>& nums, int target) {
+        // Write your solution here
+        return {};
+    }
+};
+
+int main() {
+    Solution sol;
+    vector<int> nums1 = {2, 7, 11, 15};
+    vector<int> nums2 = {3, 2, 4};
+
+    vector<int> result1 = sol.twoSum(nums1, 9);
+    cout << "[" << result1[0] << "," << result1[1] << "]" << endl;
+
+    vector<int> result2 = sol.twoSum(nums2, 6);
+    cout << "[" << result2[0] << "," << result2[1] << "]" << endl;
+
+    return 0;
+}`
+    },
+    expectedOutput: {
+      javascript: "[ 0, 1 ]\n[ 1, 2 ]",
+      python: "[0, 1]\n[1, 2]",
+      java: "[0, 1]\n[1, 2]",
+      cpp: "[0,1]\n[1,2]"
+    }
+  },
   "best-time-to-buy-and-sell-stock": {
     id: "best-time-to-buy-and-sell-stock",
     title: "Best Time to Buy and Sell Stock",

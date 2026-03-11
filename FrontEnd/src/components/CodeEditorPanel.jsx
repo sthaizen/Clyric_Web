@@ -5,8 +5,6 @@ import { LANGUAGE_CONFIG } from "../data/problem";
 function CodeEditorPanel({
   selectedLanguage,
   code,
-  isRunning,
-  isSubmitting,
   onLanguageChange,
   onCodeChange,
   onRunCode,
