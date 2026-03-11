@@ -30,6 +30,11 @@ export const runInProcessSandbox = (command, args, cwd, stdinPath, timeLimit = 5
     // Drop application secrets like DB_URL or CLERK_SECRET_KEY.
     const safeEnv = { 
       PATH: process.env.PATH,
+      // Linux standard environment variables
+      HOME: process.env.HOME,
+      USER: process.env.USER,
+      LOGNAME: process.env.LOGNAME,
+      LANG: process.env.LANG,
       // Windows standard environment variables required for smooth execution
       USERPROFILE: process.env.USERPROFILE,
       APPDATA: process.env.APPDATA,

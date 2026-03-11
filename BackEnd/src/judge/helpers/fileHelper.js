@@ -1,6 +1,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
+import os from 'os';
 
 /**
  * Creates an isolated temporary directory for a specific execution run.
@@ -12,9 +13,8 @@ export const createTempDirectory = async () => {
   // Use crypto to generate a unique ID for isolation (avoids UUID dependency)
   const uniqueId = crypto.randomUUID();
   
-  // Use root project path for temp dir to keep things close
-  // Process.cwd() works here, but path.resolve gets the guaranteed root.
-  const tempDir = path.join(process.cwd(), 'src', 'temp', uniqueId);
+  // Use os temp dir because process.cwd() is read-only in typical deployments
+  const tempDir = path.join(os.tmpdir(), 'clyric-judge-temp', uniqueId);
 
   // Ensure it exists
   await fs.mkdir(tempDir, { recursive: true });
