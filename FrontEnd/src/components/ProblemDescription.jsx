@@ -179,19 +179,19 @@ function ProblemDescription({ problem, currentProblemId }) {
 
       {/* TABS HEADER */}
       <div className="flex items-center bg-[#1b1b1f] border-b border-[#111113] text-[13px] font-medium text-gray-400 overflow-x-auto select-none shrink-0">
-        <div onClick={() => setActiveTab("Description")} className={`flex items-center gap-1.5 px-4 py-2 cursor-pointer transition-colors ${activeTab === "Description" ? "text-white bg-[#111113] border-t-2 border-t-[#2cbb5d]" : "hover:text-gray-200 border-t-2 border-t-transparent"}`}>
+        <div onClick={() => setActiveTab("Description")} className={`flex items-center gap-1.5 px-4 py-2 cursor-pointer transition-colors ${activeTab === "Description" ? "text-white bg-[#111113] border-b-2 border-b-[#2cbb5d]" : "hover:text-gray-200 border-b-2 border-b-transparent"}`}>
           <FileText className="w-4 h-4 text-blue-400" /> Description
         </div>
-        <div onClick={() => setActiveTab("Editorial")} className={`flex items-center gap-1.5 px-4 py-2 cursor-pointer transition-colors ${activeTab === "Editorial" ? "text-white bg-[#111113] border-t-2 border-t-[#2cbb5d]" : "hover:text-gray-200 border-t-2 border-t-transparent"}`}>
+        <div onClick={() => setActiveTab("Editorial")} className={`flex items-center gap-1.5 px-4 py-2 cursor-pointer transition-colors ${activeTab === "Editorial" ? "text-white bg-[#111113] border-b-2 border-b-[#2cbb5d]" : "hover:text-gray-200 border-b-2 border-b-transparent"}`}>
           <BookOpen className="w-4 h-4 text-yellow-500" /> Editorial
         </div>
-        <div onClick={() => setActiveTab("Solutions")} className={`flex items-center gap-1.5 px-4 py-2 cursor-pointer transition-colors ${activeTab === "Solutions" ? "text-white bg-[#111113] border-t-2 border-t-[#2cbb5d]" : "hover:text-gray-200 border-t-2 border-t-transparent"}`}>
+        <div onClick={() => setActiveTab("Solutions")} className={`flex items-center gap-1.5 px-4 py-2 cursor-pointer transition-colors ${activeTab === "Solutions" ? "text-white bg-[#111113] border-b-2 border-b-[#2cbb5d]" : "hover:text-gray-200 border-b-2 border-b-transparent"}`}>
           <FlaskConical className="w-4 h-4 text-blue-500" /> Solutions
         </div>
-        <div onClick={() => setActiveTab("Submissions")} className={`flex items-center gap-1.5 px-4 py-2 cursor-pointer transition-colors ${activeTab === "Submissions" ? "text-white bg-[#111113] border-t-2 border-t-[#2cbb5d]" : "hover:text-gray-200 border-t-2 border-t-transparent"}`}>
+        <div onClick={() => setActiveTab("Submissions")} className={`flex items-center gap-1.5 px-4 py-2 cursor-pointer transition-colors ${activeTab === "Submissions" ? "text-white bg-[#111113] border-b-2 border-b-[#2cbb5d]" : "hover:text-gray-200 border-b-2 border-b-transparent"}`}>
           <History className="w-4 h-4" /> Submissions
         </div>
-        <div onClick={() => setActiveTab("Notes")} className={`flex items-center gap-1.5 px-4 py-2 cursor-pointer transition-colors ${activeTab === "Notes" ? "text-white bg-[#111113] border-t-2 border-t-[#2cbb5d]" : "hover:text-gray-200 border-t-2 border-t-transparent"}`}>
+        <div onClick={() => setActiveTab("Notes")} className={`flex items-center gap-1.5 px-4 py-2 cursor-pointer transition-colors ${activeTab === "Notes" ? "text-white bg-[#111113] border-b-2 border-b-[#2cbb5d]" : "hover:text-gray-200 border-b-2 border-b-transparent"}`}>
           <PenLine className="w-4 h-4 text-purple-400" /> Notes
         </div>
       </div>
@@ -295,20 +295,20 @@ function ProblemDescription({ problem, currentProblemId }) {
           <div className="p-0 h-full flex flex-col min-h-0 relative bg-[#111113]">
             {/* Minimalist Header for Notes */}
             <div className="px-6 py-4 border-b border-[#111113] bg-[#1b1b1f] flex items-center justify-between shadow-sm z-10">
-               <div>
-                  <h1 className="text-lg font-bold text-white flex items-center gap-2">
-                     <PenLine className="w-4 h-4 text-[#2cbb5d]" />
-                     Personal Notes
-                  </h1>
-                  <p className="text-xs text-gray-400 mt-0.5 font-medium">Auto-saved to your local workspace.</p>
-               </div>
-               
-               {/* Quick status indicator or actions could go here */}
-               <div className="flex items-center gap-2">
-                  <span className="text-[11px] bg-[#3e3e42]/40 text-gray-400 px-2 py-1 rounded border border-[#3e3e42]/50">
-                     {problem?.title}
-                  </span>
-               </div>
+              <div>
+                <h1 className="text-lg font-bold text-white flex items-center gap-2">
+                  <PenLine className="w-4 h-4 text-[#2cbb5d]" />
+                  Personal Notes
+                </h1>
+                <p className="text-xs text-gray-400 mt-0.5 font-medium">Auto-saved to your local workspace.</p>
+              </div>
+
+              {/* Quick status indicator or actions could go here */}
+              <div className="flex items-center gap-2">
+                <span className="text-[11px] bg-[#3e3e42]/40 text-gray-400 px-2 py-1 rounded border border-[#3e3e42]/50">
+                  {problem?.title}
+                </span>
+              </div>
             </div>
 
             <div className="flex-1 flex flex-col quill-dark-theme overflow-hidden">
