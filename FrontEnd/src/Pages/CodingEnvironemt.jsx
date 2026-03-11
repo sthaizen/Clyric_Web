@@ -21,7 +21,7 @@ export default function LeetCodeUI() {
 
         `,
     javascript: `/**
- * @param {number[]} nums
+ * @param {nasdfumber[]} nums
  * @param {number} target
  * @return {number[]}
  */
@@ -58,7 +58,7 @@ public:
           monacoRef.current = window.monaco.editor.create(editorRef.current, {
             value: defaultCode[language],
             language: language,
-            theme: 'vs-dark',
+            theme: 'vs',
             fontSize: 14,
             minimap: { enabled: false },
             scrollBeyondLastLine: false,
@@ -320,7 +320,7 @@ Expected: [0,1]`);
           <div className="flex items-center justify-between px-6 py-3 border-t border-gray-700 bg-[#1e1e1e] text-xs">
             <div className="flex items-center gap-4">
               <span className="flex items-center gap-1">
-                👍 <span>0</span>
+                 <span>0</span>
               </span>
               <span className="flex items-center gap-1">
                 👎
