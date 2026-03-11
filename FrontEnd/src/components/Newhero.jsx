@@ -32,7 +32,6 @@ const Hero = () => {
 
   useEffect(() => {
     let ctx = gsap.context(() => {
-      // Smooth Master Load Timeline
       const loadTl = gsap.timeline({ defaults: { ease: 'power4.out' } });
 
       loadTl.to(brightOverlayRef.current, {
@@ -42,30 +41,19 @@ const Hero = () => {
       }, 0)
       .fromTo(bgImageRef.current,
         { scale: 1.3, filter: 'brightness(1.2)' }, 
-        { scale: 1, filter: 'brightness(1)', duration: 1.5, ease: 'power3.out' }, // Lands perfectly at scale 1
+        { scale: 1, filter: 'brightness(1)', duration: 1.5, ease: 'power3.out' }, 
         0
       )
-      // Trigger the Google CSS animations exactly when the text starts!
       .call(() => setIsLoaded(true), null, "-=1.1")
       .fromTo(contentRef.current.children,
         { y: 40, opacity: 0 },
-        { 
-          y: 0, 
-          opacity: 1, 
-          duration: 1.2, 
-          stagger: 0.15
-        },
+        { y: 0, opacity: 1, duration: 1.2, stagger: 0.15 },
         "-=1.1"
       )
       .fromTo(cardRef.current,
         { x: 40, opacity: 0 },
-        { 
-          x: 0, 
-          opacity: 1, 
-          duration: 1.2, 
-          ease: 'power3.out'
-        },
-        "-=1.2" // Aligning the main container slide-in with the start
+        { x: 0, opacity: 1, duration: 1.2, ease: 'power3.out' },
+        "-=1.2" 
       )
       .fromTo(logoSectionRef.current,
         { y: 30, opacity: 0 },
@@ -73,18 +61,13 @@ const Hero = () => {
         "-=1.0"
       );
 
-      // Scroll Trigger Parallax & Subtle Zoom
-      // FIX: Used fromTo and immediateRender to strictly lock the scroll start at scale 1
       gsap.fromTo(bgImageRef.current, 
-        { 
-          scale: 1, 
-          yPercent: 0 
-        }, 
+        { scale: 1, yPercent: 0 }, 
         {
           yPercent: 10,
-          scale: 1.3, // Zooms smoothly up to 1.1 on scroll
+          scale: 1.3, 
           ease: 'none',
-          immediateRender: false, // This stops it from fighting the loadTl above!
+          immediateRender: false, 
           scrollTrigger: {
             trigger: heroRef.current,
             start: 'top top',
@@ -94,7 +77,6 @@ const Hero = () => {
         }
       );
 
-      // Flawless Infinite Marquee Animations
       gsap.to(track1Ref.current, {
         xPercent: -50,
         repeat: -1,
@@ -159,41 +141,37 @@ const Hero = () => {
     >
       <div ref={brightOverlayRef} className="absolute inset-0 bg-white z-50 pointer-events-none"></div>
 
-      {/* Background Image */}
+      {/* Background Image Fix */}
       <div className="absolute inset-0 w-full h-[100vh] z-0 pointer-events-none overflow-hidden">
         <img
           ref={bgImageRef}
-          src={assets.Ai}
+          src={assets.Ai?.src || assets.Ai} 
           alt="Background"
           className="w-full h-full object-cover object-[center_35%] scale-110 opacity-70 origin-center"
         />
         <div className="absolute inset-0 bg-[#0A0B0E]/10 z-10"></div>
-        {/* Left-to-right gradient for text readability */}
         <div className="absolute inset-0 bg-gradient-to-r from-[#0A0B0E]/70 via-[#0A0B0E]/10 to-transparent z-10"></div>
-        {/* Bottom-to-top gradient for the footer blend */}
         <div className="absolute inset-0 bg-gradient-to-t from-[#0A0B0E] via-[#0A0B0E]/0 to-transparent z-10"></div>
       </div>
 
-      {/* Main Top Section: Text & Card Container */}
       <div className="relative z-20 w-full max-w-[1580px] mx-auto px-6 md:px-12 pt-82 pb-10 flex flex-col lg:flex-row items-center justify-between gap-16 flex-1">
         
-        {/* Left Side: Text & Button Layout */}
         <div ref={contentRef} className="flex flex-col items-start text-left w-full lg:w-[55%]">
-          <span className="text-white/80 font-bold text-[15px] md:text-xs tracking-[0.18em] uppercase mb-6 block">
+          <span className="text-white/80 font-bold text-[15px] md:text-xs tracking-[0.18em] uppercase mb-6 block opacity-0">
             INTERVIEW PREPARATION PLATFORM
           </span>
 
-          <h1 className="text-white font-medium tracking-tight leading-[1.05] mb-12 text-[44px] sm:text-[54px] md:text-[64px]">
+          <h1 className="text-white font-medium tracking-tight leading-[1.05] mb-12 text-[44px] sm:text-[54px] md:text-[64px] opacity-0">
           Choose difficulty level<br />
           Compete on leaderboard<br />
           Stay consistently sharp
           </h1>
 
-          <p className="text-white/90 leading-[1.6] font-light text-[17px] md:text-[19px] mb-20 max-w-[720px]">
+          <p className="text-white/90 leading-[1.6] font-light text-[17px] md:text-[19px] mb-20 max-w-[720px] opacity-0">
             Cyric brings interview prep into one clean flow — problems, timed mode, live mock sessions, and collaborative coding.
             No tool-juggling. Just practice, review, and visible progress.          </p>
 
-          <div className="flex flex-wrap items-center gap-4">
+          <div className="flex flex-wrap items-center gap-4 opacity-0">
             <a
               href="#meeting"
               className="inline-flex items-center justify-center bg-white text-[#222222] font-semibold rounded-full hover:bg-gray-100 transition-colors"
@@ -211,14 +189,11 @@ const Hero = () => {
           </div>
         </div>
 
-        {/* Right Side: Google OA Floating UI (Animated alongside text) */}
         <div ref={cardRef} className="w-full lg:w-[45%] flex justify-end items-center relative z-20 pointer-events-none mt-40">
           <div className="relative w-full max-w-[380px]">
             
-            {/* Dashed Context Border */}
             <div className={`absolute -inset-5 border-2 border-dashed border-white/40 rounded-3xl z-0 transition-opacity duration-700 delay-100 ${isLoaded ? 'opacity-100' : 'opacity-0'}`} />
 
-            {/* Top Transaction Card */}
             <div className={`relative bg-white rounded-2xl p-4 pr-8 flex items-center gap-5 shadow-2xl z-20 w-full transform transition-all duration-500 ease-out delay-300 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-12 opacity-0'}`}>
               <div className="bg-white shadow-md p-2 rounded-full flex items-center justify-center border border-gray-100">
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -232,12 +207,10 @@ const Hero = () => {
               <span className="text-black ml-auto font-semibold text-lg">-30 min</span>
             </div>
 
-            {/* Cost Center Pill */}
             <div className={`absolute -bottom-10 right-0 bg-white/95 backdrop-blur-md px-4 py-1.5 rounded-full shadow-lg z-30 border border-gray-100 transform transition-all duration-500 ease-out delay-400 ${isLoaded ? 'translate-y-0 opacity-100' : 'translate-y-6 opacity-0'}`}>
               <span className="text-xs text-black font-semibold tracking-wide">Google SWE Screening</span>
             </div>
 
-            {/* Checkmark */}
             <div className={`absolute top-[35%] -right-6 bg-[#4ade80] rounded-full p-2 border-4 border-white shadow-xl flex items-center justify-center z-30 transform transition-all duration-500 ease-out delay-500 ${isLoaded ? 'scale-100 opacity-100' : 'scale-50 opacity-0'}`}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
                 <polyline points="20 6 9 17 4 12"></polyline>
@@ -249,12 +222,11 @@ const Hero = () => {
 
       </div>
 
-      {/* Bottom Logo Marquee Section */}
       <div 
         className="relative z-20 w-full bg-black/0"
         style={{ paddingBottom: '115.78px' }}
       >
-        <div ref={logoSectionRef} className="logo-section-content mt-7">
+        <div ref={logoSectionRef} className="logo-section-content mt-7 opacity-0">
           <p 
             className="text-center text-white font-light opacity-80"
             style={{ fontSize: '16px', marginBottom: '40px' }}

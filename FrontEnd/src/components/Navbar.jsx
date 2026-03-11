@@ -24,54 +24,51 @@ const Navbar = () => {
 
     return (
         <>
-            <div 
-                className={`fixed inset-0 z-40 bg-black/10 backdrop-blur-sm transition-all duration-300 ${
-                    activeMenu ? 'opacity-100 visible' : 'opacity-0 invisible'
-                }`}
+            <div
+                className={`fixed inset-0 z-40 bg-black/10 backdrop-blur-sm transition-all duration-300 ${activeMenu ? 'opacity-100 visible' : 'opacity-0 invisible'
+                    }`}
             />
 
-            <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ease-in-out ${
-                activeMenu
-                    ? 'bg-[#f0efee] shadow-sm py-4 text-gray-900' 
-                    : isScrolled 
-                        ? 'bg-white/95 backdrop-blur-md shadow-sm py-2 text-gray-900' 
+            <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ease-in-out ${activeMenu
+                    ? 'bg-[#f0efee] shadow-sm py-4 text-gray-900'
+                    : isScrolled
+                        ? 'bg-white/95 backdrop-blur-md shadow-sm py-2 text-gray-900'
                         : 'bg-transparent py-4 text-white border-b border-white/20'
-            }`}>
+                }`}>
                 <nav className="max-w-[1560px] mx-auto px-6 md:px-5 flex items-center justify-between">
-                    
-                    <Link to="/" className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
-    <div className="flex flex-col gap-[3px]">
-        <div className={`w-[21px] h-[6px] rounded-[2px] rounded-tl-md transition-colors duration-300 ${isLightMode ? 'bg-[#18181B]' : 'bg-[#F3F3EF]'}`}></div>
-        <div className="flex gap-[3px]">
-            <div className={`w-[6px] h-[6px] rounded-[2px] transition-colors duration-300 ${isLightMode ? 'bg-[#18181B]' : 'bg-[#F3F3EF]'}`}></div>
-            <div className={`w-[16px] h-[6px] rounded-[2px] transition-colors duration-300 ${isLightMode ? 'bg-[#18181B]' : 'bg-[#F3F3EF]'}`}></div>
-        </div>
-        <div className="flex gap-[3px]">
-            <div className="w-[13px] h-[6px] bg-transparent"></div>
-            <div className={`w-[9px] h-[9px] rounded-[2px] rounded-br-md transition-colors duration-300 ${isLightMode ? 'bg-[#18181B]' : 'bg-[#F3F3EF]'}`}></div>
-        </div>
-    </div>
 
-    <span className="font-semibold text-[22px] tracking-tight">
-        CLYRIC
-    </span>
-</Link>
+                    <Link to="/" className="flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
+                        <div className="flex flex-col gap-[3px]">
+                            <div className={`w-[21px] h-[6px] rounded-[2px] rounded-tl-md transition-colors duration-300 ${isLightMode ? 'bg-[#18181B]' : 'bg-[#F3F3EF]'}`}></div>
+                            <div className="flex gap-[3px]">
+                                <div className={`w-[6px] h-[6px] rounded-[2px] transition-colors duration-300 ${isLightMode ? 'bg-[#18181B]' : 'bg-[#F3F3EF]'}`}></div>
+                                <div className={`w-[16px] h-[6px] rounded-[2px] transition-colors duration-300 ${isLightMode ? 'bg-[#18181B]' : 'bg-[#F3F3EF]'}`}></div>
+                            </div>
+                            <div className="flex gap-[3px]">
+                                <div className="w-[13px] h-[6px] bg-transparent"></div>
+                                <div className={`w-[9px] h-[9px] rounded-[2px] rounded-br-md transition-colors duration-300 ${isLightMode ? 'bg-[#18181B]' : 'bg-[#F3F3EF]'}`}></div>
+                            </div>
+                        </div>
+
+                        <span className="font-semibold text-[22px] tracking-tight">
+                            CLYRIC
+                        </span>
+                    </Link>
 
                     <div className="hidden md:flex items-center gap-8 ml-12">
-                        
-                        <div 
+
+                        <div
                             className="h-full flex items-center py-6 -my-6"
                             onMouseEnter={() => setActiveMenu('products')}
                             onMouseLeave={() => setActiveMenu(null)}
                         >
-                            <Link to="/problem" className="text-[13px] font-medium hover:opacity-60 transition-opacity">
-                                Products
+                            <Link to="/problems" className="text-[13px] font-medium hover:opacity-60 transition-opacity">
+                                Problems
                             </Link>
-                            
-                            <div 
-                                className={`absolute top-full left-0 w-full bg-[#f0efee] text-gray-900 border-t border-black/5 shadow-xl transition-all duration-300 origin-top ${
-                                    activeMenu === 'products' ? 'opacity-100 visible scale-y-100' : 'opacity-0 invisible scale-y-95'
-                                }`}
+
+                            <div
+                                className={`absolute top-full left-0 w-full bg-[#f0efee] text-gray-900 border-t border-black/5 shadow-xl transition-all duration-300 origin-top ${activeMenu === 'products' ? 'opacity-100 visible scale-y-100' : 'opacity-0 invisible scale-y-95'
+                                    }`}
                                 style={{ cursor: 'default' }}
                             >
                                 <div className="max-w-[1580px] mx-auto py-8 px-6 flex gap-6">
@@ -112,9 +109,9 @@ const Navbar = () => {
 
                                     <div className="w-1/3 bg-white rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] overflow-hidden flex flex-col">
                                         <div className="h-84 w-full bg-gray-200 overflow-hidden">
-                                            <img 
-                                            src={assets.cc}
-                                             alt="Team meeting" className="w-full h-full object-cover" />
+                                            <img
+                                                src={assets.cc}
+                                                alt="Team meeting" className="w-full h-full object-cover" />
                                         </div>
                                         <div className="p-6 flex flex-col flex-1 justify-between">
                                             <div>
@@ -132,7 +129,7 @@ const Navbar = () => {
                             </div>
                         </div>
 
-                        <div 
+                        <div
                             className="h-full flex items-center py-6 -my-6"
                             onMouseEnter={() => setActiveMenu('integrations')}
                             onMouseLeave={() => setActiveMenu(null)}
@@ -141,10 +138,9 @@ const Navbar = () => {
                                 Documentation
                             </Link>
 
-                            <div 
-                                className={`absolute top-full left-0 w-full bg-[#f0efee] text-gray-900 border-t border-black/5 shadow-xl transition-all duration-300 origin-top ${
-                                    activeMenu === 'integrations' ? 'opacity-100 visible scale-y-100' : 'opacity-0 invisible scale-y-95'
-                                }`}
+                            <div
+                                className={`absolute top-full left-0 w-full bg-[#f0efee] text-gray-900 border-t border-black/5 shadow-xl transition-all duration-300 origin-top ${activeMenu === 'integrations' ? 'opacity-100 visible scale-y-100' : 'opacity-0 invisible scale-y-95'
+                                    }`}
                                 style={{ cursor: 'default' }}
                             >
                                 <div className="max-w-[1580px] mx-auto py-8 px-6 flex gap-6">
@@ -233,26 +229,25 @@ const Navbar = () => {
                             </svg>
                             <span className="text-[13px] font-medium">en</span>
                         </button>
-                                                        
-                       <SignedOut>
-                        <SignInButton mode="modal">
-                            <button className="text-[13px] font-medium hover:opacity-60 transition-opacity">
-                            Login
-                            </button>
-                        </SignInButton>
+
+                        <SignedOut>
+                            <SignInButton mode="modal">
+                                <button className="text-[13px] font-medium hover:opacity-60 transition-opacity">
+                                    Login
+                                </button>
+                            </SignInButton>
                         </SignedOut>
 
                         <SignedIn>
-                        <UserButton afterSignOutUrl="/" />
+                            <UserButton afterSignOutUrl="/" />
                         </SignedIn>
 
-                        <Link 
-                            to="/coding" 
-                            className={`text-[14px] font-medium px-8 py-2 rounded-full transition-colors duration-300 ${
-                                isLightMode
-                                    ? 'bg-[#18181B] text-white hover:bg-black' 
+                        <Link
+                            to="/coding"
+                            className={`text-[14px] font-medium px-8 py-2 rounded-full transition-colors duration-300 ${isLightMode
+                                    ? 'bg-[#18181B] text-white hover:bg-black'
                                     : 'bg-white/10 backdrop-blur-md border border-white/10 text-white hover:bg-[#18181B]/60'
-                            }`}
+                                }`}
                         >
                             Book a demo
                         </Link>
@@ -289,9 +284,9 @@ const Navbar = () => {
                     <Link onClick={() => setSidebarOpen(false)} to="/customers" className="hover:text-white transition-colors">Customers</Link>
                     <Link onClick={() => setSidebarOpen(false)} to="/price" className="hover:text-white transition-colors">Pricing</Link>
                     <Link onClick={() => setSidebarOpen(false)} to="/resources" className="hover:text-white transition-colors">Resources</Link>
-                    
+
                     <hr className="border-white/10 my-2" />
-                    
+
                     <Link onClick={() => setSidebarOpen(false)} to="/login" className="hover:text-white transition-colors">Login</Link>
                     <Link onClick={() => setSidebarOpen(false)} to="/demo" className="bg-white text-black text-center px-6 py-2.5 rounded-full hover:bg-gray-100 transition-colors">
                         Book a demo
