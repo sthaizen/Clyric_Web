@@ -2,7 +2,6 @@ import React, { useLayoutEffect, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { ArrowRight } from "lucide-react";
-import assets from "../assets/assets";
 import GlassSurface from "./GlassSurface";
 import Lightrays from './Lightray';
 

@@ -29,7 +29,8 @@ import {
   Loader2,
   X,
   EyeOff,
-  LayoutTemplate
+  LayoutTemplate,
+  PenLine
 } from "lucide-react";
 
 function ProblemPage() {
@@ -205,22 +206,59 @@ function ProblemPage() {
     setIsRunning(true);
     setOutput({ type: "running" });
 
-    const sampleInput = currentProblem.examples[0]?.input || "";
-    const stdin = String(sampleInput).replace(/"/g, '');
+    // The user's code already runs all test cases at the end (console.log, etc)
+    // We execute it once without specific stdin
+    const result = await runCode(selectedLanguage, currentCode, "");
 
-    const result = await runCode(selectedLanguage, currentCode, stdin);
+    const results = [];
+    let allPassed = true;
+    let anyError = !!(result.compileError || result.runtimeError);
+
+    const actualLines = result.stdout ? result.stdout.trim().split('\n').map(line => line.trim()) : [];
+
+    for (let i = 0; i < currentProblem.examples.length; i++) {
+        const example = currentProblem.examples[i];
+        
+        const actual = actualLines[i] || "";
+        const expectedNormalized = String(example.output).replace(/\s/g, '');
+        const actualNormalized = actual.replace(/\s/g, '');
+
+        let passed = false;
+        if (!anyError && actualNormalized === expectedNormalized) {
+            passed = true;
+        } else {
+            allPassed = false;
+        }
+
+        results.push({
+            ...result,
+            expected: example.output,
+            actual: actual,
+            passed: passed,
+            stdin: example.input
+        });
+    }
+
+    let finalVerdict = "Wrong Answer";
+    if (anyError) {
+       finalVerdict = result.verdict || "Error";
+    } else if (allPassed) {
+       finalVerdict = "Accepted";
+    }
 
     setOutput({
       type: "run",
-      ...result
+      verdict: finalVerdict,
+      results,
+      executionTime: result.executionTime
     });
 
     setIsRunning(false);
 
-    if (result.success && result.verdict === "Executed") {
-      toast.success("Run Finished.");
+    if (allPassed && !anyError) {
+      toast.success("Accepted! Output matches expected.");
     } else {
-      toast.error(result.verdict || "Error running code");
+      toast.error(finalVerdict === "Wrong Answer" ? "Wrong Answer. Output does not match expected." : (finalVerdict || "Error"));
     }
   };
 
@@ -606,7 +644,7 @@ function ProblemPage() {
                 </Panel>
                 <PanelResizeHandle className="h-2 cursor-row-resize hover:bg-[#3e3e42]/50 transition-colors" />
                 <Panel defaultSize={40} minSize={30} className="bg-[#1b1b1f] rounded-lg border border-[#111113] flex flex-col overflow-hidden">
-                  <OutputPanel output={output} sampleTestcase={currentProblem.examples[0]} />
+                  <OutputPanel output={output} testCases={currentProblem.examples} />
                 </Panel>
               </PanelGroup>
             </Panel>
@@ -624,7 +662,7 @@ function ProblemPage() {
             </Panel>
             <PanelResizeHandle className="w-2 cursor-col-resize hover:bg-[#3e3e42]/50 transition-colors" />
             <Panel defaultSize={34} minSize={20} className="bg-[#1b1b1f] rounded-lg border border-[#111113] flex flex-col overflow-hidden">
-               <OutputPanel output={output} sampleTestcase={currentProblem.examples[0]} />
+               <OutputPanel output={output} testCases={currentProblem.examples} />
             </Panel>
           </PanelGroup>
         )}
@@ -636,7 +674,7 @@ function ProblemPage() {
              </Panel>
              <PanelResizeHandle className="h-2 cursor-row-resize hover:bg-[#3e3e42]/50 transition-colors" />
              <Panel defaultSize={30} minSize={20} className="bg-[#1b1b1f] rounded-lg border border-[#111113] flex flex-col overflow-hidden shadow-xl">
-               <OutputPanel output={output} sampleTestcase={currentProblem.examples[0]} />
+               <OutputPanel output={output} testCases={currentProblem.examples} />
              </Panel>
           </PanelGroup>
         )}

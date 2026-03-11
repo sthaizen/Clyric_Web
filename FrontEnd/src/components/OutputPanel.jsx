@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { CheckSquare, TerminalSquare, Code, AlertTriangle, CheckCircle2, XCircle, Clock } from "lucide-react";
 
-function OutputPanel({ output, sampleTestcase }) {
+function OutputPanel({ output, testCases }) {
   const [activeTab, setActiveTab] = useState("testcase");
+  const [activeTestCaseId, setActiveTestCaseId] = useState(0);
 
   const getVerdictColor = (verdict) => {
     switch (verdict) {
@@ -25,7 +26,6 @@ function OutputPanel({ output, sampleTestcase }) {
   const getVerdictIcon = (verdict) => {
     switch (verdict) {
       case "Accepted":
-      case "Executed":
         return <CheckCircle2 className="w-5 h-5 text-green-500" />;
       case "Wrong Answer":
         return <XCircle className="w-5 h-5 text-red-500" />;
@@ -36,13 +36,20 @@ function OutputPanel({ output, sampleTestcase }) {
     }
   };
 
+  const getVerdictText = (verdict) => {
+    if (verdict === "Accepted") return "Congratulations!";
+    if (verdict === "Wrong Answer") return "Wrong Answer";
+    return verdict;
+  };
+
   if (output && activeTab === "testcase" && output.type !== "running" && output.type !== "submitting") {
     setActiveTab("result");
   }
 
   // Helper for UI display logic to mimic picture
-  const splitInput = sampleTestcase?.input?.includes("target") 
-      ? sampleTestcase.input.split("target") 
+  const activeTestCase = testCases && testCases[activeTestCaseId] ? testCases[activeTestCaseId] : null;
+  const splitInput = activeTestCase?.input?.includes("target") 
+      ? activeTestCase.input.split("target") 
       : null;
 
   return (
@@ -89,16 +96,20 @@ function OutputPanel({ output, sampleTestcase }) {
         {/* === TESTCASE TAB === */}
         {activeTab === "testcase" && (
           <>
-            <div className="flex items-center gap-2 mb-6">
-              <button className="px-3 py-1.5 bg-[#8a6bfe]/20 hover:bg-[#8a6bfe]/30 text-gray-200 text-xs font-medium rounded-lg transition-colors">
-                Case 1
-              </button>
-              <button className="px-3 py-1.5 hover:bg-[#111113] text-gray-400 text-xs font-medium rounded-lg transition-colors">
-                Case 2
-              </button>
-              <button className="px-2 py-1 text-gray-400 hover:text-white">
-                +
-              </button>
+            <div className="flex items-center gap-2 mb-6 overflow-x-auto pb-2">
+              {testCases?.map((tc, idx) => (
+                <button 
+                  key={idx}
+                  onClick={() => setActiveTestCaseId(idx)}
+                  className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors whitespace-nowrap ${
+                    activeTestCaseId === idx 
+                      ? "bg-[#8a6bfe]/20 hover:bg-[#8a6bfe]/30 text-gray-200"
+                      : "hover:bg-[#111113] text-gray-400"
+                  }`}
+                >
+                  Case {idx + 1}
+                </button>
+              ))}
             </div>
 
             <div className="space-y-4">
@@ -128,7 +139,7 @@ function OutputPanel({ output, sampleTestcase }) {
                   <div className="text-xs text-gray-400 mb-2">Input Data:</div>
                   <textarea 
                     className="w-full bg-[#111113] text-gray-300 text-[13px] font-mono p-3 rounded-lg border border-[#111113] resize-none h-24 outline-none"
-                    defaultValue={sampleTestcase?.input || ""}
+                    value={activeTestCase?.input || ""}
                     readOnly
                   />
                 </div>
@@ -161,7 +172,7 @@ function OutputPanel({ output, sampleTestcase }) {
                   <div className="flex items-center gap-2">
                     {getVerdictIcon(output.verdict)}
                     <span className={`text-lg font-bold ${getVerdictColor(output.verdict)}`}>
-                      {output.verdict}
+                      {getVerdictText(output.verdict)}
                     </span>
                   </div>
                   {output.executionTime !== undefined && (
@@ -182,40 +193,78 @@ function OutputPanel({ output, sampleTestcase }) {
                   </div>
                 )}
 
-                {/* Stdout / Stderr for RUN requests */}
-                {output.type === "run" && (
+                {/* Detailed Results for RUN requests */}
+                {output.type === "run" && output.results && (
                   <>
-                    {output.compileError && (
-                      <div className="mt-2">
-                        <div className="text-xs font-medium text-red-400 mb-1">Compile Error:</div>
-                        <pre className="text-sm font-mono text-red-400 bg-red-950/20 p-3 rounded-md whitespace-pre-wrap border border-red-900/50">
-                          {output.compileError}
-                        </pre>
-                      </div>
-                    )}
-                    
-                    {output.runtimeError && (
-                      <div className="mt-2">
-                        <div className="text-xs font-medium text-yellow-400 mb-1">Runtime Error:</div>
-                        <pre className="text-sm font-mono text-yellow-400 bg-yellow-950/20 p-3 rounded-md whitespace-pre-wrap border border-yellow-900/50">
-                          {output.runtimeError}
-                        </pre>
-                      </div>
-                    )}
+                    <div className="flex items-center gap-2 mb-2 overflow-x-auto pb-2">
+                      {output.results.map((res, idx) => (
+                        <button 
+                          key={idx}
+                          onClick={() => setActiveTestCaseId(idx)}
+                          className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors flex items-center gap-1.5 whitespace-nowrap ${
+                            activeTestCaseId === idx 
+                              ? "bg-[#3e3e42] text-gray-200"
+                              : "hover:bg-[#111113] text-gray-400"
+                          }`}
+                        >
+                          <div className={`w-1.5 h-1.5 rounded-full ${res.passed ? "bg-green-500" : "bg-red-500"}`}></div>
+                          Case {idx + 1}
+                        </button>
+                      ))}
+                    </div>
 
-                    {(!output.compileError && !output.runtimeError) && (
-                      <div className="mt-2">
-                        <div className="text-xs font-medium text-gray-400 mb-1">Stdout:</div>
-                        <pre className="text-sm font-mono text-gray-200 bg-[#111113] p-3 rounded-md whitespace-pre-wrap border border-[#111113] min-h-[40px]">
-                          {output.stdout || "No output generated"}
-                        </pre>
-                      </div>
-                    )}
+                    {output.results[activeTestCaseId] && (() => {
+                      const res = output.results[activeTestCaseId];
+                      return (
+                        <div className="mt-2 space-y-4 animate-in fade-in">
+                          {res.compileError && (
+                            <div className="mt-2">
+                              <div className="text-xs font-medium text-red-400 mb-1">Compile Error:</div>
+                              <pre className="text-sm font-mono text-red-400 bg-red-950/20 p-3 rounded-md whitespace-pre-wrap border border-red-900/50">
+                                {res.compileError}
+                              </pre>
+                            </div>
+                          )}
+                          
+                          {res.runtimeError && (
+                            <div className="mt-2">
+                              <div className="text-xs font-medium text-yellow-400 mb-1">Runtime Error:</div>
+                              <pre className="text-sm font-mono text-yellow-400 bg-yellow-950/20 p-3 rounded-md whitespace-pre-wrap border border-yellow-900/50">
+                                {res.runtimeError}
+                              </pre>
+                            </div>
+                          )}
+
+                          {!res.compileError && !res.runtimeError && (
+                            <>
+                              <div>
+                                <div className="text-xs text-gray-500 mb-1">Input</div>
+                                <pre className="text-sm font-mono text-gray-200 bg-[#1b1b1f] p-2 rounded whitespace-pre-wrap">
+                                  {res.stdin}
+                                </pre>
+                              </div>
+                              <div>
+                                <div className="text-xs text-gray-500 mb-1">Output</div>
+                                <pre className={`text-sm font-mono p-2 rounded whitespace-pre-wrap ${res.passed ? 'text-gray-200 bg-[#1b1b1f]' : 'text-red-400 bg-red-950/20'}`}>
+                                  {res.actual || "Empty string"}
+                                </pre>
+                              </div>
+                              <div>
+                                <div className="text-xs text-gray-500 mb-1">Expected</div>
+                                <pre className="text-sm font-mono text-gray-200 bg-[#1b1b1f] p-2 rounded whitespace-pre-wrap">
+                                  {res.expected}
+                                </pre>
+                              </div>
+                            </>
+                          )}
+                        </div>
+                      );
+                    })()}
                   </>
                 )}
 
                 {/* Detailed Results for Failed SUBMIT requests */}
-                {output.type === "submit" && output.verdict === "Wrong Answer" && output.results && (
+                {output.type === "submit" && output.verdict === "Wrong Answer" && output.results && output.results.length > 0 && (
                   <div className="mt-2 space-y-4">
                     {output.results.filter(r => r.status === "Wrong Answer").map((res, i) => (
                       <div key={i} className="bg-[#111113] border border-red-900/50 rounded-md p-3">
@@ -267,19 +316,60 @@ function OutputPanel({ output, sampleTestcase }) {
               <div className="text-gray-400 animate-pulse">Running Code...</div>
             ) : (
               <div className="animate-in fade-in duration-300 space-y-4">
-                <div>
-                  <div className="text-xs text-gray-400 mb-1.5">Standard Output:</div>
-                  <pre className="text-sm font-mono text-gray-200 bg-[#111113] p-3 rounded-md whitespace-pre-wrap border border-[#111113] min-h-[100px]">
-                    {output.stdout || "No output generated"}
-                  </pre>
-                </div>
-                {output.stderr && (
-                  <div>
-                    <div className="text-xs text-red-400 mb-1.5">Standard Error:</div>
-                    <pre className="text-sm font-mono text-red-400 bg-red-950/20 p-3 rounded-md whitespace-pre-wrap border border-red-900/50 min-h-[40px]">
-                      {output.stderr}
-                    </pre>
-                  </div>
+                {output.type === "run" && output.results ? (
+                  <>
+                    <div className="flex items-center gap-2 mb-2 overflow-x-auto pb-2">
+                      {output.results.map((res, idx) => (
+                        <button 
+                          key={idx}
+                          onClick={() => setActiveTestCaseId(idx)}
+                          className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors flex items-center gap-1.5 whitespace-nowrap ${
+                            activeTestCaseId === idx 
+                              ? "bg-[#3e3e42] text-gray-200"
+                              : "hover:bg-[#111113] text-gray-400"
+                          }`}
+                        >
+                          <div className={`w-1.5 h-1.5 rounded-full ${res.passed ? "bg-green-500" : "bg-red-500"}`}></div>
+                          Case {idx + 1}
+                        </button>
+                      ))}
+                    </div>
+                    {output.results[activeTestCaseId] && (
+                      <div className="animate-in fade-in mt-2 space-y-4">
+                        <div>
+                          <div className="text-xs text-gray-400 mb-1.5">Standard Output:</div>
+                          <pre className="text-sm font-mono text-gray-200 bg-[#111113] p-3 rounded-md whitespace-pre-wrap border border-[#111113] min-h-[100px]">
+                            {output.results[activeTestCaseId].stdout || "No output generated"}
+                          </pre>
+                        </div>
+                        {output.results[activeTestCaseId].stderr && (
+                          <div>
+                            <div className="text-xs text-red-400 mb-1.5">Standard Error:</div>
+                            <pre className="text-sm font-mono text-red-400 bg-red-950/20 p-3 rounded-md whitespace-pre-wrap border border-red-900/50 min-h-[40px]">
+                              {output.results[activeTestCaseId].stderr}
+                            </pre>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <div>
+                      <div className="text-xs text-gray-400 mb-1.5">Standard Output:</div>
+                      <pre className="text-sm font-mono text-gray-200 bg-[#111113] p-3 rounded-md whitespace-pre-wrap border border-[#111113] min-h-[100px]">
+                        {output.stdout || "No output generated"}
+                      </pre>
+                    </div>
+                    {output.stderr && (
+                      <div>
+                        <div className="text-xs text-red-400 mb-1.5">Standard Error:</div>
+                        <pre className="text-sm font-mono text-red-400 bg-red-950/20 p-3 rounded-md whitespace-pre-wrap border border-red-900/50 min-h-[40px]">
+                          {output.stderr}
+                        </pre>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             )}
