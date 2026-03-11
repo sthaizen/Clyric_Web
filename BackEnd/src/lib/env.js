@@ -3,9 +3,9 @@ import dotenv from "dotenv"
 dotenv.config({quiet: true}); //removes the warning
 
 export const ENV={
-    PORT: process.env.PORT,
+    PORT: process.env.PORT || 5000,
     DB_URL: process.env.DB_URL,
-    NODE_ENV: process.env.NODE_ENV,
+    NODE_ENV: process.env.NODE_ENV || "development",
 
     INNGEST_EVENT_KEY: process.env.INNGEST_EVENT_KEY,
     INNGEST_SIGNING_KEY: process.env.INNGEST_SIGNING_KEY,
@@ -16,5 +16,5 @@ export const ENV={
     CLERK_PUBLISHABLE_KEY: process.env.CLERK_PUBLISHABLE_KEY,
     CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
 
-    CLIENT_URL: process.env.CLIENT_URL,
+    CLIENT_URL: process.env.CLIENT_URL || "http://localhost:5173",
 }
