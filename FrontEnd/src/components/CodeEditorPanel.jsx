@@ -36,14 +36,14 @@ function CodeEditorPanel({
         { token: "attribute.value", foreground: "A5D6FF" }
       ],
       colors: {
-        "editor.background": "#020817",
+        "editor.background": "#1b1b1f",
         "editor.foreground": "#C9D1D9",
         "editorLineNumber.foreground": "#6E7681",
         "editorLineNumber.activeForeground": "#C9D1D9",
         "editorCursor.foreground": "#79C0FF",
         "editor.selectionBackground": "#1F3B5B",
         "editor.inactiveSelectionBackground": "#1F3B5B88",
-        "editor.lineHighlightBackground": "#0B1220",
+        "editor.lineHighlightBackground": "#111113",
         "editorLineNumber.background": "#020817",
         "editorIndentGuide.background1": "#1B2433",
         "editorIndentGuide.activeBackground1": "#2F3B52"
