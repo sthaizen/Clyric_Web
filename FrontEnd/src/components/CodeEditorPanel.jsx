@@ -13,10 +13,10 @@ function CodeEditorPanel({
   onResetCode
 }) {
   return (
-    <div className="h-full flex flex-col bg-[#1e1e1e] relative">
+    <div className="h-full flex flex-col bg-[#111113] relative">
       
       {/* HEADER TABS & ACTIONS */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-[#282828] border-b border-[#3e3e42]">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[#1b1b1f] border-b border-[#111113]">
         
         {/* Left Side: Tab & Language Dropdown */}
         <div className="flex items-center gap-3">
@@ -24,14 +24,14 @@ function CodeEditorPanel({
             <Code2 className="w-4 h-4" /> Code
           </div>
           
-          <div className="flex items-center text-[13px] text-gray-300 group relative bg-[#3e3e42]/30 rounded">
+          <div className="flex items-center text-[13px] text-gray-300 group relative bg-[#111113] rounded">
             <select 
-              className="appearance-none bg-transparent hover:bg-[#3e3e42] text-gray-300 py-1 pl-2 pr-6 rounded cursor-pointer outline-none transition-colors"
+              className="appearance-none bg-transparent hover:bg-[#8a6bfe]/20 text-gray-300 py-1 pl-2 pr-6 rounded cursor-pointer outline-none transition-colors"
               value={selectedLanguage} 
               onChange={onLanguageChange}
             >
               {Object.entries(LANGUAGE_CONFIG).map(([key, lang]) => (
-                <option key={key} value={key} className="bg-[#282828]">
+                <option key={key} value={key} className="bg-[#1b1b1f]">
                   {lang.name}
                 </option>
               ))}
@@ -62,7 +62,7 @@ function CodeEditorPanel({
       </div>
 
       {/* MONACO EDITOR */}
-      <div className="flex-1 overflow-hidden bg-[#1e1e1e]">
+      <div className="flex-1 overflow-hidden bg-[#111113]">
         <Editor
           height={"100%"}
           language={LANGUAGE_CONFIG[selectedLanguage]?.monacoLang || "javascript"}
@@ -82,15 +82,15 @@ function CodeEditorPanel({
       </div>
 
       {/* BOTTOM BANNERS (Saved status & Auth prompt) */}
-      <div className="w-full">
-         <div className="bg-[#1e1e1e] px-4 py-1 flex justify-between items-center text-[11px] text-gray-500 border-t border-[#3e3e42]">
+      {/* <div className="w-full">
+         <div className="bg-[#111113] px-4 py-1 flex justify-between items-center text-[11px] text-gray-500 border-t border-[#111113]">
            <span>Saved</span>
            <span>Ln 1, Col 1</span>
          </div>
-         <div className="bg-[#24354c]/60 text-gray-300 px-4 py-2 text-sm border-t border-[#3e3e42]">
+         <div className="bg-[#8a6bfe]/10 text-gray-300 px-4 py-2 text-sm border-t border-[#111113]">
            You need to <a href="#" className="text-blue-400 hover:underline">log in / sign up</a> to run or submit
          </div>
-      </div>
+      </div> */}
 
     </div>
   );
