@@ -154,53 +154,53 @@ export default function LeetCodeClone() {
     <div style={{ minHeight:'100vh', background:'#111113', color:'#eff1f6', fontFamily:'"Segoe UI", system-ui, sans-serif', display:'flex', flexDirection:'column', fontSize:14 }}>
 
       {/* NAV */}
-      <nav style={{ height:56, background:'#1b1b1f', borderBottom:'1px solid #2c2c35', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 16px', position:'sticky', top:0, zIndex:100, flexShrink:0 }}>
-        <div style={{ display:'flex', alignItems:'center' }}>
-          <div style={{ display:'flex', alignItems:'center', gap:6, marginRight:20, cursor:'pointer' }}>
-            {/* Logo */}
-            <div className="flex flex-col gap-[2px]">
-              <div className="w-[16px] h-[4px] rounded-[2px] rounded-tl-sm bg-[#F3F3EF]"></div>
-              <div className="flex gap-[2px]">
-                <div className="w-[4px] h-[4px] rounded-[2px] bg-[#F3F3EF]"></div>
-                <div className="w-[12px] h-[4px] rounded-[2px] bg-[#fba120]"></div>
-              </div>
-              <div className="flex gap-[2px]">
-                <div className="w-[10px] h-[4px] bg-transparent"></div>
-                <div className="w-[6px] h-[6px] rounded-[2px] rounded-br-sm bg-[#F3F3EF]"></div>
-              </div>
+     <nav style={{ height:56, background:'#1b1b1f', borderBottom:'1px solid #2c2c35', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 16px', position:'sticky', top:0, zIndex:100, flexShrink:0 }}>
+      <div style={{ display:'flex', alignItems:'center' }}>
+        {/* Wrapped logo in an anchor tag pointing to "/" */}
+        <a href="/" style={{ display:'flex', alignItems:'center', gap:6, marginRight:20, cursor:'pointer', textDecoration:'none' }}>
+          {/* Logo */}
+          <div className="flex flex-col gap-[2px]">
+            <div className="w-[16px] h-[4px] rounded-[2px] rounded-tl-sm bg-[#F3F3EF]"></div>
+            <div className="flex gap-[2px]">
+              <div className="w-[4px] h-[4px] rounded-[2px] bg-[#F3F3EF]"></div>
+              <div className="w-[12px] h-[4px] rounded-[2px] bg-[#fba120]"></div>
             </div>
-            <span style={{ color:'#fff', fontWeight:700, fontSize:17, letterSpacing:'-0.2px' }}>Clyric</span>
-          </div>
-          
-          {[
-            { label:'Explore' },
-            { label:'Problems', active:true },
-            { label:'Contest' },
-            { label:'Discuss' },
-            { label:'Interview', caret:true },
-            { label:'Store', caret:true, gold:true },
-          ].map(({label, active, caret, gold}) => (
-            <div key={label} style={{
-              height:56, display:'flex', alignItems:'center', padding:'0 12px', cursor:'pointer',
-              color: active ? '#fff' : gold ? '#ffa116' : '#9ca3af',
-              borderBottom: active ? '2px solid #8a6bfe' : '2px solid transparent',
-              fontSize:13.5, fontWeight: active ? 500 : 400, gap:4,
-            }}>
-              {label}{caret && <ChevronDown size={13}/>}
+            <div className="flex gap-[2px]">
+              <div className="w-[10px] h-[4px] bg-transparent"></div>
+              <div className="w-[6px] h-[6px] rounded-[2px] rounded-br-sm bg-[#F3F3EF]"></div>
             </div>
-          ))}
-        </div>
-        <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-          <div style={{ display:'flex', alignItems:'center', background:'#2c2c35', borderRadius:8, padding:'6px 12px', gap:8, width:200 }}>
-            <Search size={14} color="#6b7280"/>
-            <input placeholder="Search" style={{ background:'transparent', border:'none', outline:'none', color:'#d1d5db', fontSize:13, width:'100%' }}/>
           </div>
-          <button style={{ background:'#524026', color:'#fba121', border:'none', borderRadius:6, padding:'6px 14px', fontWeight:600, fontSize:13, cursor:'pointer' }}>
-            Premium
-          </button>
+          <span style={{ color:'#fff', fontWeight:700, fontSize:17, letterSpacing:'-0.2px' }}>Clyric</span>
+        </a>
+        
+        {[
+          { label:'Explore' },
+          { label:'Problems', active:true },
+          { label:'Contest' },
+          { label:'Discuss' },
+          { label:'Interview', caret:true },
+          { label:'Store', caret:true, gold:true },
+        ].map(({label, active, caret, gold}) => (
+          <div key={label} style={{
+            height:56, display:'flex', alignItems:'center', padding:'0 12px', cursor:'pointer',
+            color: active ? '#fff' : gold ? '#ffa116' : '#9ca3af',
+            borderBottom: active ? '2px solid #8a6bfe' : '2px solid transparent',
+            fontSize:13.5, fontWeight: active ? 500 : 400, gap:4,
+          }}>
+            {label}{caret && <ChevronDown size={13}/>}
+          </div>
+        ))}
+      </div>
+      <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+        <div style={{ display:'flex', alignItems:'center', background:'#2c2c35', borderRadius:8, padding:'6px 12px', gap:8, width:200 }}>
+          <Search size={14} color="#6b7280"/>
+          <input placeholder="Search" style={{ background:'transparent', border:'none', outline:'none', color:'#d1d5db', fontSize:13, width:'100%' }}/>
         </div>
-      </nav>
-
+        <button style={{ background:'#524026', color:'#fba121', border:'none', borderRadius:6, padding:'6px 14px', fontWeight:600, fontSize:13, cursor:'pointer' }}>
+          Premium
+        </button>
+      </div>
+    </nav>
       {/* BODY */}
       <div style={{ display:'flex', flex:1, maxWidth:1700, margin:'0 auto', width:'100%', overflow:'hidden' }}>
 
@@ -359,7 +359,7 @@ export default function LeetCodeClone() {
                   {idx + 1}. {problem.title}
                 </span>
                 <span style={{ textAlign:'right', color:'#9ca3af', fontSize:13 }}>
-                  {problem.acceptance || '57.0%'}
+                  {problem.acceptance || '5sadasd7.0%'}
                 </span>
                 <span style={{ textAlign:'right', fontSize:13, fontWeight:500, color: diffColor(problem.difficulty) }}>
                   {problem.difficulty === 'Medium' ? 'Med.' : problem.difficulty}
@@ -377,7 +377,7 @@ export default function LeetCodeClone() {
         <aside style={{ width:300, borderLeft:'1px solid #2c2c35', padding:'16px', display:'flex', flexDirection:'column', gap:16, flexShrink:0, overflowY:'auto' }}>
 
           {/* Calendar Section */}
-          <div style={{ background:'#1b1b1f', borderRadius:10, padding:16, border:'1px solid #2c2c35' }}>
+        <div style={{ background:'#1b1b1f', borderRadius:10, padding:16, border:'1px solid #2c2c35' }}>
             <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12 }}>
               <span style={{ fontSize:13, color:'#fcfdff', display: 'flex', alignItems: 'center', gap: 6 }}>
                 Day {today.getDate()} <span style={{ color:'#d1d5db', fontSize:11 }}>{timeLeft}</span>
@@ -402,7 +402,7 @@ export default function LeetCodeClone() {
                 <div key={i} style={{
                   textAlign:'center', fontSize:12, borderRadius:999,
                   background: isToday(day) ? '#eb5a56' : 'transparent',
-                  color: isToday(day) ? '#000' : day ? '#9ca3af' : 'transparent',
+                  color: isToday(day) ? '#fff' : day ? '#9ca3af' : 'transparent', // Changed from #000 to #fff
                   fontWeight: isToday(day) ? 700 : 400,
                   cursor: day ? 'pointer' : 'default', lineHeight:'24px', height:24
                 }}>{day}</div>
@@ -411,24 +411,26 @@ export default function LeetCodeClone() {
             
             <div style={{ marginTop:14, background:'#3e3427', border:'1px solid #2c2c35', borderRadius:8, padding:'10px 12px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
               <div style={{ display:'flex', alignItems:'center', gap:4 }}>
+                {/* Changed text and lock icon from #ffa116 to #fff */}
                 <span style={{ color:'#ffa116', fontSize:12, fontWeight:600 }}>Weekly Premium</span>
-                <Lock size={11} color="#ffa116"/>
+                <Lock size={11} color="#ffa116"/> 
               </div>
               <span style={{ color:'#6b7280', fontSize:11 }}>4 days left</span>
             </div>
+
             
             {/* Week Selector */}
-            <div style={{ display:'flex', gap:6, marginTop:10 }}>
-              {['W1','W2','W3','W4','W5'].map((w,i) => (
-                <div key={w} onClick={() => setActiveWeek(i)} style={{
-                  flex:1, textAlign:'center', padding:'4px 0', borderRadius:6, fontSize:11,
-                  background: activeWeek === i ? '#ef5a55' : '#2c2c35',
-                  color: activeWeek === i ? '#000' : '#9ca3af', 
-                  fontWeight: activeWeek === i ? 700 : 400, 
-                  cursor:'pointer', transition: 'all 0.2s'
-                }}>{w}</div>
-              ))}
-            </div>
+           <div style={{ display:'flex', gap:6, marginTop:10 }}>
+            {['W1','W2','W3','W4','W5'].map((w,i) => (
+              <div key={w} onClick={() => setActiveWeek(i)} style={{
+                flex:1, textAlign:'center', padding:'4px 0', borderRadius:6, fontSize:11,
+                background: activeWeek === i ? '#ef5a55' : '#2c2c35',
+                color: activeWeek === i ? '#fff' : '#9ca3af', // Changed from #000 to #fff
+                fontWeight: activeWeek === i ? 700 : 400, 
+                cursor:'pointer', transition: 'all 0.2s'
+              }}>{w}</div>
+            ))}
+          </div>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:12, fontSize:12 }}>
               <div style={{ display:'flex', alignItems:'center', gap:6 }}>
                 <span style={{ color:'#4ade80', fontSize:16 }}>⬡</span>
