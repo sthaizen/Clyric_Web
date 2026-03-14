@@ -18,6 +18,7 @@ import Connection from "./components/Connection";
 // CSS Imports
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import SessionPage from "./Pages/SessionPage";
 
 const App = () => {
   const { isSignedIn, isLoaded } = useUser();
@@ -36,13 +37,13 @@ const App = () => {
           />
 
           <Route
-            path="/dashboard"
-            element={isSignedIn ? <DashboardPage /> : <Navigate to="/" />}
+            path="/dashboard" element={<DashboardPage />}
           />
 
           {/* Other Routes */}
           <Route path="/problems" element={<ProblemsPage />} />
           <Route path="/problem/:id" element={<ProblemPage />} />
+          <Route path="/session/:id" element={<SessionPage />} />
           <Route path="/connection" element={<Connection />} />
           <Route path="/service" element={<Servicess />} />
           <Route path="/coding" element={<CodingEnvironemt />} />

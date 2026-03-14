@@ -156,52 +156,66 @@ export default function LeetCodeClone() {
 
       {/* NAV */}
      <nav style={{ height:56, background:'#1b1b1f', borderBottom:'1px solid #2c2c35', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 16px', position:'sticky', top:0, zIndex:100, flexShrink:0 }}>
-      <div style={{ display:'flex', alignItems:'center' }}>
-        {/* Wrapped logo in an anchor tag pointing to "/" */}
-        <a href="/" style={{ display:'flex', alignItems:'center', gap:6, marginRight:20, cursor:'pointer', textDecoration:'none' }}>
-          {/* Logo */}
-          <div className="flex flex-col gap-[2px]">
-            <div className="w-[16px] h-[4px] rounded-[2px] rounded-tl-sm bg-[#F3F3EF]"></div>
-            <div className="flex gap-[2px]">
-              <div className="w-[4px] h-[4px] rounded-[2px] bg-[#F3F3EF]"></div>
-              <div className="w-[12px] h-[4px] rounded-[2px] bg-[#fba120]"></div>
-            </div>
-            <div className="flex gap-[2px]">
-              <div className="w-[10px] h-[4px] bg-transparent"></div>
-              <div className="w-[6px] h-[6px] rounded-[2px] rounded-br-sm bg-[#F3F3EF]"></div>
-            </div>
-          </div>
-          <span style={{ color:'#fff', fontWeight:700, fontSize:17, letterSpacing:'-0.2px' }}>Clyric</span>
-        </a>
-        
-        {[
-          { label:'Explore' },
-          { label:'Problems', active:true },
-          { label:'Contest' },
-          { label:'Discuss' },
-          { label:'Interview', caret:true },
-          { label:'Store', caret:true, gold:true },
-        ].map(({label, active, caret, gold}) => (
-          <div key={label} style={{
-            height:56, display:'flex', alignItems:'center', padding:'0 12px', cursor:'pointer',
-            color: active ? '#fff' : gold ? '#ffa116' : '#9ca3af',
-            borderBottom: active ? '2px solid #8a6bfe' : '2px solid transparent',
-            fontSize:13.5, fontWeight: active ? 500 : 400, gap:4,
-          }}>
-            {label}{caret && <ChevronDown size={13}/>}
-          </div>
-        ))}
-      </div>
-      <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-        <div style={{ display:'flex', alignItems:'center', background:'#2c2c35', borderRadius:8, padding:'6px 12px', gap:8, width:200 }}>
-          <Search size={14} color="#6b7280"/>
-          <input placeholder="Search" style={{ background:'transparent', border:'none', outline:'none', color:'#d1d5db', fontSize:13, width:'100%' }}/>
+  <div style={{ display:'flex', alignItems:'center' }}>
+    {/* Wrapped logo in an anchor tag pointing to "/" */}
+    <a href="/" style={{ display:'flex', alignItems:'center', gap:6, marginRight:20, cursor:'pointer', textDecoration:'none' }}>
+      {/* Logo */}
+      <div className="flex flex-col gap-[2px]">
+        <div className="w-[16px] h-[4px] rounded-[2px] rounded-tl-sm bg-[#F3F3EF]"></div>
+        <div className="flex gap-[2px]">
+          <div className="w-[4px] h-[4px] rounded-[2px] bg-[#F3F3EF]"></div>
+          <div className="w-[12px] h-[4px] rounded-[2px] bg-[#fba120]"></div>
         </div>
-        <button style={{ background:'#524026', color:'#fba121', border:'none', borderRadius:6, padding:'6px 14px', fontWeight:600, fontSize:13, cursor:'pointer' }}>
-          Premium
-        </button>
+        <div className="flex gap-[2px]">
+          <div className="w-[10px] h-[4px] bg-transparent"></div>
+          <div className="w-[6px] h-[6px] rounded-[2px] rounded-br-sm bg-[#F3F3EF]"></div>
+        </div>
       </div>
-    </nav>
+      <span style={{ color:'#fff', fontWeight:700, fontSize:17, letterSpacing:'-0.2px' }}>Clyric</span>
+    </a>
+    
+    {[
+      { label:'Dashboard', link:'/dashboard' },
+      { label:'Problems', link:'/problems', active:true },
+      { label:'Contest', link:'/contest' },
+      { label:'Discuss', link:'/discuss' },
+      { label:'Interview', link:'/interview', caret:true },
+      { label:'Store', link:'/store', caret:true, gold:true },
+    ].map(({label, link, active, caret, gold}) => (
+      <a
+        key={label}
+        href={link}
+        style={{
+          height:56,
+          display:'flex',
+          alignItems:'center',
+          padding:'0 12px',
+          cursor:'pointer',
+          color: active ? '#fff' : gold ? '#ffa116' : '#9ca3af',
+          borderBottom: active ? '2px solid #8a6bfe' : '2px solid transparent',
+          fontSize:13.5,
+          fontWeight: active ? 500 : 400,
+          gap:4,
+          textDecoration:'none',
+        }}
+      >
+        {label}{caret && <ChevronDown size={13}/>}
+      </a>
+    ))}
+  </div>
+  <div style={{ display:'flex', alignItems:'center', gap:12 }}>
+    <div style={{ display:'flex', alignItems:'center', background:'#2c2c35', borderRadius:8, padding:'6px 12px', gap:8, width:200 }}>
+      <Search size={14} color="#6b7280"/>
+      <input placeholder="Search" style={{ background:'transparent', border:'none', outline:'none', color:'#d1d5db', fontSize:13, width:'100%' }}/>
+    </div>
+    <button
+      onClick={() => window.location.href = '/premium'}
+      style={{ background:'#524026', color:'#fba121', border:'none', borderRadius:6, padding:'6px 14px', fontWeight:600, fontSize:13, cursor:'pointer' }}
+    >
+      Premium
+    </button>
+  </div>
+</nav>
       {/* BODY */}
       <div style={{ display:'flex', flex:1, maxWidth:1700, margin:'0 auto', width:'100%', overflow:'hidden' }}>
 
@@ -360,7 +374,7 @@ export default function LeetCodeClone() {
                   {idx + 1}. {problem.title}
                 </span>
                 <span style={{ textAlign:'right', color:'#9ca3af', fontSize:13 }}>
-                  {problem.acceptance || '5sadasd7.0%'}
+                  {problem.acceptance || '57.0%'}
                 </span>
                 <span style={{ textAlign:'right', fontSize:13, fontWeight:500, color: diffColor(problem.difficulty) }}>
                   {problem.difficulty === 'Medium' ? 'Med.' : problem.difficulty}
