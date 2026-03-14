@@ -23,6 +23,7 @@
     "@tabler/icons-react": "^3.35.0",
     "@tailwindcss/vite": "^4.1.17",
     "@tanstack/react-query": "^5.90.5",
+    "axios": "^1.13.6",
     "canvas-confetti": "^1.9.3",
     "date-fns": "^4.1.0",
     "development": "file:..",
