@@ -58,6 +58,7 @@ import Ab from './Ab2.jpg'
 import Ac from './Ac3.png'
 import ll from './ll.png'
 import cc from './cc.png'
+import img from './ggss.png'
 export const company_logos = [
   microsoft_logo,
   zoom_logo,
@@ -69,6 +70,7 @@ export const company_logos = [
 
 const assets = {
   map,
+  img,
   Ab,
   ll,
   Ac,

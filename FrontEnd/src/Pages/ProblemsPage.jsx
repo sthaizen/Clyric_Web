@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { PROBLEMS } from '../data/problem';
+import assets from "../assets/assets";
 import {
   Search, ChevronLeft, ChevronRight, LayoutList, CheckCircle2,
   Lock, Settings, Shuffle, ChevronDown, ChevronUp, ArrowUpDown, SlidersHorizontal,
@@ -238,7 +239,7 @@ export default function LeetCodeClone() {
               'https://assets.leetcode.com/users/images/dba14729-0f89-4a5a-a181-b2a7ec1fb0ec_1772459043.341392.png',
               'https://assets.leetcode.com/users/images/942e9e91-7f81-4513-8544-c462980a5d3a_1738741032.3553998.png',
               'https://assets.leetcode.com/users/images/b0a08a5c-c575-48f6-9110-b6ae4e011e98_1655746322.579097.png',
-              'https://assets.leetcode.com/users/images/49479bba-73b3-45d2-9272-99e773d784b2_1687290663.3168745.jpeg',
+              assets.img,
             ].map((src, i) => (
               <div key={i} style={{ height:110, borderRadius:12, overflow:'hidden', cursor:'pointer', transition:'transform 0.2s' }}
                 onMouseEnter={e=>e.currentTarget.style.transform='scale(1.02)'}
