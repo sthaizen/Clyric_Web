@@ -74,11 +74,17 @@ if (ENV.NODE_ENV === "production") {
   });
 }
 
+import { createServer } from "http";
+import { setupSocket } from "./lib/socket.js";
+
 // start server
 const startServer = async () => {
   try {
     await connectDB();
-    app.listen(ENV.PORT, () => {
+    const server = createServer(app);
+    setupSocket(server);
+    
+    server.listen(ENV.PORT, () => {
       console.log("Server is running on port:", ENV.PORT);
     });
   } catch (error) {
