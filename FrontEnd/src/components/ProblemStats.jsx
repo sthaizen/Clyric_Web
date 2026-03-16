@@ -2,10 +2,10 @@ import React from "react";
 
 export default function ProblemStats() {
   const stats = {
-    totalSolved: 821,
-    easy: { solved: 313, total: 640, beats: "99.6%", color: "bg-[#00b8a3]", track: "bg-[#294d42]" },
-    medium: { solved: 401, total: 1392, beats: "98.9%", color: "bg-[#ffc01e]", track: "bg-[#5c4e25]" },
-    hard: { solved: 107, total: 585, beats: "98.2%", color: "bg-[#ef4743]", track: "bg-[#5a302f]" },
+    totalSolved: 0,
+    easy: { solved: 0, total: 640, beats: "99.6%", color: "bg-[#00b8a3]", track: "bg-[#294d42]" },
+    medium: { solved: 0, total: 1392, beats: "98.9%", color: "bg-[#ffc01e]", track: "bg-[#5c4e25]" },
+    hard: { solved: 0, total: 585, beats: "98.2%", color: "bg-[#ef4743]", track: "bg-[#5a302f]" },
   };
 
   const totalQuestions = stats.easy.total + stats.medium.total + stats.hard.total;

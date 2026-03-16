@@ -1,10 +1,4 @@
-/**
- * Code Execution Controller
- * 
- * Handles HTTP request validation and delegates to service layer.
- * Keeps controllers thin — no business logic here, just input
- * validation + calling the right service + returning the response.
- */
+
 
 import { runUserCode } from "../services/codeExecutionService.js";
 import { judgeSubmission } from "../services/judgeService.js";
