@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { PROBLEMS } from '../data/problem';
 import assets from "../assets/assets";
+import { SignInButton, SignedOut, SignedIn, UserButton } from "@clerk/clerk-react";
 import {
   Search, ChevronLeft, ChevronRight, LayoutList, CheckCircle2,
   Lock, Settings, Shuffle, ChevronDown, ChevronUp, ArrowUpDown, SlidersHorizontal,
@@ -208,6 +209,17 @@ export default function LeetCodeClone() {
       <Search size={14} color="#6b7280"/>
       <input placeholder="Search" style={{ background:'transparent', border:'none', outline:'none', color:'#d1d5db', fontSize:13, width:'100%' }}/>
     </div>
+     <SignedOut>
+          <SignInButton mode="modal">
+            <button className="text-[13px] font-medium hover:opacity-60 transition-opacity">
+              Register or Login
+            </button>
+          </SignInButton>
+        </SignedOut>
+
+        <SignedIn>
+          <UserButton afterSignOutUrl="/" />
+        </SignedIn>
     <button
       onClick={() => window.location.href = '/premium'}
       style={{ background:'#524026', color:'#fba121', border:'none', borderRadius:6, padding:'6px 14px', fontWeight:600, fontSize:13, cursor:'pointer' }}

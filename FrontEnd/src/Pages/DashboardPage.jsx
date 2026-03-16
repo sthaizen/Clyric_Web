@@ -2,7 +2,8 @@ import { useNavigate } from "react-router";
 import { useUser } from "@clerk/clerk-react";
 import { useState, useEffect } from "react";
 import { useActiveSessions, useCreateSession, useMyRecentSessions } from "../hooks/useSessions.js";
-import { CodeIcon, ActivityIcon, ChevronDown, Search, X, Camera } from "lucide-react"; // Added Camera icon
+import { CodeIcon, ActivityIcon, ChevronDown, Search, X, Camera } from "lucide-react"; 
+import { SignInButton, SignedOut, SignedIn, UserButton } from "@clerk/clerk-react";
 
 import WelcomeSection from "../components/WelcomeSection";
 import StatsCards from "../components/StatsCards";
@@ -152,6 +153,17 @@ function DashboardPage() {
               <Search size={14} color="#6b7280"/>
               <input placeholder="Search" style={{ background:'transparent', border:'none', outline:'none', color:'#d1d5db', fontSize:13, width:'100%' }}/>
             </div>
+            <SignedOut>
+          <SignInButton mode="modal">
+            <button className="text-[13px] font-medium hover:opacity-60 transition-opacity">
+              Register or Login
+            </button>
+          </SignInButton>
+        </SignedOut>
+
+        <SignedIn>
+          <UserButton afterSignOutUrl="/" />
+        </SignedIn>
             <button
               onClick={() => window.location.href = '/premium'}
               style={{ background:'#524026', color:'#fba121', border:'none', borderRadius:6, padding:'6px 14px', fontWeight:600, fontSize:13, cursor:'pointer' }}
