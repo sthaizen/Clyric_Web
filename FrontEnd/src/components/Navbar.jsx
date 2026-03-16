@@ -233,7 +233,7 @@ const Navbar = () => {
                         <SignedOut>
                             <SignInButton mode="modal">
                                 <button className="text-[13px] font-medium hover:opacity-60 transition-opacity">
-                                    Login
+                                   Register or Login
                                 </button>
                             </SignInButton>
                         </SignedOut>

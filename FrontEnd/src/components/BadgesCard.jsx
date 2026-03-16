@@ -23,7 +23,7 @@ export default function BadgesCard() {
       {/* Bottom Section */}
       <div className="relative z-10 mt-6">
         <p className="text-gray-500 text-xs mb-1">Locked Badge</p>
-        <p className="text-gray-200 text-sm font-medium">Mar LeetCoding Challenge</p>
+        <p className="text-gray-200 text-sm font-medium"></p>
       </div>
     </div>
   );
