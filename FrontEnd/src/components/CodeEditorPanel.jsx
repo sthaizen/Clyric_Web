@@ -1,3 +1,5 @@
+import { useEffect, useRef } from "react";
+import { socket } from "../lib/socket";
 import Editor from "@monaco-editor/react";
 import { Code2, Maximize2, RotateCcw, Bookmark, Code } from "lucide-react";
 import { LANGUAGE_CONFIG } from "../data/problem";
@@ -8,8 +10,60 @@ function CodeEditorPanel({
   onLanguageChange,
   onCodeChange,
   onRunCode,
-  onResetCode
+  onResetCode,
+  roomId, // Passed if collaboration is needed
+  user,    // Current user context
+  onRemoteLanguageChange // Added callback if parent needs notification
 }) {
+  const isRemoteUpdate = useRef(false);
+
+  // --- COLLABORATION LOGIC ---
+  useEffect(() => {
+    if (!roomId || !user) return;
+
+    // Connect and join room
+    socket.connect();
+    socket.emit("join-room", roomId);
+
+    // Listen for remote updates
+    const handleSyncCode = (receivedCode) => {
+      isRemoteUpdate.current = true;
+      if (onCodeChange) onCodeChange(receivedCode);
+    };
+
+    const handleSyncLanguage = (receivedLanguage) => {
+      isRemoteUpdate.current = true;
+      if (onRemoteLanguageChange) onRemoteLanguageChange(receivedLanguage);
+    };
+
+    socket.on("sync-code", handleSyncCode);
+    socket.on("sync-language", handleSyncLanguage);
+
+    return () => {
+      socket.off("sync-code", handleSyncCode);
+      socket.off("sync-language", handleSyncLanguage);
+      socket.disconnect();
+    };
+  }, [roomId, user, onCodeChange, onRemoteLanguageChange]);
+
+  const handleLocalCodeChange = (newCode) => {
+    if (onCodeChange) onCodeChange(newCode);
+    
+    // Emit only if it's a local edit
+    if (roomId && !isRemoteUpdate.current) {
+      socket.emit("code-update", { roomId, code: newCode });
+    }
+    isRemoteUpdate.current = false;
+  };
+
+  const wrapLanguageChange = (e) => {
+     if (onLanguageChange) onLanguageChange(e);
+     if (roomId) {
+        socket.emit("language-update", { roomId, language: e.target.value });
+        // Optionally emit the starter code too if that's the desired behavior
+     }
+  };
+
   const handleEditorWillMount = (monaco) => {
     monaco.editor.defineTheme("customNavyTheme", {
       base: "vs-dark",
@@ -61,7 +115,7 @@ function CodeEditorPanel({
             <select
               className="appearance-none bg-transparent hover:bg-[#8a6bfe]/20 text-gray-300 py-1 pl-2 pr-6 rounded cursor-pointer outline-none transition-colors"
               value={selectedLanguage}
-              onChange={onLanguageChange}
+              onChange={wrapLanguageChange}
             >
               {Object.entries(LANGUAGE_CONFIG).map(([key, lang]) => (
                 <option key={key} value={key} className="bg-[#1b1b1f]">
@@ -103,7 +157,7 @@ function CodeEditorPanel({
           height="100%"
           language={LANGUAGE_CONFIG[selectedLanguage]?.monacoLang || "javascript"}
           value={code}
-          onChange={onCodeChange}
+          onChange={handleLocalCodeChange}
           theme="customNavyTheme"
           options={{
             fontSize: 14,

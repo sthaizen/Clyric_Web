@@ -1,6 +1,6 @@
 import { useUser } from "@clerk/clerk-react";
-import { useEffect, useState } from "react";
 import { useNavigate, useParams, Link } from "react-router-dom";
+import { useEffect, useState, useRef } from "react";
 import { useEndSession, useJoinSession, useSessionById } from "../hooks/useSessions";
 import { PROBLEMS } from "../data/problem.js";
 
@@ -80,7 +80,8 @@ function SessionPage() {
 
   // Update code when problem loads or language changes
   useEffect(() => {
-    if (currentProblem?.starterCode?.[selectedLanguage]) {
+    // Only apply starter code if we don't have code yet OR if it's a completely new problem
+    if (currentProblem?.starterCode?.[selectedLanguage] && !code) {
       setCode(currentProblem.starterCode[selectedLanguage]);
     }
   }, [currentProblem, selectedLanguage]);
@@ -160,16 +161,25 @@ function SessionPage() {
   // --- EDITOR LOGIC ---
   const handleLanguageChange = (e) => {
     const newLang = e.target.value;
+    // Parent state update
     setSelectedLanguage(newLang);
     const starterCode = currentProblem?.starterCode?.[newLang] || "";
     setCode(starterCode);
     setOutput(null);
   };
 
+  const handleCodeChange = (newCode) => {
+    setCode(newCode);
+  };
+
   const handleResetCode = () => {
     if (!currentProblem) return;
-    setCode(currentProblem.starterCode[selectedLanguage]);
+    const starterCode = currentProblem.starterCode[selectedLanguage];
+    setCode(starterCode);
     toast.success("Code reset back to starter code.");
+
+    // Sync reset
+    socket.emit("code-update", { roomId: id, code: starterCode });
   };
 
   const handleProblemChange = (newProblemId) => navigate(`/problem/${newProblemId}`);
@@ -389,7 +399,19 @@ function SessionPage() {
                 <Panel defaultSize={50} minSize={30} className="flex flex-col">
                   <PanelGroup direction="vertical">
                     <Panel defaultSize={60} minSize={30} className="bg-[#1b1b1f] rounded-lg border border-[#111113] flex flex-col overflow-hidden">
-                      <CodeEditorPanel selectedLanguage={selectedLanguage} code={code} isRunning={isRunning} isSubmitting={isSubmitting} onLanguageChange={handleLanguageChange} onCodeChange={(value) => setCode(value)} onRunCode={handleRunCode} onResetCode={handleResetCode} />
+                      <CodeEditorPanel 
+                        selectedLanguage={selectedLanguage} 
+                        code={code} 
+                        isRunning={isRunning} 
+                        isSubmitting={isSubmitting} 
+                        onLanguageChange={handleLanguageChange} 
+                        onCodeChange={handleCodeChange} 
+                        onRunCode={handleRunCode} 
+                        onResetCode={handleResetCode} 
+                        roomId={id}
+                        user={user}
+                        onRemoteLanguageChange={setSelectedLanguage}
+                      />
                     </Panel>
                     <PanelResizeHandle className="h-2 cursor-row-resize hover:bg-[#3e3e42]/50 transition-colors" />
                     <Panel defaultSize={40} minSize={30} className="bg-[#1b1b1f] rounded-lg border border-[#111113] flex flex-col overflow-hidden">
@@ -407,7 +429,19 @@ function SessionPage() {
                 </Panel>
                 <PanelResizeHandle className="w-2 cursor-col-resize hover:bg-[#3e3e42]/50 transition-colors" />
                 <Panel defaultSize={33} minSize={20} className="bg-[#1b1b1f] rounded-lg border border-[#111113] flex flex-col overflow-hidden">
-                  <CodeEditorPanel selectedLanguage={selectedLanguage} code={code} isRunning={isRunning} isSubmitting={isSubmitting} onLanguageChange={handleLanguageChange} onCodeChange={(value) => setCode(value)} onRunCode={handleRunCode} onResetCode={handleResetCode} />
+                  <CodeEditorPanel 
+                    selectedLanguage={selectedLanguage} 
+                    code={code} 
+                    isRunning={isRunning} 
+                    isSubmitting={isSubmitting} 
+                    onLanguageChange={handleLanguageChange} 
+                    onCodeChange={handleCodeChange} 
+                    onRunCode={handleRunCode} 
+                    onResetCode={handleResetCode} 
+                    roomId={id}
+                    user={user}
+                    onRemoteLanguageChange={setSelectedLanguage}
+                  />
                 </Panel>
                 <PanelResizeHandle className="w-2 cursor-col-resize hover:bg-[#3e3e42]/50 transition-colors" />
                 <Panel defaultSize={34} minSize={20} className="bg-[#1b1b1f] rounded-lg border border-[#111113] flex flex-col overflow-hidden">
@@ -419,7 +453,19 @@ function SessionPage() {
             {layoutMode === 'focus' && (
               <PanelGroup direction="vertical">
                 <Panel defaultSize={70} minSize={30} className="bg-[#1b1b1f] rounded-lg border border-[#111113] flex flex-col overflow-hidden shadow-2xl">
-                  <CodeEditorPanel selectedLanguage={selectedLanguage} code={code} isRunning={isRunning} isSubmitting={isSubmitting} onLanguageChange={handleLanguageChange} onCodeChange={(value) => setCode(value)} onRunCode={handleRunCode} onResetCode={handleResetCode} />
+                  <CodeEditorPanel 
+                    selectedLanguage={selectedLanguage} 
+                    code={code} 
+                    isRunning={isRunning} 
+                    isSubmitting={isSubmitting} 
+                    onLanguageChange={handleLanguageChange} 
+                    onCodeChange={handleCodeChange} 
+                    onRunCode={handleRunCode} 
+                    onResetCode={handleResetCode} 
+                    roomId={id}
+                    user={user}
+                    onRemoteLanguageChange={setSelectedLanguage}
+                  />
                 </Panel>
                 <PanelResizeHandle className="h-2 cursor-row-resize hover:bg-[#3e3e42]/50 transition-colors" />
                 <Panel defaultSize={30} minSize={20} className="bg-[#1b1b1f] rounded-lg border border-[#111113] flex flex-col overflow-hidden shadow-xl">
