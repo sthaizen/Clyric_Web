@@ -12,13 +12,17 @@ import {
   ChevronDown,
   PenLine,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import ReactQuill from "react-quill-new";
 import "quill/dist/quill.snow.css";
+import { trackProblemEvent } from "../lib/api/analytics";
+import { useAuth } from "@clerk/clerk-react";
+import debounce from "lodash.debounce";
 
 function ProblemDescription({ problem, currentProblemId }) {
   const [activeTab, setActiveTab] = useState("Description");
   const [notes, setNotes] = useState("");
+  const { userId } = useAuth();
 
   useEffect(() => {
     if (currentProblemId) {
@@ -29,10 +33,35 @@ function ProblemDescription({ problem, currentProblemId }) {
     }
   }, [currentProblemId]);
 
+  // Debounced tracking for notes
+  const debouncedTrackNotes = useCallback(
+    debounce((pid) => {
+      if (userId && pid) {
+        trackProblemEvent({
+          userId,
+          problemSlug: pid,
+          actionType: "note_saved"
+        });
+      }
+    }, 2000),
+    [userId]
+  );
+
   const handleNotesChange = (content) => {
     setNotes(content);
     if (currentProblemId) {
       localStorage.setItem(`notes_${currentProblemId}`, content);
+      debouncedTrackNotes(currentProblemId);
+    }
+  };
+
+  const handleHintClick = (hintIndex) => {
+    if (userId && currentProblemId) {
+      trackProblemEvent({
+        userId,
+        problemSlug: currentProblemId,
+        actionType: "hint"
+      });
     }
   };
 
@@ -364,9 +393,12 @@ function ProblemDescription({ problem, currentProblemId }) {
             </div>
 
             <div className="space-y-0.5 border-t border-[#111113] pt-2">
-              {["Topics", "Companies", "Hint 1", "Hint 2", "Hint 3", "Similar Questions"].map((item) => (
+              {["Topics", "Companies", "Hint 1", "Hint 2", "Hint 3", "Similar Questions"].map((item, idx) => (
                 <div
                   key={item}
+                  onClick={() => {
+                     if (item.includes("Hint")) handleHintClick(idx);
+                  }}
                   className="flex items-center justify-between py-2.5 text-sm hover:text-white cursor-pointer group"
                 >
                   <div className="flex items-center gap-2">

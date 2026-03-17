@@ -15,6 +15,8 @@ import { protectRoute } from "./middleware/protectRoute.js";
 import chatRoutes from "./routes/chatRoutes.js";
 import sessionRoutes from "./routes/sessionRoutes.js";
 import codeExecutionRoutes from "./routes/codeExecutionRoutes.js";
+import problemRoutes from "./routes/problemRoutes.js";
+import analyticsRoutes from "./routes/analyticsRoutes.js";
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
@@ -51,6 +53,8 @@ app.use("/api/inngest", serve({ client: inngest, functions }));
 app.use("/api/chat", chatRoutes);
 app.use("/api/sessions", sessionRoutes);
 app.use("/api/code", codeExecutionRoutes);
+app.use("/api/problems", problemRoutes);
+app.use("/api/problem-analytics", analyticsRoutes);
 
 app.get("/health", (req, res) => {
   res.status(200).json({ msg: "success api is running" });

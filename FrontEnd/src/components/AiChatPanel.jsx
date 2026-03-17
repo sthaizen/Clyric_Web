@@ -5,8 +5,11 @@ import {
   Lightbulb, ChevronDown, User
 } from "lucide-react";
 import { getChatbotReply } from "../prompts/geminiHelper";
+import { useAuth } from "@clerk/clerk-react";
+import { trackProblemEvent } from "../lib/api/analytics";
 
 export default function AiChatPanel({ onClose, currentProblemId }) {
+  const { userId } = useAuth();
   // --- STATE ---
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -113,6 +116,15 @@ export default function AiChatPanel({ onClose, currentProblemId }) {
     const finalChat = [...currentChat, { role: "ai", content: aiResponseText }];
     setMessages(finalChat);
     setIsTyping(false);
+
+    // Track AI usage
+    if (userId && currentProblemId) {
+      trackProblemEvent({
+        userId,
+        problemSlug: currentProblemId,
+        actionType: "ai_help"
+      });
+    }
 
     // Generate a short title from the first message
     const generatedTitle = finalChat[0].content.slice(0, 15) + (finalChat[0].content.length > 15 ? "..." : "");

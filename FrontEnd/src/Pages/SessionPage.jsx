@@ -2,7 +2,7 @@ import { useUser } from "@clerk/clerk-react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import { useEndSession, useJoinSession, useSessionById } from "../hooks/useSessions";
-import { PROBLEMS } from "../data/problem.js";
+import { getProblems, getProblemBySlug } from "../lib/api/problems.js";
 
 // Execution & Utilities
 import { runCode, submitCode } from "../lib/codeExecution.js";
@@ -56,14 +56,53 @@ function SessionPage() {
     isParticipant
   );
 
-  const currentProblem = session?.problem
-    ? Object.values(PROBLEMS).find((p) => p.title === session.problem)
-    : null;
+  const [currentProblem, setCurrentProblem] = useState(null);
+  const [loadingProblem, setLoadingProblem] = useState(true);
+  const [problemList, setProblemList] = useState([]);
+
+  // Fetch full problem list for navigating
+  useEffect(() => {
+    getProblems({ limit: 1000 }).then(res => {
+      if (res.problems) setProblemList(res.problems);
+    }).catch(console.error);
+  }, []);
+
+  // Fetch specific problem details based on session string
+  useEffect(() => {
+    async function loadProblemData() {
+      if (!session?.problem) return;
+      
+      setLoadingProblem(true);
+      try {
+        // Backwards compatibility trick for current backend data storing the title instead of slug:
+        // Search by title or slug depending on what was stored.
+        // First get all to find slug if title is stored.
+        let slugToFetch = session.problem;
+        
+        // This handles cases where session.problem is "Two Sum" instead of "two-sum"
+        if (problemList.length > 0) {
+           const match = problemList.find(p => p.title === session.problem || p.id === session.problem);
+           if (match) slugToFetch = match.id;
+        }
+
+        const data = await getProblemBySlug(slugToFetch);
+        setCurrentProblem(data);
+      } catch (err) {
+        console.error("Failed to load session problem", err);
+      } finally {
+        setLoadingProblem(false);
+      }
+    }
+    
+    if (session?.problem) {
+      loadProblemData();
+    }
+  }, [session?.problem, problemList]);
 
   const currentProblemId = currentProblem?.id;
 
   const [selectedLanguage, setSelectedLanguage] = useState("javascript");
-  const [code, setCode] = useState(currentProblem?.starterCode?.[selectedLanguage] || "");
+  const [code, setCode] = useState("");
 
   // Auto-join session
   useEffect(() => {
@@ -185,24 +224,23 @@ function SessionPage() {
   const handleProblemChange = (newProblemId) => navigate(`/problem/${newProblemId}`);
 
   // Navigation Logic
-  const problemIds = Object.keys(PROBLEMS);
-  const currentIndex = currentProblemId ? problemIds.indexOf(currentProblemId) : 0;
-  const isFirstProblem = currentIndex === 0;
-  const isLastProblem = currentIndex === problemIds.length - 1;
+  const currentIndex = currentProblemId ? problemList.findIndex(p => p.id === currentProblemId) : 0;
+  const isFirstProblem = currentIndex <= 0;
+  const isLastProblem = currentIndex === problemList.length - 1 || currentIndex === -1;
 
   const handlePrevProblem = () => {
-    if (!isFirstProblem) handleProblemChange(problemIds[currentIndex - 1]);
+    if (!isFirstProblem) handleProblemChange(problemList[currentIndex - 1].id);
   };
   const handleNextProblem = () => {
-    if (!isLastProblem) handleProblemChange(problemIds[currentIndex + 1]);
+    if (!isLastProblem) handleProblemChange(problemList[currentIndex + 1].id);
   };
   const handleRandomProblem = () => {
-    if (problemIds.length <= 1) return;
+    if (problemList.length <= 1) return;
     let randomIndex;
     do {
-      randomIndex = Math.floor(Math.random() * problemIds.length);
+      randomIndex = Math.floor(Math.random() * problemList.length);
     } while (randomIndex === currentIndex);
-    handleProblemChange(problemIds[randomIndex]);
+    handleProblemChange(problemList[randomIndex].id);
   };
 
   const triggerConfetti = () => {
@@ -276,7 +314,7 @@ function SessionPage() {
     }
   };
 
-  if (!currentProblem && !loadingSession) {
+  if ((!currentProblem && !loadingSession && !loadingProblem) || (!session && !loadingSession)) {
     return (
       <div className="h-screen bg-[#111113] flex flex-col">
         <div className="flex-1 flex flex-col items-center justify-center gap-4">
@@ -287,6 +325,14 @@ function SessionPage() {
         </div>
       </div>
     );
+  }
+
+  if (loadingSession || loadingProblem) {
+    return (
+      <div className="h-screen bg-[#111113] flex items-center justify-center text-white">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    )
   }
 
   const showNavTime = isTimerActive || timeElapsed > 0 || timeRemaining > 0;
@@ -353,7 +399,7 @@ function SessionPage() {
               </div>
 
               <div className="flex-1 overflow-y-auto px-3 pb-4 space-y-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-[#3e3e42] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent">
-                {Object.values(PROBLEMS).map((p, index) => {
+                {problemList.map((p, index) => {
                   const isActive = p.id === currentProblemId;
                   return (
                     <div
@@ -393,7 +439,7 @@ function SessionPage() {
             {layoutMode === 'default' && (
               <PanelGroup direction="horizontal">
                 <Panel defaultSize={50} minSize={30} className="bg-[#1b1b1f] rounded-lg border border-[#111113] flex flex-col overflow-hidden">
-                  <ProblemDescription problem={currentProblem} currentProblemId={currentProblemId} onProblemChange={handleProblemChange} allProblems={Object.values(PROBLEMS)} />
+                  <ProblemDescription problem={currentProblem} currentProblemId={currentProblemId} onProblemChange={handleProblemChange} allProblems={problemList} />
                 </Panel>
                 <PanelResizeHandle className="w-2 cursor-col-resize hover:bg-[#3e3e42]/50 transition-colors" />
                 <Panel defaultSize={50} minSize={30} className="flex flex-col">
@@ -425,7 +471,7 @@ function SessionPage() {
             {layoutMode === 'columns' && (
               <PanelGroup direction="horizontal">
                 <Panel defaultSize={33} minSize={20} className="bg-[#1b1b1f] rounded-lg border border-[#111113] flex flex-col overflow-hidden">
-                  <ProblemDescription problem={currentProblem} currentProblemId={currentProblemId} onProblemChange={handleProblemChange} allProblems={Object.values(PROBLEMS)} />
+                  <ProblemDescription problem={currentProblem} currentProblemId={currentProblemId} onProblemChange={handleProblemChange} allProblems={problemList} />
                 </Panel>
                 <PanelResizeHandle className="w-2 cursor-col-resize hover:bg-[#3e3e42]/50 transition-colors" />
                 <Panel defaultSize={33} minSize={20} className="bg-[#1b1b1f] rounded-lg border border-[#111113] flex flex-col overflow-hidden">

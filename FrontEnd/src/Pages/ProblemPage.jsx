@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { PROBLEMS } from "../data/problem";
+import { getProblemBySlug, getProblems } from "../lib/api/problems";
+import { trackProblemEvent } from "../lib/api/analytics";
+import { useAuth } from "@clerk/clerk-react";
 
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import ProblemDescription from "../components/ProblemDescription";
@@ -21,9 +23,12 @@ import { ChevronRight, X, EyeOff } from "lucide-react";
 function ProblemPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { userId } = useAuth(); // for tracking
 
-  const DEFAULT_PROBLEM_ID = Object.keys(PROBLEMS)[0];
-  const [currentProblemId, setCurrentProblemId] = useState(DEFAULT_PROBLEM_ID);
+  const [problemList, setProblemList] = useState([]);
+  const [currentProblem, setCurrentProblem] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
   const [selectedLanguage, setSelectedLanguage] = useState("javascript");
 
   // Track code for all languages separately so switching doesn't wipe them out
@@ -64,20 +69,46 @@ function ProblemPage() {
   const [layoutMode, setLayoutMode] = useState("default"); // 'default' | 'columns' | 'focus'
   const [isAiChatOpen, setIsAiChatOpen] = useState(false); // <-- NEW AI STATE
 
-  const currentProblem = PROBLEMS[currentProblemId] ?? null;
+  const currentProblemId = id || "";
 
-  // Initialize per-language code cache when problem changes
+  // Fetch problem list for sidebar navigating
   useEffect(() => {
-    if (id && PROBLEMS[id]) {
-      setCurrentProblemId(id);
-
-      const defaultCodes = {};
-      Object.entries(PROBLEMS[id].starterCode).forEach(([lang, src]) => {
-        defaultCodes[lang] = src;
-      });
-      setCodePerLanguage(defaultCodes);
-      setOutput(null);
+    async function fetchList() {
+      try {
+        const res = await getProblems({ limit: 1000 });
+        if (res.problems) setProblemList(res.problems);
+      } catch (err) {
+        console.error("Failed to fetch problem list:", err);
+      }
     }
+    fetchList();
+  }, []);
+
+  // Fetch current problem details
+  useEffect(() => {
+    async function fetchProblem() {
+      if (!id) return;
+      setIsLoading(true);
+      try {
+        const problemData = await getProblemBySlug(id);
+        setCurrentProblem(problemData);
+        
+        const defaultCodes = {};
+        if (problemData && problemData.starterCode) {
+          Object.entries(problemData.starterCode).forEach(([lang, src]) => {
+            defaultCodes[lang] = src;
+          });
+        }
+        setCodePerLanguage(defaultCodes);
+        setOutput(null);
+      } catch (err) {
+        console.error("Failed to fetch problem details:", err);
+        setCurrentProblem(null);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchProblem();
   }, [id]);
 
   // --- TIMER & STOPWATCH LOGIC ---
@@ -161,36 +192,47 @@ function ProblemPage() {
       [selectedLanguage]: currentProblem.starterCode[selectedLanguage]
     }));
     toast.success("Code reset back to starter code.");
+
+    if (userId) {
+      trackProblemEvent({
+        userId,
+        problemSlug: currentProblemId,
+        actionType: "code_reset",
+        language: selectedLanguage
+      });
+    }
   };
 
-  const handleProblemChange = (newProblemId) => navigate(`/problem/${newProblemId}`);
+  const handleProblemChange = (newProblemId) => {
+    if (!newProblemId) return;
+    navigate(`/problem/${newProblemId}`);
+  };
 
   // --- NAVIGATION LOGIC ---
-  const problemIds = Object.keys(PROBLEMS);
-  const currentIndex = problemIds.indexOf(currentProblemId);
-  const isFirstProblem = currentIndex === 0;
-  const isLastProblem = currentIndex === problemIds.length - 1;
+  const currentIndex = problemList.findIndex(p => p.id === id);
+  const isFirstProblem = currentIndex <= 0;
+  const isLastProblem = currentIndex === problemList.length - 1 || currentIndex === -1;
 
   const handlePrevProblem = () => {
     if (!isFirstProblem) {
-      handleProblemChange(problemIds[currentIndex - 1]);
+      handleProblemChange(problemList[currentIndex - 1].id);
     }
   };
 
   const handleNextProblem = () => {
-    if (!isLastProblem) {
-      handleProblemChange(problemIds[currentIndex + 1]);
+    if (!isLastProblem && currentIndex !== -1) {
+      handleProblemChange(problemList[currentIndex + 1].id);
     }
   };
 
   const handleRandomProblem = () => {
-    if (problemIds.length <= 1) return;
+    if (problemList.length <= 1) return;
     let randomIndex;
     do {
-      randomIndex = Math.floor(Math.random() * problemIds.length);
+      randomIndex = Math.floor(Math.random() * problemList.length);
     } while (randomIndex === currentIndex);
     
-    handleProblemChange(problemIds[randomIndex]);
+    handleProblemChange(problemList[randomIndex].id);
   };
 
   const triggerConfetti = () => {
@@ -256,6 +298,20 @@ function ProblemPage() {
     } else {
       toast.error(finalVerdict === "Wrong Answer" ? "Wrong Answer. Output does not match expected." : (finalVerdict || "Error"));
     }
+
+    if (userId) {
+      trackProblemEvent({
+        userId,
+        problemSlug: currentProblemId,
+        actionType: "run",
+        language: selectedLanguage,
+        verdict: finalVerdict,
+        runtimeMs: result.executionTime || 0,
+        memoryKb: 0,
+        timeSpentSeconds: timeElapsed > 0 ? timeElapsed : 0,
+        mode: "practice"
+      });
+    }
   };
 
   const handleSubmitCode = async () => {
@@ -273,15 +329,39 @@ function ProblemPage() {
 
     setIsSubmitting(false);
 
-    if (result.success && result.verdict === "Accepted") {
+    const actualVerdict = result.success && result.verdict === "Accepted" ? "Accepted" : result.verdict || "Error";
+
+    if (actualVerdict === "Accepted") {
       triggerConfetti();
       toast.success("Accepted! All tests passed.");
     } else if (result.success) {
-      toast.error(`Submission failed: ${result.verdict}`);
+      toast.error(`Submission failed: ${actualVerdict}`);
     } else {
       toast.error("Code submission encountered an error.");
     }
+
+    if (userId) {
+      trackProblemEvent({
+        userId,
+        problemSlug: currentProblemId,
+        actionType: "submit",
+        language: selectedLanguage,
+        verdict: actualVerdict,
+        runtimeMs: result.executionTime || 0,
+        memoryKb: 0,
+        timeSpentSeconds: timeElapsed > 0 ? timeElapsed : 0,
+        mode: "practice"
+      });
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="h-screen bg-[#111113] flex items-center justify-center">
+        <div className="text-white">Loading problem data...</div>
+      </div>
+    );
+  }
 
   if (!currentProblem) {
     return (
@@ -381,7 +461,7 @@ function ProblemPage() {
 
               {/* Sidebar Problems List (Pills) */}
               <div className="flex-1 overflow-y-auto px-3 pb-4 space-y-2 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-thumb]:bg-[#3e3e42] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-track]:bg-transparent">
-                {Object.values(PROBLEMS).map((p, index) => {
+                {problemList.map((p, index) => {
                   const isActive = p.id === currentProblemId;
                   return (
                     <div
@@ -419,7 +499,7 @@ function ProblemPage() {
         {layoutMode === 'default' && (
           <PanelGroup direction="horizontal" className="flex-1">
             <Panel defaultSize={isAiChatOpen ? 40 : 50} minSize={25} className="bg-[#1b1b1f] rounded-lg border border-[#111113] flex flex-col overflow-hidden transition-all duration-300">
-              <ProblemDescription problem={currentProblem} currentProblemId={currentProblemId} onProblemChange={handleProblemChange} allProblems={Object.values(PROBLEMS)} />
+              <ProblemDescription problem={currentProblem} currentProblemId={currentProblemId} onProblemChange={handleProblemChange} allProblems={problemList} />
             </Panel>
             
             <PanelResizeHandle className="w-2 cursor-col-resize hover:bg-[#3e3e42]/50 transition-colors" />
@@ -462,7 +542,7 @@ function ProblemPage() {
         {layoutMode === 'columns' && (
           <PanelGroup direction="horizontal" className="flex-1">
             <Panel defaultSize={isAiChatOpen ? 25 : 33} minSize={20} className="bg-[#1b1b1f] rounded-lg border border-[#111113] flex flex-col overflow-hidden transition-all duration-300">
-              <ProblemDescription problem={currentProblem} currentProblemId={currentProblemId} onProblemChange={handleProblemChange} allProblems={Object.values(PROBLEMS)} />
+              <ProblemDescription problem={currentProblem} currentProblemId={currentProblemId} onProblemChange={handleProblemChange} allProblems={problemList} />
             </Panel>
             <PanelResizeHandle className="w-2 cursor-col-resize hover:bg-[#3e3e42]/50 transition-colors" />
             <Panel defaultSize={isAiChatOpen ? 25 : 33} minSize={20} className="bg-[#1b1b1f] rounded-lg border border-[#111113] flex flex-col overflow-hidden transition-all duration-300">
