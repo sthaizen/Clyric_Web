@@ -74,12 +74,8 @@ function SessionPage() {
       
       setLoadingProblem(true);
       try {
-        // Backwards compatibility trick for current backend data storing the title instead of slug:
-        // Search by title or slug depending on what was stored.
-        // First get all to find slug if title is stored.
         let slugToFetch = session.problem;
         
-        // This handles cases where session.problem is "Two Sum" instead of "two-sum"
         if (problemList.length > 0) {
            const match = problemList.find(p => p.title === session.problem || p.id === session.problem);
            if (match) slugToFetch = match.id;
@@ -89,15 +85,22 @@ function SessionPage() {
         setCurrentProblem(data);
       } catch (err) {
         console.error("Failed to load session problem", err);
+        // If it really fails to fetch a specific problem, we should ideally handle it
+        // but not necessarily trigger the global "Not Found" UI if the session itself exists.
+        setCurrentProblem(null);
       } finally {
         setLoadingProblem(false);
       }
     }
     
+    // Only attempt to load problem if we have a session problem string
     if (session?.problem) {
       loadProblemData();
+    } else if (!loadingSession && !session) {
+      // If session fetch is done and there's no session, we won't have a problem to load
+      setLoadingProblem(false);
     }
-  }, [session?.problem, problemList]);
+  }, [session?.problem, problemList, loadingSession]);
 
   const currentProblemId = currentProblem?.id;
 
@@ -314,25 +317,27 @@ function SessionPage() {
     }
   };
 
-  if ((!currentProblem && !loadingSession && !loadingProblem) || (!session && !loadingSession)) {
+  // --- RENDER LOGIC ---
+
+  // 1. Show global loading state if we are still fetching session OR initial problem data
+  if (loadingSession || (session?.problem && loadingProblem && !currentProblem)) {
     return (
-      <div className="h-screen bg-[#111113] flex flex-col">
-        <div className="flex-1 flex flex-col items-center justify-center gap-4">
-          <h1 className="text-3xl font-bold text-white">Problem/Session Not Found</h1>
-          <button className="px-4 py-2 bg-[#2cbb5d] text-white rounded-md hover:bg-[#2cbb5d]/90" onClick={() => navigate("/dashboard")}>
-            Back to Dashboard
-          </button>
-        </div>
+      <div className="h-screen bg-[#111113] flex items-center justify-center text-white">
+        <Loader2 className="w-8 h-8 animate-spin text-[#2cbb5d]" />
       </div>
     );
   }
 
-  if (loadingSession || loadingProblem) {
-    return (
-      <div className="h-screen bg-[#111113] flex items-center justify-center text-white">
-        <Loader2 className="w-8 h-8 animate-spin" />
-      </div>
-    )
+  // 2. Show "Blank Screen" if session hasn't arrived yet
+  // This prevents the "Not Found" flash. If it stayed blank for longer than 3 seconds, 
+  // we could show an error, but for now we'll just keep it blank as requested.
+  if (!loadingSession && !session) {
+    return <div className="h-screen bg-[#111113]" />;
+  }
+
+  // 3. Optional: Problem data failed to load - also show blank or subtle message
+  if (session && session.problem && !currentProblem && !loadingProblem) {
+    return <div className="h-screen bg-[#111113]" />;
   }
 
   const showNavTime = isTimerActive || timeElapsed > 0 || timeRemaining > 0;
