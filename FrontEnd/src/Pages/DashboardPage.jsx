@@ -16,6 +16,7 @@ import DashboardDifficultyStats from "../components/dashboard/DashboardDifficult
 import DashboardTopicStats from "../components/dashboard/DashboardTopicStats";
 import DashboardLanguageUsage from "../components/dashboard/DashboardLanguageUsage";
 import DashboardRecentActivity from "../components/dashboard/DashboardRecentActivity";
+import DashboardContributionGraph from "../components/dashboard/DashboardContributionGraph"; // <-- Added Import
 import StatsCards from "../components/StatsCards.jsx";
 
 function DashboardPage() {
@@ -103,12 +104,10 @@ function DashboardPage() {
     <>
       <div className="min-h-screen bg-[#111113] text-gray-200 font-sans selection:bg-indigo-500/30">
 
-        {/* INLINE NAVBAR (Truncated for brevity, keep your existing navbar) */}
+        {/* INLINE NAVBAR */}
         <nav style={{ height: 56, background: '#1b1b1f', borderBottom: '1px solid #2c2c35', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', position: 'sticky', top: 0, zIndex: 100, flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            {/* Wrapped logo in an anchor tag pointing to "/" */}
             <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 6, marginRight: 20, cursor: 'pointer', textDecoration: 'none' }}>
-              {/* Logo */}
               <div className="flex flex-col gap-[2px]">
                 <div className="w-[16px] h-[4px] rounded-[2px] rounded-tl-sm bg-[#F3F3EF]"></div>
                 <div className="flex gap-[2px]">
@@ -250,33 +249,13 @@ function DashboardPage() {
               </div>
             </div>
 
-
-
             {/* RIGHT COLUMN: Main Content */}
             <div className="xl:col-span-9 flex flex-col gap-6">
 
+              
+
+                  <DashboardContributionGraph data={analyticsData} />
               <WelcomeSection onCreateSession={() => setShowCreateModal(true)} />
-
-              {loadingAnalytics ? (
-                <div className="h-24 w-full bg-[#1b1b1f] animate-pulse rounded-lg border border-[#231c2f]"></div>
-              ) : (
-                <DashboardOverviewCards data={analyticsData} />
-              )}
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {loadingAnalytics ? (
-                  <>
-                    <div className="h-64 w-full bg-[#1b1b1f] animate-pulse rounded-lg border border-[#231c2f]"></div>
-                    <div className="h-64 w-full bg-[#1b1b1f] animate-pulse rounded-lg border border-[#231c2f]"></div>
-                  </>
-                ) : (
-                  <>
-                    <DashboardDifficultyStats data={analyticsData} />
-                    <DashboardTopicStats data={analyticsData} />
-                  </>
-                )}
-              </div>
-
               <ActiveSessions sessions={activeSessions} isLoading={loadingActiveSessions} isUserInSession={isUserInSession} />
               <RecentSessions sessions={recentSessions} isLoading={loadingRecentSessions} />
             </div>
