@@ -355,26 +355,20 @@ function ProblemPage() {
     }
   };
 
+  // --- RENDER LOGIC ---
   if (isLoading) {
     return (
-      <div className="h-screen bg-[#111113] flex items-center justify-center">
-        <div className="text-white">Loading problem data...</div>
+      <div className="h-screen bg-[#111113] flex items-center justify-center text-white">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-4 border-t-indigo-500 border-indigo-500/20 rounded-full animate-spin"></div>
+          <span className="text-sm font-medium text-gray-400">Loading problem data...</span>
+        </div>
       </div>
     );
   }
 
   if (!currentProblem) {
-    return (
-      <div className="h-screen bg-[#111113] flex flex-col">
-        <div className="flex-1 flex flex-col items-center justify-center gap-4">
-          <h1 className="text-3xl font-bold text-white">Problem Not Found</h1>
-          <p className="text-gray-400">The problem &ldquo;{id}&rdquo; does not exist.</p>
-          <button className="px-4 py-2 bg-[#2cbb5d] text-white rounded-md hover:bg-[#2cbb5d]/90" onClick={() => navigate("/problems")}>
-            Back to Problems
-          </button>
-        </div>
-      </div>
-    );
+    return <div className="h-screen bg-[#111113]" />;
   }
 
   // Determine if we should show the active time next to the nav icon
