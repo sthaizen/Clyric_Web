@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { PROBLEMS } from '../data/problem';
+import { getProblems, getTopicMetadata } from '../lib/api/problems';
 import assets from "../assets/assets";
 import { SignInButton, SignedOut, SignedIn, UserButton } from "@clerk/clerk-react";
 import {
@@ -97,18 +97,28 @@ export default function LeetCodeClone() {
   const handleNextCompanyPage = () => setCompanyPage(p => Math.min(totalCompanyPages - 1, p + 1));
 
   // --- PROBLEM LIST LOGIC ---
-  const allProblems = Object.values(PROBLEMS);
+  const [allProblems, setAllProblems] = useState([]);
+  const [dynamicTopics, setDynamicTopics] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const dynamicTopics = useMemo(() => {
-    const counts = allProblems.reduce((acc, prob) => {
-      const cat = prob.category || 'Uncategorized';
-      acc[cat] = (acc[cat] || 0) + 1;
-      return acc;
-    }, {});
-    return Object.entries(counts)
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => b.count - a.count);
-  }, [allProblems]);
+  useEffect(() => {
+    async function loadData() {
+      setIsLoading(true);
+      try {
+        const [probRes, metaRes] = await Promise.all([
+          getProblems({ limit: 1000 }), 
+          getTopicMetadata()
+        ]);
+        setAllProblems(probRes.problems || []);
+        setDynamicTopics(metaRes.topics || []);
+      } catch (err) {
+        console.error("Failed to load problems:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadData();
+  }, []);
 
   const counts = useMemo(() => ({
     Easy: allProblems.filter(p => p.difficulty === 'Easy').length,
@@ -372,7 +382,9 @@ export default function LeetCodeClone() {
               <span style={{ textAlign:'right' }}>Frequency</span>
             </div>
 
-            {filteredProblems.length === 0 ? (
+            {isLoading ? (
+              <div style={{ padding:40, textAlign:'center', color:'#6b7280' }}>Loading problems...</div>
+            ) : filteredProblems.length === 0 ? (
               <div style={{ padding:40, textAlign:'center', color:'#6b7280' }}>No problems found matching your filters.</div>
             ) : filteredProblems.map((problem, idx) => (
               <Link key={problem.id} to={`/problem/${problem.id}`}

@@ -2,18 +2,21 @@ import { useNavigate } from "react-router";
 import { useUser } from "@clerk/clerk-react";
 import { useState, useEffect } from "react";
 import { useActiveSessions, useCreateSession, useMyRecentSessions } from "../hooks/useSessions.js";
-import { CodeIcon, ActivityIcon, ChevronDown, Search, X, Camera } from "lucide-react"; 
+import { useAnalytics } from "../hooks/useAnalytics.js";
+import { CodeIcon, ActivityIcon, ChevronDown, Search, X, Camera } from "lucide-react";
 import { SignInButton, SignedOut, SignedIn, UserButton } from "@clerk/clerk-react";
 
 import WelcomeSection from "../components/WelcomeSection";
-import StatsCards from "../components/StatsCards";
 import ActiveSessions from "../components/ActiveSessions";
 import RecentSessions from "../components/RecentSessions";
 import CreateSessionModal from "../components/CreateSessionModal";
 
-
-import ProblemStats from "../components/ProblemStats";
-import BadgesCard from "../components/BadgesCard";
+import DashboardOverviewCards from "../components/dashboard/DashboardOverviewCards";
+import DashboardDifficultyStats from "../components/dashboard/DashboardDifficultyStats";
+import DashboardTopicStats from "../components/dashboard/DashboardTopicStats";
+import DashboardLanguageUsage from "../components/dashboard/DashboardLanguageUsage";
+import DashboardRecentActivity from "../components/dashboard/DashboardRecentActivity";
+import StatsCards from "../components/StatsCards.jsx";
 
 function DashboardPage() {
   const navigate = useNavigate();
@@ -24,7 +27,7 @@ function DashboardPage() {
   // --- Profile State ---
   const [profileData, setProfileData] = useState({
     name: user?.fullName || user?.firstName || "Developer",
-    nickname: "", 
+    nickname: "",
     description: "Let others know about You",
     profilePic: user?.publicMetadata?.profileImage || user?.imageUrl || ""
   });
@@ -36,6 +39,7 @@ function DashboardPage() {
   const createSessionMutation = useCreateSession();
   const { data: activeSessionsData, isLoading: loadingActiveSessions } = useActiveSessions();
   const { data: recentSessionsData, isLoading: loadingRecentSessions } = useMyRecentSessions();
+  const { data: analyticsData, isLoading: loadingAnalytics } = useAnalytics(user?.id);
 
   useEffect(() => {
     if (isEditModalOpen) {
@@ -91,19 +95,19 @@ function DashboardPage() {
 
   const MAX_DESC_LENGTH = 80;
   const shouldTruncate = profileData.description.length > MAX_DESC_LENGTH;
-  const displayDescription = isExpanded 
-    ? profileData.description 
+  const displayDescription = isExpanded
+    ? profileData.description
     : profileData.description.slice(0, MAX_DESC_LENGTH) + (shouldTruncate ? "..." : "");
 
   return (
     <>
       <div className="min-h-screen bg-[#111113] text-gray-200 font-sans selection:bg-indigo-500/30">
-        
+
         {/* INLINE NAVBAR (Truncated for brevity, keep your existing navbar) */}
-          <nav style={{ height:56, background:'#1b1b1f', borderBottom:'1px solid #2c2c35', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 16px', position:'sticky', top:0, zIndex:100, flexShrink:0 }}>
-          <div style={{ display:'flex', alignItems:'center' }}>
+        <nav style={{ height: 56, background: '#1b1b1f', borderBottom: '1px solid #2c2c35', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', position: 'sticky', top: 0, zIndex: 100, flexShrink: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center' }}>
             {/* Wrapped logo in an anchor tag pointing to "/" */}
-            <a href="/" style={{ display:'flex', alignItems:'center', gap:6, marginRight:20, cursor:'pointer', textDecoration:'none' }}>
+            <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 6, marginRight: 20, cursor: 'pointer', textDecoration: 'none' }}>
               {/* Logo */}
               <div className="flex flex-col gap-[2px]">
                 <div className="w-[16px] h-[4px] rounded-[2px] rounded-tl-sm bg-[#F3F3EF]"></div>
@@ -116,57 +120,57 @@ function DashboardPage() {
                   <div className="w-[6px] h-[6px] rounded-[2px] rounded-br-sm bg-[#F3F3EF]"></div>
                 </div>
               </div>
-              <span style={{ color:'#fff', fontWeight:700, fontSize:17, letterSpacing:'-0.2px' }}>Clyric</span>
+              <span style={{ color: '#fff', fontWeight: 700, fontSize: 17, letterSpacing: '-0.2px' }}>Clyric</span>
             </a>
-            
+
             {[
-              { label:'Dashboard', link:'/dashboard', active:true },
-              { label:'Problems', link:'/problems' },
-              { label:'Contest', link:'/contest' },
-              { label:'Discuss', link:'/discuss' },
-              { label:'Interview', link:'/interview', caret:true },
-              { label:'Store', link:'/store', caret:true, gold:true },
-            ].map(({label, link, active, caret, gold}) => (
+              { label: 'Dashboard', link: '/dashboard', active: true },
+              { label: 'Problems', link: '/problems' },
+              { label: 'Contest', link: '/contest' },
+              { label: 'Discuss', link: '/discuss' },
+              { label: 'Interview', link: '/interview', caret: true },
+              { label: 'Store', link: '/store', caret: true, gold: true },
+            ].map(({ label, link, active, caret, gold }) => (
               <a
                 key={label}
                 href={link}
                 style={{
-                  height:56,
-                  display:'flex',
-                  alignItems:'center',
-                  padding:'0 12px',
-                  cursor:'pointer',
+                  height: 56,
+                  display: 'flex',
+                  alignItems: 'center',
+                  padding: '0 12px',
+                  cursor: 'pointer',
                   color: active ? '#fff' : gold ? '#ffa116' : '#9ca3af',
                   borderBottom: active ? '2px solid #8a6bfe' : '2px solid transparent',
-                  fontSize:13.5,
+                  fontSize: 13.5,
                   fontWeight: active ? 500 : 400,
-                  gap:4,
-                  textDecoration:'none',
+                  gap: 4,
+                  textDecoration: 'none',
                 }}
               >
-                {label}{caret && <ChevronDown size={13}/>}
+                {label}{caret && <ChevronDown size={13} />}
               </a>
             ))}
           </div>
-          <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-            <div style={{ display:'flex', alignItems:'center', background:'#2c2c35', borderRadius:8, padding:'6px 12px', gap:8, width:200 }}>
-              <Search size={14} color="#6b7280"/>
-              <input placeholder="Search" style={{ background:'transparent', border:'none', outline:'none', color:'#d1d5db', fontSize:13, width:'100%' }}/>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', background: '#2c2c35', borderRadius: 8, padding: '6px 12px', gap: 8, width: 200 }}>
+              <Search size={14} color="#6b7280" />
+              <input placeholder="Search" style={{ background: 'transparent', border: 'none', outline: 'none', color: '#d1d5db', fontSize: 13, width: '100%' }} />
             </div>
             <SignedOut>
-          <SignInButton mode="modal">
-            <button className="text-[13px] font-medium hover:opacity-60 transition-opacity">
-              Register or Login
-            </button>
-          </SignInButton>
-        </SignedOut>
+              <SignInButton mode="modal">
+                <button className="text-[13px] font-medium hover:opacity-60 transition-opacity">
+                  Register or Login
+                </button>
+              </SignInButton>
+            </SignedOut>
 
-        <SignedIn>
-          <UserButton afterSignOutUrl="/" />
-        </SignedIn>
+            <SignedIn>
+              <UserButton afterSignOutUrl="/" />
+            </SignedIn>
             <button
               onClick={() => window.location.href = '/premium'}
-              style={{ background:'#524026', color:'#fba121', border:'none', borderRadius:6, padding:'6px 14px', fontWeight:600, fontSize:13, cursor:'pointer' }}
+              style={{ background: '#524026', color: '#fba121', border: 'none', borderRadius: 6, padding: '6px 14px', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}
             >
               Premium
             </button>
@@ -175,17 +179,17 @@ function DashboardPage() {
 
         <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
-            
+
             {/* LEFT COLUMN: Profile & Stats */}
             <div className="xl:col-span-3 flex flex-col gap-6">
-              
+
               <div className="bg-[#1b1b1f] border border-[#231c2f] rounded-xl p-6 flex flex-col items-center text-center shadow-lg relative">
-                
+
                 <div className="relative mb-4">
                   {profileData.profilePic ? (
-                    <img 
-                      src={profileData.profilePic} 
-                      alt="Profile" 
+                    <img
+                      src={profileData.profilePic}
+                      alt="Profile"
                       className="w-24 h-24 rounded-full border-4 border-[#231c2f] object-cover"
                     />
                   ) : (
@@ -195,19 +199,19 @@ function DashboardPage() {
                   )}
                   <div className="absolute bottom-1 right-1 w-5 h-5 bg-emerald-500 border-2 border-[#1b1b1f] rounded-full"></div>
                 </div>
-                
+
                 <h2 className="text-xl font-bold text-white mb-1">{profileData.name}</h2>
                 {profileData.nickname && (
                   <p className="text-sm text-indigo-400 font-medium mb-1">@{profileData.nickname}</p>
                 )}
                 <p className="text-xs text-gray-400 mb-4">{user?.primaryEmailAddress?.emailAddress}</p>
-                
+
                 <div className="w-full mb-5 text-sm text-gray-400">
                   {profileData.description ? (
                     <div>
                       <p className="text-left break-words">{displayDescription}</p>
                       {shouldTruncate && (
-                        <button 
+                        <button
                           onClick={() => setIsExpanded(!isExpanded)}
                           className="text-indigo-400 hover:text-indigo-300 mt-1 text-xs float-left"
                         >
@@ -220,39 +224,59 @@ function DashboardPage() {
                   )}
                 </div>
 
-                <button 
+                <button
                   onClick={() => setIsEditModalOpen(true)}
                   className="w-full py-2.5 mb-4 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 font-semibold rounded-xl border border-indigo-500/20 transition-all duration-200 text-sm"
                 >
                   Edit Profile
                 </button>
-                
+
                 {/* Status lines */}
                 <div className="w-full pt-4 border-t border-[#231c2f] flex flex-col gap-3 text-sm clear-both">
                   <div className="flex items-center justify-between text-gray-400">
-                    <span className="flex items-center gap-2"><ActivityIcon className="w-4 h-4"/> Status</span>
+                    <span className="flex items-center gap-2"><ActivityIcon className="w-4 h-4" /> Status</span>
                     <span className="text-indigo-400 font-medium">Ready to practice</span>
                   </div>
                   <div className="flex items-center justify-between text-gray-400">
-                    <span className="flex items-center gap-2"><CodeIcon className="w-4 h-4"/> Platform</span>
+                    <span className="flex items-center gap-2"><CodeIcon className="w-4 h-4" /> Platform</span>
                     <span className="text-gray-300">Active Member</span>
                   </div>
                 </div>
               </div>
 
-              <StatsCards activeSessionsCount={activeSessions.length} recentSessionsCount={recentSessions.length} />
-            </div>
-                    
-
-                    
-            {/* RIGHT COLUMN: Main Content */}
-            <div className="xl:col-span-9 flex flex-col gap-8">
-              
-              <WelcomeSection onCreateSession={() => setShowCreateModal(true)} />
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <ProblemStats />
-                <BadgesCard />
+              <StatsCards />
+              <div className="h-[380px]">
+                <DashboardRecentActivity data={analyticsData} />
               </div>
+            </div>
+
+
+
+            {/* RIGHT COLUMN: Main Content */}
+            <div className="xl:col-span-9 flex flex-col gap-6">
+
+              <WelcomeSection onCreateSession={() => setShowCreateModal(true)} />
+
+              {loadingAnalytics ? (
+                <div className="h-24 w-full bg-[#1b1b1f] animate-pulse rounded-lg border border-[#231c2f]"></div>
+              ) : (
+                <DashboardOverviewCards data={analyticsData} />
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {loadingAnalytics ? (
+                  <>
+                    <div className="h-64 w-full bg-[#1b1b1f] animate-pulse rounded-lg border border-[#231c2f]"></div>
+                    <div className="h-64 w-full bg-[#1b1b1f] animate-pulse rounded-lg border border-[#231c2f]"></div>
+                  </>
+                ) : (
+                  <>
+                    <DashboardDifficultyStats data={analyticsData} />
+                    <DashboardTopicStats data={analyticsData} />
+                  </>
+                )}
+              </div>
+
               <ActiveSessions sessions={activeSessions} isLoading={loadingActiveSessions} isUserInSession={isUserInSession} />
               <RecentSessions sessions={recentSessions} isLoading={loadingRecentSessions} />
             </div>
@@ -267,7 +291,7 @@ function DashboardPage() {
       {isEditModalOpen && (
         <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
           <div className="bg-[#1b1b1f] border border-[#231c2f] w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col">
-            
+
             {/* Modal Header */}
             <div className="px-6 py-4 border-b border-[#231c2f] flex justify-between items-center bg-[#151518]">
               <h2 className="text-lg font-bold text-white">Edit Profile</h2>
@@ -278,14 +302,14 @@ function DashboardPage() {
 
             {/* Modal Body */}
             <div className="p-6 flex flex-col gap-5">
-              
+
               {/* Profile Image File Upload */}
               <div className="flex flex-col items-center gap-2">
                 <div className="relative group">
                   {draftData.profilePic ? (
-                    <img 
-                      src={draftData.profilePic} 
-                      alt="Draft Profile" 
+                    <img
+                      src={draftData.profilePic}
+                      alt="Draft Profile"
                       className="w-24 h-24 rounded-full border-2 border-[#3a3a45] object-cover"
                     />
                   ) : (
@@ -293,19 +317,19 @@ function DashboardPage() {
                       {userInitials}
                     </div>
                   )}
-                  
+
                   {/* Hidden File Input */}
-                  <input 
-                    type="file" 
-                    id="profileImageUpload" 
-                    accept="image/*" 
-                    className="hidden" 
+                  <input
+                    type="file"
+                    id="profileImageUpload"
+                    accept="image/*"
+                    className="hidden"
                     onChange={handleImageChange}
                   />
-                  
+
                   {/* Custom Upload Button Overlay */}
-                  <label 
-                    htmlFor="profileImageUpload" 
+                  <label
+                    htmlFor="profileImageUpload"
                     className="absolute bottom-0 right-0 bg-indigo-600 hover:bg-indigo-500 text-white p-2 rounded-full cursor-pointer transition-colors shadow-lg border-2 border-[#1b1b1f]"
                     title="Upload new picture"
                   >
@@ -319,8 +343,8 @@ function DashboardPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-sm font-semibold text-gray-300">Name</label>
-                  <input 
-                    type="text" 
+                  <input
+                    type="text"
                     value={draftData.name}
                     onChange={(e) => setDraftData({ ...draftData, name: e.target.value })}
                     className="w-full bg-[#111113] border border-[#3a3a45] rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-indigo-500 transition-colors"
@@ -330,8 +354,8 @@ function DashboardPage() {
                   <label className="text-sm font-semibold text-gray-300">Nickname</label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">@</span>
-                    <input 
-                      type="text" 
+                    <input
+                      type="text"
                       value={draftData.nickname}
                       onChange={(e) => setDraftData({ ...draftData, nickname: e.target.value })}
                       className="w-full bg-[#111113] border border-[#3a3a45] rounded-lg pl-7 pr-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-indigo-500 transition-colors"
@@ -343,7 +367,7 @@ function DashboardPage() {
               {/* Description Input */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-sm font-semibold text-gray-300">Description</label>
-                <textarea 
+                <textarea
                   value={draftData.description}
                   onChange={(e) => setDraftData({ ...draftData, description: e.target.value })}
                   rows={4}
@@ -356,13 +380,13 @@ function DashboardPage() {
 
             {/* Modal Footer */}
             <div className="px-6 py-4 border-t border-[#231c2f] flex justify-end gap-3 bg-[#151518]">
-              <button 
+              <button
                 onClick={() => setIsEditModalOpen(false)}
                 className="px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white transition-colors"
               >
                 Cancel
               </button>
-              <button 
+              <button
                 onClick={handleSaveProfile}
                 className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-medium transition-colors"
               >
