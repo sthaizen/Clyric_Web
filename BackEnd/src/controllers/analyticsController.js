@@ -232,6 +232,51 @@ export const getDashboardStats = async (req, res) => {
       ? ((agg.totalAccepted / agg.totalSubmissions) * 100).toFixed(1) + "%" 
       : "0.0%";
 
+    // Contribution Graph Aggregation
+    const targetYear = req.query.year ? parseInt(req.query.year) : new Date().getFullYear();
+    const startDate = new Date(`${targetYear}-01-01T00:00:00.000Z`);
+    const endDate = new Date(`${targetYear + 1}-01-01T00:00:00.000Z`);
+
+    const contributionAggregation = await ProblemAnalytics.aggregate([
+      { $match: { userId: userId.toString() } },
+      {
+        $project: {
+          events: {
+            $concatArrays: [
+              { $ifNull: ["$activityDates", []] },
+              { $ifNull: ["$sessionJoinedDates", []] }
+            ]
+          }
+        }
+      },
+      { $unwind: "$events" },
+      { $match: { events: { $gte: startDate, $lt: endDate } } },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$events" }
+          },
+          count: { $sum: 1 }
+        }
+      },
+      { $sort: { _id: 1 } }
+    ]);
+
+    const dailyContributions = contributionAggregation.map(item => {
+      let level = 0;
+      if (item.count === 1) level = 1;
+      else if (item.count === 2) level = 2;
+      else if (item.count === 3) level = 3;
+      else if (item.count === 4) level = 4;
+      else if (item.count >= 5) level = 5;
+
+      return {
+        date: item._id,
+        count: item.count,
+        level: level
+      };
+    });
+
     const result = {
       overview: {
         totalAttempted: agg.totalAttempted,
@@ -262,7 +307,9 @@ export const getDashboardStats = async (req, res) => {
         other: agg.otherErrorCount
       },
       topics,
-      recentSubmissions
+      recentSubmissions,
+      contributionGraph: dailyContributions,
+      dailyContributions: dailyContributions
     };
 
     res.json(result);

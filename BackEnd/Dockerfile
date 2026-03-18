@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y \
 COPY package*.json ./
 
 # Install application dependencies
-RUN npm ci --only=production
+RUN npm ci --omit=dev
 
 # Copy the rest of the application code
 COPY . .

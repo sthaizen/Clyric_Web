@@ -1,5 +1,51 @@
 import { chatClient, streamClient } from "../lib/streamTemp.js";
-import Session from "../models/Session.js"
+import Session from "../models/Session.js";
+import ProblemAnalytics from "../models/ProblemAnalytics.js";
+import AdvancedProblem from "../models/AdvancedProblem.js";
+
+async function trackSessionJoin(userIdStr, problemSlug, isHost) {
+  try {
+    const problem = await AdvancedProblem.findOne({ slug: problemSlug });
+    if (!problem) return;
+    
+    let analytics = await ProblemAnalytics.findOne({ userId: userIdStr, problemId: problem._id });
+    if (!analytics) {
+      analytics = new ProblemAnalytics({
+        userId: userIdStr,
+        problemId: problem._id,
+        problemSlug: problem.slug,
+        titleSnapshot: problem.title,
+        difficultySnapshot: problem.difficulty,
+        categoriesSnapshot: problem.categories,
+        categoryDisplaySnapshot: problem.categoryDisplay
+      });
+    }
+    
+    if (!analytics.sessionJoinedDates) analytics.sessionJoinedDates = [];
+    analytics.sessionJoinedDates.push(new Date());
+    
+    const today = new Date().toISOString().split('T')[0];
+    const lastPracticedStr = analytics.lastPracticedAt ? analytics.lastPracticedAt.toISOString().split('T')[0] : null;
+    if (today !== lastPracticedStr) {
+      analytics.activityDates.push(new Date());
+      analytics.lastPracticedAt = new Date();
+      analytics.streakSnapshot.currentStreak += 1; 
+      if (analytics.streakSnapshot.currentStreak > analytics.streakSnapshot.longestStreak) {
+        analytics.streakSnapshot.longestStreak = analytics.streakSnapshot.currentStreak;
+      }
+    }
+    
+    if (isHost) {
+      analytics.interviewSessionsHosted = (analytics.interviewSessionsHosted || 0) + 1;
+    } else {
+      analytics.interviewSessionsJoined = (analytics.interviewSessionsJoined || 0) + 1;
+    }
+    
+    await analytics.save();
+  } catch (error) {
+    console.error("Failed to track session start/join in analytics:", error);
+  }
+}
 
 export async function createSession(req, res) {
   try {
@@ -38,6 +84,9 @@ export async function createSession(req, res) {
     });
 
     await channel.create();
+
+    // Track for graph
+    trackSessionJoin(userId.toString(), problem, true);
 
     res.status(201).json({ session });
   } catch (error) {
@@ -121,6 +170,9 @@ export async function joinSession(req, res) {
 
     const channel = chatClient.channel("messaging", session.callId);
     await channel.addMembers([clerkId]);
+
+    // Track for graph
+    trackSessionJoin(userId.toString(), session.problem, false);
 
     res.status(200).json({ session });
   } catch (error) {

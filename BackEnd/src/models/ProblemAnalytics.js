@@ -102,6 +102,7 @@ const problemAnalyticsSchema = new mongoose.Schema({
   interviewSessionsHosted: { type: Number, default: 0 },
   collaborativeEditsCount: { type: Number, default: 0 },
   whiteboardOrDiscussionInteractions: { type: Number, default: 0 },
+  sessionJoinedDates: { type: [Date], default: [] },
 
   // History arrays
   attemptHistory: [attemptHistorySchema],

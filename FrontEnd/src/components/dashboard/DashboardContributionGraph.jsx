@@ -1,20 +1,24 @@
 import React, { useState, useMemo } from "react";
 import ContributionGraph from "../ContributionGraph.jsx";
 
-const DashboardContributionGraph = ({ data }) => {
+const DashboardContributionGraph = ({ data, selectedYear, setSelectedYear }) => {
   const contributionData = data?.dailyContributions || data?.contributionGraph || [];
   
   const currentYear = new Date().getFullYear();
-  const [selectedYear, setSelectedYear] = useState(currentYear);
+  // Safe fallback if props aren't provided by parent
+  const [localYear, setLocalYear] = useState(currentYear);
+  const yearToUse = selectedYear || localYear;
+  const setYear = setSelectedYear || setLocalYear;
 
   const totalContributions = useMemo(() => {
     return contributionData.reduce((sum, day) => {
-      if (day.date && day.date.startsWith(selectedYear.toString())) {
+      // Backend already filters by year, but safety check:
+      if (day.date && day.date.startsWith(yearToUse.toString())) {
         return sum + (day.count || 0);
       }
       return sum;
     }, 0);
-  }, [contributionData, selectedYear]);
+  }, [contributionData, yearToUse]);
 
   return (
     // 1. Made the outer wrapper the main card matching your top row
@@ -24,7 +28,7 @@ const DashboardContributionGraph = ({ data }) => {
       <div className="flex-1 min-w-0">
         <div className="flex justify-between items-end mb-4 px-1">
           <h2 className="text-xl text-white font-medium tracking-wide">
-            {totalContributions} Activity in {selectedYear}
+            {totalContributions} Activity in {yearToUse}
           </h2>
           <button className="text-xs text-gray-400 hover:text-indigo-400 transition-colors flex items-center gap-1.5">
             Activity settings
@@ -36,7 +40,7 @@ const DashboardContributionGraph = ({ data }) => {
         <div className="overflow-hidden pt-2">
           <ContributionGraph 
             data={contributionData} 
-            year={selectedYear} 
+            year={yearToUse} 
           />
         </div>
       </div>
@@ -46,10 +50,10 @@ const DashboardContributionGraph = ({ data }) => {
         {[currentYear, currentYear - 1].map((yearOption) => (
           <button
             key={yearOption}
-            onClick={() => setSelectedYear(yearOption)}
+            onClick={() => setYear(yearOption)}
             // 3. Cleaned up the active state to be a subtle wash of indigo, not a heavy block
             className={`text-left px-4 py-2.5 text-[13px] rounded-lg transition-all duration-200 ${
-              selectedYear === yearOption
+              yearToUse === yearOption
                 ? "bg-indigo-500/10 text-indigo-400 font-medium"
                 : "text-gray-400 hover:bg-white/[0.04] hover:text-gray-200"
             }`}
