@@ -176,81 +176,97 @@ function DashboardPage() {
           </div>
         </nav>
 
-        <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
+        <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-5 py-8">
+          <div className="grid grid-cols-1 xl:grid-cols-12 gap-5">
 
             {/* LEFT COLUMN: Profile & Stats */}
-            <div className="xl:col-span-3 flex flex-col gap-6">
+            <div className="xl:col-span-3 flex flex-col gap-4">
 
-              <div className="bg-[#1b1b1f] border border-[#231c2f] rounded-xl p-6 flex flex-col items-center text-center shadow-lg relative">
-
-                <div className="relative mb-4">
+             <div className="bg-[#1b1b1f] border border-[#231c2f] rounded-xl p-5 w-full shadow-sm">
+  
+              {/* Top Section: Avatar + User Info */}
+              <div className="flex items-center gap-4 mb-5">
+                {/* Avatar */}
+                <div className="relative shrink-0">
                   {profileData.profilePic ? (
                     <img
                       src={profileData.profilePic}
                       alt="Profile"
-                      className="w-24 h-24 rounded-full border-4 border-[#231c2f] object-cover"
+                      className="w-20 h-20 rounded-xl object-cover" 
                     />
                   ) : (
-                    <div className="w-24 h-24 rounded-full border-4 border-[#231c2f] bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-2xl font-bold text-white">
+                    <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-2xl font-bold text-white">
                       {userInitials}
                     </div>
                   )}
-                  <div className="absolute bottom-1 right-1 w-5 h-5 bg-emerald-500 border-2 border-[#1b1b1f] rounded-full"></div>
+                  {/* Kept your status dot, but adjusted position for the square corners */}
+                  <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-[3px] border-[#1b1b1f] rounded-full"></div>
                 </div>
 
-                <h2 className="text-xl font-bold text-white mb-1">{profileData.name}</h2>
-                {profileData.nickname && (
-                  <p className="text-sm text-indigo-400 font-medium mb-1">@{profileData.nickname}</p>
-                )}
-                <p className="text-xs text-gray-400 mb-4">{user?.primaryEmailAddress?.emailAddress}</p>
-
-                <div className="w-full mb-5 text-sm text-gray-400">
-                  {profileData.description ? (
-                    <div>
-                      <p className="text-left break-words">{displayDescription}</p>
-                      {shouldTruncate && (
-                        <button
-                          onClick={() => setIsExpanded(!isExpanded)}
-                          className="text-indigo-400 hover:text-indigo-300 mt-1 text-xs float-left"
-                        >
-                          {isExpanded ? "Show less" : "Show more"}
-                        </button>
-                      )}
-                    </div>
-                  ) : (
-                    <span className="italic opacity-50">No description provided.</span>
+                {/* Identity Info */}
+                <div className="flex flex-col overflow-hidden">
+                  <h2 className="text-lg font-semibold text-white truncate">{profileData.name}</h2>
+                  
+                  {profileData.nickname && (
+                    <p className="text-sm text-gray-400 truncate">@{profileData.nickname}</p>
                   )}
-                </div>
-
-                <button
-                  onClick={() => setIsEditModalOpen(true)}
-                  className="w-full py-2.5 mb-4 bg-indigo-500/10 hover:bg-indigo-500/20 text-indigo-400 font-semibold rounded-xl border border-indigo-500/20 transition-all duration-200 text-sm"
-                >
-                  Edit Profile
-                </button>
-
-                {/* Status lines */}
-                <div className="w-full pt-4 border-t border-[#231c2f] flex flex-col gap-3 text-sm clear-both">
-                  <div className="flex items-center justify-between text-gray-400">
-                    <span className="flex items-center gap-2"><ActivityIcon className="w-4 h-4" /> Status</span>
-                    <span className="text-indigo-400 font-medium">Ready to practice</span>
-                  </div>
-                  <div className="flex items-center justify-between text-gray-400">
-                    <span className="flex items-center gap-2"><CodeIcon className="w-4 h-4" /> Platform</span>
-                    <span className="text-gray-300">Active Member</span>
-                  </div>
+                  
+                  <p className="text-xs text-gray-500 truncate mt-0.5">
+                    {user?.primaryEmailAddress?.emailAddress}
+                  </p>
                 </div>
               </div>
+
+              {/* Edit Profile Button */}
+              <button
+                onClick={() => setIsEditModalOpen(true)}
+                className="w-full py-2 mb-5 bg-[#2a2538] hover:bg-[#342e45] text-indigo-300 font-medium rounded-lg border border-[#3b3350] transition-colors text-sm"
+              >
+                Edit Profile
+              </button>
+
+              {/* Description Section */}
+              <div className="w-full mb-6 text-sm text-gray-400">
+                {profileData.description ? (
+                  <div>
+                    <p className="text-left break-words">{displayDescription}</p>
+                    {shouldTruncate && (
+                      <button
+                        onClick={() => setIsExpanded(!isExpanded)}
+                        className="text-indigo-400 hover:text-indigo-300 mt-1 text-xs float-left"
+                      >
+                        {isExpanded ? "Show less" : "Show more"}
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <span className="opacity-80">Let others know about You</span>
+                )}
+              </div>
+
+              {/* Bottom Status Lines (Styled exactly like the list in the screenshot) */}
+              <div className="w-full flex flex-col gap-3 text-sm text-gray-400">
+                <div className="flex items-center gap-2">
+                  <ActivityIcon className="w-4 h-4 shrink-0" />
+                  <span className="truncate">Status: <span className="text-gray-300">Ready to practice</span></span>
+                </div>
+                
+                <div className="flex items-center gap-2">
+                  <CodeIcon className="w-4 h-4 shrink-0" />
+                  <span className="truncate">Platform: <span className="text-gray-300">Active Member</span></span>
+                </div>
+              </div>
+              
+            </div>
 
               <StatsCards />
-              <div className="h-[380px]">
+              {/* <div className="h-[380px]">
                 <DashboardRecentActivity data={analyticsData} />
-              </div>
+              </div> */}
             </div>
 
             {/* RIGHT COLUMN: Main Content */}
-            <div className="xl:col-span-9 flex flex-col gap-6">
+            <div className="xl:col-span-9 flex flex-col gap-4">
 
               
 
