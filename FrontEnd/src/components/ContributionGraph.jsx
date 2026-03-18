@@ -198,7 +198,7 @@ export function ContributionGraph({
     <div className={`contribution-graph relative w-full ${className}`}>
       <div className="overflow-x-auto overflow-y-hidden pb-2 scrollbar-hide">
         {/* Slightly increased border spacing to let the grid breathe */}
-        <table className="border-collapse" style={{ borderSpacing: '3px', borderCollapse: 'separate' }}>
+        <table className="border-collapse" style={{ borderSpacing: '5px', borderCollapse: 'separate' }}>
           <caption className="sr-only">Contribution Graph for {year}</caption>
 
           {/* Month Headers */}

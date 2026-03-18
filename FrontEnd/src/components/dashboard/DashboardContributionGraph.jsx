@@ -42,7 +42,7 @@ const DashboardContributionGraph = ({ data }) => {
       </div>
 
       {/* Right Sidebar - Year Navigation */}
-      <div className="w-full md:w-[120px] md:pt-10 flex flex-col gap-1.5 shrink-0">
+      <div className="w-full md:w-[150px] md:pt-10 flex flex-col gap-1.5 shrink-0">
         {[currentYear, currentYear - 1].map((yearOption) => (
           <button
             key={yearOption}
