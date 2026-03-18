@@ -12,7 +12,6 @@
     "@stream-io/node-sdk": "^0.7.12",
     "compression": "^1.8.1",
     "cors": "^2.8.5",
-    "development": "file:..",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "express-rate-limit": "^8.3.1",

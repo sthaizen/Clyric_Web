@@ -25,7 +25,8 @@ const CONTRIBUTION_COLORS = [
   "bg-indigo-500/30",     // Level 1
   "bg-indigo-500/50",     // Level 2
   "bg-indigo-500/80",     // Level 3
-  "bg-indigo-500",        // Level 4 - Max
+  "bg-indigo-500",        // Level 4
+  "bg-indigo-600",        // Level 5 - Max
 ];
 
 const LEVEL_0 = 0;
@@ -33,7 +34,8 @@ const LEVEL_1 = 1;
 const LEVEL_2 = 2;
 const LEVEL_3 = 3;
 const LEVEL_4 = 4;
-const CONTRIBUTION_LEVELS = [LEVEL_0, LEVEL_1, LEVEL_2, LEVEL_3, LEVEL_4];
+const LEVEL_5 = 5;
+const CONTRIBUTION_LEVELS = [LEVEL_0, LEVEL_1, LEVEL_2, LEVEL_3, LEVEL_4, LEVEL_5];
 const DAY_1 = 1;
 const DAY_31 = 31;
 
@@ -49,7 +51,10 @@ const isDateInValidRange = (currentDate, startDate, endDate, targetYear) => {
 };
 
 const createDayData = (currentDate, contributionData) => {
-  const dateString = currentDate.toISOString().split("T")[0];
+  const year = currentDate.getFullYear();
+  const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+  const day = String(currentDate.getDate()).padStart(2, '0');
+  const dateString = `${year}-${month}-${day}`;
   const existingData = contributionData.find((d) => d.date === dateString);
   return {
     date: dateString,

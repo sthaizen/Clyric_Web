@@ -22,10 +22,13 @@ export async function trackProblemEvent(payload) {
   }
 }
 
-export async function getDashboardStats(userId) {
+export async function getDashboardStats(userId, year) {
   if (!userId) return null;
   try {
-    const response = await fetch(`${API_URL}/problem-analytics/dashboard/${userId}`);
+    const url = year 
+      ? `${API_URL}/problem-analytics/dashboard/${userId}?year=${year}`
+      : `${API_URL}/problem-analytics/dashboard/${userId}`;
+    const response = await fetch(url);
     if (!response.ok) {
       console.warn("Dashboard stats API returned:", response.status);
       return null;

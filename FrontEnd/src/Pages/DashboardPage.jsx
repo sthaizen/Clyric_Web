@@ -24,6 +24,7 @@ function DashboardPage() {
   const { user } = useUser();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [roomConfig, setRoomConfig] = useState({ problem: "", difficulty: "" });
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
   // --- Profile State ---
   const [profileData, setProfileData] = useState({
@@ -40,7 +41,7 @@ function DashboardPage() {
   const createSessionMutation = useCreateSession();
   const { data: activeSessionsData, isLoading: loadingActiveSessions } = useActiveSessions();
   const { data: recentSessionsData, isLoading: loadingRecentSessions } = useMyRecentSessions();
-  const { data: analyticsData, isLoading: loadingAnalytics } = useAnalytics(user?.id);
+  const { data: analyticsData, isLoading: loadingAnalytics } = useAnalytics(user?.id, selectedYear);
 
   useEffect(() => {
     if (isEditModalOpen) {
@@ -270,7 +271,7 @@ function DashboardPage() {
 
               
 
-                  <DashboardContributionGraph data={analyticsData} />
+                  <DashboardContributionGraph data={analyticsData} selectedYear={selectedYear} setSelectedYear={setSelectedYear} />
               <WelcomeSection onCreateSession={() => setShowCreateModal(true)} />
               <ActiveSessions sessions={activeSessions} isLoading={loadingActiveSessions} isUserInSession={isUserInSession} />
               <RecentSessions sessions={recentSessions} isLoading={loadingRecentSessions} />

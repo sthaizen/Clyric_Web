@@ -18,7 +18,7 @@ const EMPTY_DATA = {
   recentSubmissions: []
 };
 
-export function useAnalytics(userId) {
+export function useAnalytics(userId, year) {
   const [data, setData] = useState(EMPTY_DATA);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -34,7 +34,7 @@ export function useAnalytics(userId) {
       try {
         setIsLoading(true);
         setError(null);
-        const result = await getDashboardStats(userId);
+        const result = await getDashboardStats(userId, year);
         if (!cancelled) {
           setData(result || EMPTY_DATA);
         }
@@ -54,7 +54,7 @@ export function useAnalytics(userId) {
     fetchData();
 
     return () => { cancelled = true; };
-  }, [userId]);
+  }, [userId, year]);
 
   return { data, isLoading, error };
 }
