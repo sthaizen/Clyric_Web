@@ -3,7 +3,7 @@ import { useUser } from "@clerk/clerk-react";
 import { useState, useEffect } from "react";
 import { useActiveSessions, useCreateSession, useMyRecentSessions } from "../hooks/useSessions.js";
 import { useAnalytics } from "../hooks/useAnalytics.js";
-import { CodeIcon, ActivityIcon, ChevronDown, Search, X, Camera } from "lucide-react";
+import { CodeIcon, ActivityIcon, ChevronDown, Search, X, Camera, BarChart3 } from "lucide-react";
 import { SignInButton, SignedOut, SignedIn, UserButton } from "@clerk/clerk-react";
 
 import WelcomeSection from "../components/WelcomeSection";
@@ -25,6 +25,7 @@ function DashboardPage() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [roomConfig, setRoomConfig] = useState({ problem: "", difficulty: "" });
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [showAnalytics, setShowAnalytics] = useState(false);
 
   // --- Profile State ---
   const [profileData, setProfileData] = useState({
@@ -157,6 +158,22 @@ function DashboardPage() {
               <Search size={14} color="#6b7280" />
               <input placeholder="Search" style={{ background: 'transparent', border: 'none', outline: 'none', color: '#d1d5db', fontSize: 13, width: '100%' }} />
             </div>
+            <button
+              onClick={() => setShowAnalytics(prev => !prev)}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                background: showAnalytics ? '#3b2d6b' : '#2a2538',
+                color: showAnalytics ? '#a78bfa' : '#a5b4fc',
+                border: '1px solid',
+                borderColor: showAnalytics ? '#5b4a9e' : '#3b3350',
+                borderRadius: 8, padding: '6px 14px',
+                fontWeight: 600, fontSize: 13, cursor: 'pointer',
+                transition: 'all 0.2s ease'
+              }}
+            >
+              <BarChart3 size={14} />
+              {showAnalytics ? 'Dashboard' : 'View Analytics'}
+            </button>
             <SignedOut>
               <SignInButton mode="modal">
                 <button className="text-[13px] font-medium hover:opacity-60 transition-opacity">
@@ -180,7 +197,7 @@ function DashboardPage() {
         <div className="max-w-[1500px] mx-auto px-4 sm:px-6 lg:px-5 py-8">
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-5">
 
-            {/* LEFT COLUMN: Profile & Stats */}
+            {/* LEFT COLUMN: Profile & Stats — ALWAYS VISIBLE */}
             <div className="xl:col-span-3 flex flex-col gap-4">
 
              <div className="bg-[#1b1b1f] border border-[#231c2f] rounded-xl p-5 w-full shadow-sm">
@@ -266,15 +283,44 @@ function DashboardPage() {
               </div> */}
             </div>
 
-            {/* RIGHT COLUMN: Main Content */}
+            {/* RIGHT COLUMN: Toggles between Sessions and Analytics */}
             <div className="xl:col-span-9 flex flex-col gap-4">
 
-              
-
+              {/* ===== DEFAULT DASHBOARD CONTENT ===== */}
+              {!showAnalytics && (
+                <>
                   <DashboardContributionGraph data={analyticsData} selectedYear={selectedYear} setSelectedYear={setSelectedYear} />
-              <WelcomeSection onCreateSession={() => setShowCreateModal(true)} />
-              <ActiveSessions sessions={activeSessions} isLoading={loadingActiveSessions} isUserInSession={isUserInSession} />
-              <RecentSessions sessions={recentSessions} isLoading={loadingRecentSessions} />
+                  <WelcomeSection onCreateSession={() => setShowCreateModal(true)} />
+                  <ActiveSessions sessions={activeSessions} isLoading={loadingActiveSessions} isUserInSession={isUserInSession} />
+                  <RecentSessions sessions={recentSessions} isLoading={loadingRecentSessions} />
+                </>
+              )}
+
+              {/* ===== ANALYTICS CONTENT ===== */}
+              {showAnalytics && (
+                <>
+                  {loadingAnalytics ? (
+                    <div className="flex items-center justify-center py-20">
+                      <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                      <span className="ml-3 text-gray-400 text-sm">Loading analytics...</span>
+                    </div>
+                  ) : (
+                    <>
+                      <DashboardOverviewCards data={analyticsData} />
+                      <DashboardContributionGraph data={analyticsData} selectedYear={selectedYear} setSelectedYear={setSelectedYear} />
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                        <DashboardDifficultyStats data={analyticsData} />
+                        <DashboardTopicStats data={analyticsData} />
+                      </div>
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+                        <DashboardLanguageUsage data={analyticsData} />
+                        <DashboardRecentActivity data={analyticsData} />
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
+
             </div>
 
           </div>
