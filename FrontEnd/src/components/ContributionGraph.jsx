@@ -1,6 +1,6 @@
 "use client";
 
-import { motion, useReducedMotion } from "motion/react";
+import { motion, useReducedMotion } from "framer-motion";
 import { useMemo, useState } from "react";
 
 const WEEKS_IN_YEAR = 53;
