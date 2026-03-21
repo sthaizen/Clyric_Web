@@ -1,5 +1,8 @@
 import ProblemAnalytics from "../models/ProblemAnalytics.js";
 import AdvancedProblem from "../models/AdvancedProblem.js";
+import Session from "../models/Session.js";
+import User from "../models/User.js";
+import Presence from "../models/Presence.js";
 
 // GET /api/dashboard/:userId?year=YYYY
 export const getDashboardData = async (req, res) => {
@@ -312,5 +315,68 @@ export const getDashboardData = async (req, res) => {
   } catch (error) {
     console.error("Error fetching dashboard data:", error);
     res.status(500).json({ message: "Server error fetching dashboard data" });
+  }
+};
+
+export const getRecommendedPeers = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    // 1. Find sessions involving the user
+    const sessions = await Session.find({
+      $or: [{ host: userId }, { participant: userId }],
+      status: "completed" // Usually peers are from completed sessions
+    })
+    .sort({ createdAt: -1 })
+    .limit(50); // Scan a reasonable amount of history
+
+    const peersMap = new Map();
+
+    for (const session of sessions) {
+      const isHost = session.host.toString() === userId.toString();
+      const peerId = isHost ? session.participant : session.host;
+
+      if (!peerId) continue; // Session might not have a participant yet
+
+      const peerIdStr = peerId.toString();
+      if (!peersMap.has(peerIdStr)) {
+        peersMap.set(peerIdStr, {
+          peerId: peerId,
+          lastProblem: session.problem,
+          lastDifficulty: session.difficulty
+        });
+      }
+      
+      if (peersMap.size >= 5) break; // Limit to 5 unique peers
+    }
+
+    const peerIds = Array.from(peersMap.keys());
+    
+    // 2. Fetch User profiles and Presence
+    const users = await User.find({ _id: { $in: peerIds } });
+    
+    // Get clerkIds for presence lookup
+    const clerkIds = users.map(u => u.clerkId);
+    const presences = await Presence.find({ userId: { $in: clerkIds } });
+    
+    const presenceMap = new Map();
+    presences.forEach(p => presenceMap.set(p.userId, p.status));
+
+    const result = users.map(user => {
+      const peerData = peersMap.get(user._id.toString());
+      return {
+        id: user._id,
+        name: user.nickname || user.name,
+        avatar: user.profileImage,
+        isOnline: presenceMap.get(user.clerkId) === "online",
+        role: peerData.lastProblem, // Using problem name as the "tag" or "role"
+        statusText: presenceMap.get(user.clerkId) === "online" ? "online" : "offline"
+      };
+    });
+
+    res.status(200).json({ peers: result });
+  } catch (error) {
+    console.error("Error fetching recommended peers:", error);
+    res.status(500).json({ message: "Server error fetching recommended peers" });
   }
 };

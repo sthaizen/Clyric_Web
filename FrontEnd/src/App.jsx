@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Route, Routes, Navigate } from "react-router-dom";
 import ReactLenis from "lenis/react";
 import { Toaster } from "react-hot-toast";
 import { useUser } from "@clerk/clerk-react";
+import { socket } from "./lib/socket";
 
 // Page Imports
 import LandingPage from "./Pages/LandingPage";
@@ -21,8 +22,17 @@ import "slick-carousel/slick/slick-theme.css";
 import SessionPage from "./Pages/SessionPage";
 
 const App = () => {
-  const { isSignedIn, isLoaded } = useUser();
+  const { isSignedIn, isLoaded, user } = useUser();
   const [theme, setTheme] = useState("light");
+
+  useEffect(() => {
+    if (isLoaded && isSignedIn && user) {
+      if (!socket.connected) {
+        socket.connect();
+      }
+      socket.emit("user-connected", user.id);
+    }
+  }, [isLoaded, isSignedIn, user]);
 
   if (!isLoaded) return null;
 
