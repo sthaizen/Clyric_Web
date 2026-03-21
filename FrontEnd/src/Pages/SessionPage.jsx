@@ -3,6 +3,7 @@ import { useNavigate, useParams, Link } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import { useEndSession, useJoinSession, useSessionById } from "../hooks/useSessions";
 import { getProblems, getProblemBySlug } from "../lib/api/problems.js";
+import { trackProblemEvent } from "../lib/api/analytics.js";
 
 // Execution & Utilities
 import { runCode, submitCode } from "../lib/codeExecution.js";
@@ -212,6 +213,9 @@ function SessionPage() {
 
   const handleCodeChange = (newCode) => {
     setCode(newCode);
+    if (!isTimerActive && timeElapsed === 0 && timerMode === "stopwatch") {
+      setIsTimerActive(true);
+    }
   };
 
   const handleResetCode = () => {
@@ -290,6 +294,21 @@ function SessionPage() {
 
     if (allPassed && !anyError) toast.success("Accepted! Output matches expected.");
     else toast.error(finalVerdict === "Wrong Answer" ? "Wrong Answer. Output does not match expected." : (finalVerdict || "Error"));
+
+    // Track analytics
+    if (user?.id && currentProblem?.slug) {
+      trackProblemEvent({
+        userId: user.id,
+        problemSlug: currentProblem.slug,
+        actionType: "run",
+        language: selectedLanguage,
+        verdict: finalVerdict,
+        runtimeMs: result.executionTime || 0,
+        memoryKb: 0,
+        timeSpentSeconds: timeElapsed > 0 ? timeElapsed : 0,
+        mode: "interview"
+      });
+    }
   };
 
   const handleSubmitCode = async () => {
@@ -302,12 +321,29 @@ function SessionPage() {
     setIsSubmitting(false);
 
     if (result.success && result.verdict === "Accepted") {
+      setIsTimerActive(false);
       triggerConfetti();
       toast.success("Accepted! All tests passed.");
     } else if (result.success) {
       toast.error(`Submission failed: ${result.verdict}`);
     } else {
       toast.error("Code submission encountered an error.");
+    }
+
+    // Track analytics
+    const actualVerdict = result.success && result.verdict === "Accepted" ? "Accepted" : result.verdict || "Error";
+    if (user?.id && currentProblem?.slug) {
+      trackProblemEvent({
+        userId: user.id,
+        problemSlug: currentProblem.slug,
+        actionType: "submit",
+        language: selectedLanguage,
+        verdict: actualVerdict,
+        runtimeMs: result.executionTime || 0,
+        memoryKb: 0,
+        timeSpentSeconds: timeElapsed > 0 ? timeElapsed : 0,
+        mode: "interview"
+      });
     }
   };
 

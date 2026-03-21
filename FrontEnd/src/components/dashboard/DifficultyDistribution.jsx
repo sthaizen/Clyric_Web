@@ -2,16 +2,20 @@ import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { PieChart as PieChartIcon } from 'lucide-react';
 
-const DifficultyDistribution = () => {
-  const totalAvailable = 600 + 1200 + 400; // 2200
-  const totalSolved = 542 + 612 + 130;     // 1284
-  const unsolved = totalAvailable - totalSolved; // 916
+const DifficultyDistribution = ({ difficulty = {}, totalSolved = 0 }) => {
+  const easy = difficulty.easy || { solved: 0, attempted: 0, total: 0 };
+  const medium = difficulty.medium || { solved: 0, attempted: 0, total: 0 };
+  const hard = difficulty.hard || { solved: 0, attempted: 0, total: 0 };
+
+  const totalAvailable = easy.total + medium.total + hard.total;
+  const solvedCount = easy.solved + medium.solved + hard.solved;
+  const unsolved = Math.max(0, totalAvailable - solvedCount);
 
   const data = [
-    { name: 'Easy', value: 542, total: 600, color: '#6366f1' },   // Vibrant Indigo
-    { name: 'Medium', value: 612, total: 1200, color: '#facc15' }, // Yellow
-    { name: 'Hard', value: 130, total: 400, color: '#fca5a5' },    // Pink
-    { name: 'Unsolved', value: unsolved, total: 0, color: '#111113' }, // Deep dark track
+    { name: 'Easy', value: easy.solved, total: easy.total, color: '#6366f1' },
+    { name: 'Medium', value: medium.solved, total: medium.total, color: '#facc15' },
+    { name: 'Hard', value: hard.solved, total: hard.total, color: '#fca5a5' },
+    { name: 'Unsolved', value: unsolved || 1, total: 0, color: '#111113' },
   ];
 
   return (
@@ -47,7 +51,7 @@ const DifficultyDistribution = () => {
           </ResponsiveContainer>
           
           <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none mt-1">
-            <span className="text-[22px] font-bold text-gray-100 leading-none">1,284</span>
+            <span className="text-[22px] font-bold text-gray-100 leading-none">{solvedCount.toLocaleString()}</span>
             <span className="text-[8px] font-bold uppercase tracking-widest text-gray-500 mt-1">
               TOTAL SOLVED
             </span>

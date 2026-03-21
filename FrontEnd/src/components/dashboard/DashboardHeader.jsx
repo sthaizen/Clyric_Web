@@ -1,7 +1,7 @@
 import React from 'react';
 import { Flame } from 'lucide-react';
 
-const DashboardHeader = () => {
+const DashboardHeader = ({ currentStreak = 0 }) => {
   return (
     <div className="flex justify-between items-center w-full mb-2">
       <div className="flex flex-col gap-1">
@@ -20,7 +20,7 @@ const DashboardHeader = () => {
       CURRENT STREAK
     </span>
     <span className="text-[22px] font-bold text-[#FACC15] leading-none">
-      42 Days
+      {currentStreak} {currentStreak === 1 ? 'Day' : 'Days'}
     </span>
   </div>
   <Flame 

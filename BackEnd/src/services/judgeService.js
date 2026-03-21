@@ -8,7 +8,7 @@
  * 4. Aggregates the results into a final verdict.
  */
 
-import Problem from "../models/Problem.js";
+import AdvancedProblem from "../models/AdvancedProblem.js";
 import { runInJudge } from "../judge/index.js";
 import { compareOutputs } from "../judge/helpers/compareHelper.js";
 
@@ -22,12 +22,12 @@ import { compareOutputs } from "../judge/helpers/compareHelper.js";
  */
 export const judgeSubmission = async (problemId, language, code) => {
   // 1. Load problem
-  const problem = await Problem.findOne({ problemId });
+  const problem = await AdvancedProblem.findOne({ slug: problemId });
   if (!problem) {
     throw new Error(`Problem not found: ${problemId}`);
   }
 
-  const testCases = problem.testCases || [];
+  const testCases = problem.examples || [];
   if (testCases.length === 0) {
     return {
       verdict: "Internal Error",
@@ -69,7 +69,7 @@ export const judgeSubmission = async (problemId, language, code) => {
     }
 
     // 3. Compare output
-    const isCorrect = compareOutputs(runResult.stdout, testCase.expectedOutput);
+    const isCorrect = compareOutputs(runResult.stdout, testCase.output);
     
     if (isCorrect) {
       testCasesPassed++;
@@ -83,7 +83,7 @@ export const judgeSubmission = async (problemId, language, code) => {
       results.push({
         case: i + 1,
         status: "Wrong Answer",
-        expected: testCase.expectedOutput,
+        expected: testCase.output,
         actual: runResult.stdout,
         time: runResult.executionTime,
       });

@@ -181,6 +181,10 @@ function ProblemPage() {
 
   const handleCodeChange = (newCode) => {
     setCodePerLanguage(prev => ({ ...prev, [selectedLanguage]: newCode }));
+    // Auto-start timer on first type if it's a new or reset session
+    if (!isTimerActive && timeElapsed === 0 && timerMode === "stopwatch") {
+      setIsTimerActive(true);
+    }
   };
 
   const currentCode = codePerLanguage[selectedLanguage] || "";
@@ -332,6 +336,7 @@ function ProblemPage() {
     const actualVerdict = result.success && result.verdict === "Accepted" ? "Accepted" : result.verdict || "Error";
 
     if (actualVerdict === "Accepted") {
+      setIsTimerActive(false);
       triggerConfetti();
       toast.success("Accepted! All tests passed.");
     } else if (result.success) {

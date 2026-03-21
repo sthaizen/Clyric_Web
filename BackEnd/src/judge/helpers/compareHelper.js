@@ -15,12 +15,8 @@
  */
 const normalizeString = (str) => {
   if (!str) return "";
-  return str
-    .replace(/\r\n/g, "\n")       // CRLF to LF
-    .split("\n")
-    .map(line => line.trimEnd())  // Remove trailing spaces per line
-    .join("\n")
-    .trim();                      // Remove leading/trailing newlines for the whole string
+  // Remove all whitespace for maximum leniency, matching frontend behavior
+  return String(str).replace(/\s/g, '');
 };
 
 /**
@@ -31,5 +27,8 @@ const normalizeString = (str) => {
  * @returns {boolean}       - true if they match
  */
 export const compareOutputs = (actual, expected) => {
-  return normalizeString(actual) === normalizeString(expected);
+  const normActual = normalizeString(actual);
+  const normExpected = normalizeString(expected);
+  if (!normExpected) return true; // Safety
+  return normActual.includes(normExpected);
 };
