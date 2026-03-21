@@ -1,3 +1,5 @@
+import axiosInstance from "../axios";
+
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
 
 export async function fetchDashboardData(userId, year) {
@@ -15,5 +17,15 @@ export async function fetchDashboardData(userId, year) {
   } catch (error) {
     console.error("Failed to fetch dashboard data:", error);
     return null;
+  }
+}
+
+export async function fetchRecommendedPeers() {
+  try {
+    const response = await axiosInstance.get("/dashboard/peers/recommended");
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch recommended peers:", error);
+    throw error;
   }
 }

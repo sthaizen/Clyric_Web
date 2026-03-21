@@ -1,38 +1,9 @@
-import React, { useState, useEffect } from "react";
-import axiosInstance from "../../lib/axios";
-import { useUser, useAuth } from "@clerk/clerk-react";
-import { socket } from "../../lib/socket";
+import React from "react";
+import { useRecommendedPeers } from "../../hooks/useRecommendedPeers";
 
 const RecommendedConnections = () => {
-  const { user } = useUser();
-  const { getToken } = useAuth();
-  const [peers, setPeers] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    if (!user) return;
-
-    const fetchPeers = async () => {
-      try {
-        const token = await getToken();
-        const response = await axiosInstance.get("/dashboard/peers/recommended", {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setPeers(response.data.peers || []);
-      } catch (error) {
-        console.error("Error fetching recommended peers:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchPeers();
-    if (!socket.connected) socket.connect();
-    socket.emit("user-connected", user.id);
-
-    const interval = setInterval(fetchPeers, 30000);
-    return () => clearInterval(interval);
-  }, [user, getToken]);
+  const { data, isLoading } = useRecommendedPeers();
+  const peers = data?.peers || [];
 
   if (isLoading) {
     return (
@@ -58,7 +29,7 @@ const RecommendedConnections = () => {
           peers.map((peer) => (
             <div
               key={peer.id}
-              className="flex items-center justify-between p-2 rounded-xl transition-colors hover:bg-white/[0.02]"
+              className="flex items-center justify-between p-2 rounded-xl transition-colors hover:bg-white/[0.02] "
             >
               <div className="flex items-center gap-4 min-w-0">
                 {/* Avatar */}
