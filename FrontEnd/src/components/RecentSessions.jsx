@@ -6,11 +6,11 @@ import { formatDistanceToNow } from "date-fns";
 
 function RecentSessions({ sessions, isLoading }) {
   return (
-    <div className="bg-[#1b1b1f] border border-[#231c2f] rounded-xl shadow-sm flex flex-col min-h-[250px] overflow-hidden">
+    <div className="bg-[#16161a] border border-[#231c2f] rounded-xl shadow-sm flex flex-col min-h-[250px] overflow-hidden">
       
       {/* HEADER */}
       <div className="p-5 flex items-start gap-3">
-        <div className="p-2 bg-[#2a1f36] rounded-lg border border-[#3b3350] shrink-0">
+        <div className="p-2 bg-[#2a1f36]/60 rounded-lg border border-[#3b3350] shrink-0">
           <HistoryIcon className="w-5 h-5 text-[#b570e9]" />
         </div>
         <div>
@@ -52,7 +52,7 @@ function RecentSessions({ sessions, isLoading }) {
 
                   <div className="flex items-start gap-3 mb-4">
                     <div className={`shrink-0 w-10 h-10 rounded-lg flex items-center justify-center border ${
-                      isActive ? "bg-[#141d1a] border-emerald-500/30" : "bg-[#2a2538] border-[#3b3350]"
+                      isActive ? "bg-[#141d1a] border-emerald-500/30" : "bg-[#232329] border-[#3b3350]"
                     }`}>
                       <Code2 className={`w-5 h-5 ${isActive ? "text-emerald-500" : "text-indigo-300"}`} />
                     </div>

@@ -12,12 +12,12 @@ import { getDifficultyBadgeClass } from "../lib/utils";
 
 function ActiveSessions({ sessions, isLoading, isUserInSession }) {
   return (
-    <div className="bg-[#1b1b1f] border border-[#231c2f] rounded-xl shadow-sm flex flex-col min-h-[300px] overflow-hidden">
+    <div className="bg-[#16161a] border border-[#231c2f] rounded-xl shadow-sm flex flex-col min-h-[300px] overflow-hidden">
       
       {/* HEADER */}
       <div className="p-5 flex items-start justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-[#2a2538] rounded-lg border border-[#3b3350]">
+          <div className="p-2 bg-[#232329] rounded-lg border border-[#3b3350]">
             <RadioIcon className="w-5 h-5 text-indigo-400" />
           </div>
           <div>
@@ -50,11 +50,11 @@ function ActiveSessions({ sessions, isLoading, isUserInSession }) {
               return (
                 <div
                   key={session._id}
-                  className="group flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#111113]/50 border border-[#2a2538] hover:border-[#3b3350] transition-colors"
+                  className="group flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 rounded-xl bg-[#232329]/20 border border-[#2a2538] hover:border-[#3b3350] transition-colors"
                 >
                   {/* Left: Info */}
                   <div className="flex items-center gap-4 min-w-0 flex-1">
-                    <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-[#2a2538] border border-[#3b3350] flex items-center justify-center">
+                    <div className="flex-shrink-0 w-10 h-10 rounded-lg bg-[#232329] border border-[#3b3350] flex items-center justify-center">
                       <Code2Icon className="w-5 h-5 text-indigo-300" />
                     </div>
 
@@ -107,7 +107,7 @@ function ActiveSessions({ sessions, isLoading, isUserInSession }) {
         ) : (
           /* Empty State fallback (just in case) */
           <div className="flex flex-col items-center justify-center flex-grow text-center">
-            <div className="w-12 h-12 mb-3 bg-[#2a2538] border border-[#3b3350] rounded-xl flex items-center justify-center">
+            <div className="w-12 h-12 mb-3 bg-[#232329] border border-[#3b3350] rounded-xl flex items-center justify-center">
               <SparklesIcon className="w-6 h-6 text-indigo-400" />
             </div>
             <p className="text-sm font-medium text-gray-300 mb-1">No active sessions</p>

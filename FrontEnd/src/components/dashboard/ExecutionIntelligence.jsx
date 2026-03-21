@@ -46,7 +46,7 @@ const ExecutionIntelligence = ({ languages = [], errors = {}, recentIncidents = 
   };
 
   return (
-    <div className="bg-[#1b1b1f] rounded-2xl p-6 flex flex-col h-full border border-[#2a2a35] shadow-sm overflow-hidden">
+    <div className="bg-[#16161a] rounded-2xl p-6 flex flex-col h-full border border-[#2a2a35] shadow-sm overflow-hidden">
       <h3 className="text-[17px] font-bold text-gray-100 mb-8">Execution Intelligence</h3>
 
       <div className="mb-8">

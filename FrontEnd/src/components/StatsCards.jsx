@@ -3,7 +3,7 @@ import { RadioIcon, CheckSquare, MessageCircle, Star } from "lucide-react";
 
 function StatsCards({ activeSessionsCount = "1.9B", recentSessionsCount = "2.6K" }) {
   return (
-    <div className="w-full bg-[#1b1b1f] border border-[#231c2f] text-white p-6 rounded-xl font-sans shadow-sm">
+    <div className="w-full bg-[#16161a] border border-[#231c2f] text-white p-6 rounded-xl font-sans shadow-sm">
       
       {/* --- Community Stats --- */}
       <div>
@@ -76,15 +76,15 @@ function StatsCards({ activeSessionsCount = "1.9B", recentSessionsCount = "2.6K"
         <h2 className="text-lg font-medium text-white mb-5 tracking-wide">Languages</h2>
         <div className="flex flex-col gap-4">
           <div className="flex justify-between items-center">
-            <span className="bg-[#261f36] text-gray-200 px-3.5 py-1.5 rounded-full text-[13px]">Java</span>
+            <span className="bg-[#232329] text-gray-200 px-3.5 py-1.5 rounded-full text-[13px]">Java</span>
             <span className="text-gray-500 text-[13px]"><span className="text-gray-200 font-medium mr-1">22</span> problems solved</span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="bg-[#261f36] text-gray-200 px-3.5 py-1.5 rounded-full text-[13px]">C++</span>
+            <span className="bg-[#232329] text-gray-200 px-3.5 py-1.5 rounded-full text-[13px]">C++</span>
             <span className="text-gray-500 text-[13px]"><span className="text-gray-200 font-medium mr-1">8</span> problems solved</span>
           </div>
           <div className="flex justify-between items-center">
-            <span className="bg-[#261f36] text-gray-200 px-3.5 py-1.5 rounded-full text-[13px]">Python3</span>
+            <span className="bg-[#232329] text-gray-200 px-3.5 py-1.5 rounded-full text-[13px]">Python3</span>
             <span className="text-gray-500 text-[13px]"><span className="text-gray-200 font-medium mr-1">7</span> problems solved</span>
           </div>
         </div>
@@ -106,13 +106,13 @@ function StatsCards({ activeSessionsCount = "1.9B", recentSessionsCount = "2.6K"
             <span className="text-sm font-medium text-white">Advanced</span>
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="bg-[#261f36] px-3 py-1.5 rounded-full text-[12px] flex items-center gap-1.5">
+            <span className="bg-[#232329] px-3 py-1.5 rounded-full text-[12px] flex items-center gap-1.5">
               <span className="text-gray-300">Dynamic Programming</span> <span className="text-gray-500">x9</span>
             </span>
-            <span className="bg-[#261f36] px-3 py-1.5 rounded-full text-[12px] flex items-center gap-1.5">
+            <span className="bg-[#232329] px-3 py-1.5 rounded-full text-[12px] flex items-center gap-1.5">
               <span className="text-gray-300">Union-Find</span> <span className="text-gray-500">x3</span>
             </span>
-            <span className="bg-[#261f36] px-3 py-1.5 rounded-full text-[12px] flex items-center gap-1.5">
+            <span className="bg-[#232329] px-3 py-1.5 rounded-full text-[12px] flex items-center gap-1.5">
               <span className="text-gray-300">Monotonic Stack</span> <span className="text-gray-500">x2</span>
             </span>
           </div>
@@ -125,13 +125,13 @@ function StatsCards({ activeSessionsCount = "1.9B", recentSessionsCount = "2.6K"
             <span className="text-sm font-medium text-white">Intermediate</span>
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="bg-[#261f36] px-3 py-1.5 rounded-full text-[12px] flex items-center gap-1.5">
+            <span className="bg-[#232329] px-3 py-1.5 rounded-full text-[12px] flex items-center gap-1.5">
               <span className="text-gray-300">Hash Table</span> <span className="text-gray-500">x10</span>
             </span>
-            <span className="bg-[#261f36] px-3 py-1.5 rounded-full text-[12px] flex items-center gap-1.5">
+            <span className="bg-[#232329] px-3 py-1.5 rounded-full text-[12px] flex items-center gap-1.5">
               <span className="text-gray-300">Math</span> <span className="text-gray-500">x9</span>
             </span>
-            <span className="bg-[#261f36] px-3 py-1.5 rounded-full text-[12px] flex items-center gap-1.5">
+            <span className="bg-[#232329] px-3 py-1.5 rounded-full text-[12px] flex items-center gap-1.5">
               <span className="text-gray-300">Design</span> <span className="text-gray-500">x7</span>
             </span>
           </div>
@@ -144,13 +144,13 @@ function StatsCards({ activeSessionsCount = "1.9B", recentSessionsCount = "2.6K"
             <span className="text-sm font-medium text-white">Fundamental</span>
           </div>
           <div className="flex flex-wrap gap-2">
-            <span className="bg-[#261f36] px-3 py-1.5 rounded-full text-[12px] flex items-center gap-1.5">
+            <span className="bg-[#232329] px-3 py-1.5 rounded-full text-[12px] flex items-center gap-1.5">
               <span className="text-gray-300">Array</span> <span className="text-gray-500">x27</span>
             </span>
-            <span className="bg-[#261f36] px-3 py-1.5 rounded-full text-[12px] flex items-center gap-1.5">
+            <span className="bg-[#232329] px-3 py-1.5 rounded-full text-[12px] flex items-center gap-1.5">
               <span className="text-gray-300">Sorting</span> <span className="text-gray-500">x8</span>
             </span>
-            <span className="bg-[#261f36] px-3 py-1.5 rounded-full text-[12px] flex items-center gap-1.5">
+            <span className="bg-[#232329] px-3 py-1.5 rounded-full text-[12px] flex items-center gap-1.5">
               <span className="text-gray-300">String</span> <span className="text-gray-500">x7</span>
             </span>
           </div>

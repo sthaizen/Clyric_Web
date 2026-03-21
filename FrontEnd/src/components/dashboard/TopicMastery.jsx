@@ -51,7 +51,7 @@ const TopicMastery = ({ topics = [] }) => {
       
       <div className="grid grid-cols-2 gap-4 flex-1">
         {topTopics.map((topic, idx) => (
-          <div key={idx} className="bg-[#1b1b1f] rounded-2xl p-5 flex flex-col justify-between shadow-sm border border-[#2a2a35]">
+          <div key={idx} className="bg-[#16161a] rounded-2xl p-5 flex flex-col justify-between shadow-sm border border-[#2a2a35]">
             
             <div className="flex justify-between items-start mb-6">
               <div className="flex items-center justify-center h-6">

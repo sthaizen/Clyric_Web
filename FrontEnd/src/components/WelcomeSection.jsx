@@ -6,7 +6,7 @@ function WelcomeSection({ onCreateSession }) {
   const { user } = useUser();
 
   return (
-    <div className="bg-[#1b1b1f] border border-[#231c2f] rounded-xl p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 w-full shadow-sm">
+    <div className="bg-[#16161a] border border-[#231c2f] rounded-xl p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 w-full shadow-sm">
       
       {/* Left Side: Header & Subtitle */}
       <div>

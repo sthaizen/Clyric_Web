@@ -19,7 +19,7 @@ const DifficultyDistribution = ({ difficulty = {}, totalSolved = 0 }) => {
   ];
 
   return (
-    <div className="bg-[#1b1b1f] border border-[#2a2a35] rounded-2xl p-6 h-full flex flex-col shadow-sm min-h-[200px]">
+    <div className="bg-[#16161a] border border-[#2a2a35] rounded-2xl p-6 h-full flex flex-col shadow-sm min-h-[200px]">
       
       <div className="flex justify-between items-start mb-4">
         <h3 className="text-[15px] font-bold text-gray-100">

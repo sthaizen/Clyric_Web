@@ -41,7 +41,7 @@ function formatStatus(item) {
 const RecentTransmissions = ({ recentSubmissions = [] }) => {
   if (recentSubmissions.length === 0) {
     return (
-      <div className="bg-[#1b1b1f] rounded-2xl p-6 h-full relative shadow-sm border border-[#2A2B32]/30">
+      <div className="bg-[#16161a] rounded-2xl p-6 h-full relative shadow-sm border border-[#2A2B32]/30">
         <div className="flex justify-between items-center mb-6">
           <h3 className="text-[18px] font-bold text-gray-100">Recent Submission</h3>
         </div>
@@ -53,7 +53,7 @@ const RecentTransmissions = ({ recentSubmissions = [] }) => {
   }
 
   return (
-    <div className="bg-[#1b1b1f] rounded-2xl p-6 h-full relative shadow-sm border border-[#2A2B32]/30 flex flex-col">
+    <div className="bg-[#16161a] rounded-2xl p-6 h-full relative shadow-sm border border-[#2A2B32]/30 flex flex-col">
 
       {/* Header */}
       <div className="flex justify-between items-center mb-6 flex-shrink-0">
@@ -71,7 +71,7 @@ const RecentTransmissions = ({ recentSubmissions = [] }) => {
           <div key={idx} className="flex items-center gap-4 hover:bg-[#1F2028] p-3 rounded-xl transition-colors cursor-pointer group">
 
             {/* Icon Box */}
-            <div className="bg-[#2A2B32]/60 group-hover:bg-[#2A2B32] p-2.5 rounded-xl transition-colors flex-shrink-0">
+            <div className="bg-[#1d1d22]/60 group-hover:bg-[#2A2B32] border border-[#2a2a35] p-2.5 rounded-xl transition-colors flex-shrink-0">
               {getVerdictIcon(t.verdict)}
             </div>
 
