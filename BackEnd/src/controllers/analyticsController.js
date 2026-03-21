@@ -74,6 +74,11 @@ export const trackEvent = async (req, res) => {
       if (analytics.attemptHistory.length > 100) {
         analytics.attemptHistory.shift();
       }
+
+      // Update total time spent
+      if (timeSpentSeconds && timeSpentSeconds > 0) {
+        analytics.totalTimeSpentSeconds += timeSpentSeconds;
+      }
     }
 
     if (actionType === "run") {
@@ -102,11 +107,16 @@ export const trackEvent = async (req, res) => {
            timeSpentSeconds,
            mode: mode || "practice"
         });
-      } else {
+      }
+    }
+
+    // Track error counts for both run and submit
+    if (actionType === "run" || actionType === "submit") {
+      if (verdict !== "Accepted" && verdict !== "Executed") {
         if (verdict === "Wrong Answer") analytics.wrongAnswerCount += 1;
         else if (verdict === "Time Limit Exceeded") analytics.timeLimitExceededCount += 1;
         else if (verdict === "Runtime Error") analytics.runtimeErrorCount += 1;
-        else if (verdict === "Compilation Error") analytics.compilationErrorCount += 1;
+        else if (verdict === "Compile Error" || verdict === "Compilation Error") analytics.compilationErrorCount += 1;
         else analytics.otherErrorCount += 1;
       }
     } else if (actionType === "hint") {

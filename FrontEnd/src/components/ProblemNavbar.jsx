@@ -240,8 +240,8 @@ export default function ProblemNavbar({
               onClick={() => setIsTimerOpen(!isTimerOpen)}
               className={`p-1.5 px-2 rounded-lg transition-colors flex items-center justify-center gap-1.5 ${isTimerOpen ? 'bg-[#3e3e42] text-blue-500' : 'text-gray-400 hover:text-white hover:bg-[#3e3e42]'}`}
             >
-              <Timer className="w-[18px] h-[18px]" />
               {showNavTime && <span className="text-[13px] font-mono text-gray-200">{currentNavTime}</span>}
+              <Timer className="w-[18px] h-[18px]" />
             </button>
 
             {/* TIMER DROPDOWN MENU */}

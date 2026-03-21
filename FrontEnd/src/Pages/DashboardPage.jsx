@@ -3,6 +3,7 @@ import { useUser, SignInButton, SignedOut, SignedIn, UserButton } from "@clerk/c
 import { useState, useEffect } from "react";
 import { useActiveSessions, useCreateSession, useMyRecentSessions } from "../hooks/useSessions.js";
 import { useAnalytics } from "../hooks/useAnalytics.js";
+import { useDashboard } from "../hooks/useDashboard.js";
 import { CodeIcon, ActivityIcon, ChevronDown, Search, X, Camera, BarChart3 } from "lucide-react";
 
 // Existing Components
@@ -29,6 +30,7 @@ function DashboardPage() {
   const [roomConfig, setRoomConfig] = useState({ problem: "", difficulty: "" });
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [showAnalytics, setShowAnalytics] = useState(false);
+  const [dashboardRefreshKey, setDashboardRefreshKey] = useState(0);
 
   // --- Profile State ---
   const [profileData, setProfileData] = useState({
@@ -46,6 +48,7 @@ function DashboardPage() {
   const { data: activeSessionsData, isLoading: loadingActiveSessions } = useActiveSessions();
   const { data: recentSessionsData, isLoading: loadingRecentSessions } = useMyRecentSessions();
   const { data: analyticsData, isLoading: loadingAnalytics } = useAnalytics(user?.id, selectedYear);
+  const { data: dashboardData, isLoading: loadingDashboard } = useDashboard(user?.id, selectedYear, dashboardRefreshKey);
 
   useEffect(() => {
     if (isEditModalOpen) {
@@ -159,7 +162,11 @@ function DashboardPage() {
               <input placeholder="Search" style={{ background: 'transparent', border: 'none', outline: 'none', color: '#d1d5db', fontSize: 13, width: '100%' }} />
             </div>
             <button
-              onClick={() => setShowAnalytics(prev => !prev)}
+              onClick={() => {
+                const next = !showAnalytics;
+                setShowAnalytics(next);
+                if (next) setDashboardRefreshKey(k => k + 1);
+              }}
               style={{
                 display: 'flex', alignItems: 'center', gap: 6,
                 background: showAnalytics ? '#3b2d6b' : '#2a2538',
@@ -287,7 +294,7 @@ function DashboardPage() {
               {/* ===== NEW ANALYTICS CONTENT ===== */}
               {showAnalytics && (
                 <>
-                  {loadingAnalytics ? (
+                  {loadingDashboard ? (
                     <div className="flex items-center justify-center py-20">
                       <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
                       <span className="ml-3 text-gray-400 text-sm">Synchronizing telemetry...</span>
@@ -296,15 +303,15 @@ function DashboardPage() {
                     <div className="flex flex-col gap-6 animate-in fade-in duration-500 w-full">
                       
                       {/* 1. Header Area */}
-                      <DashboardHeader />
+                      <DashboardHeader currentStreak={dashboardData?.overview?.currentStreak} />
                       
                       {/* 2. Top Level: 4 Stats (Left 66%) + Difficulty (Right 33%) */}
                       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
                         <div className="xl:col-span-8">
-                          <StatsCardsContainer />
+                          <StatsCardsContainer overview={dashboardData?.overview} />
                         </div>
                         <div className="xl:col-span-4">
-                          <DifficultyDistribution />
+                          <DifficultyDistribution difficulty={dashboardData?.difficulty} totalSolved={dashboardData?.overview?.totalSolved} />
                         </div>
                       </div>
 
@@ -313,7 +320,7 @@ function DashboardPage() {
                        
                         <div className="w-full overflow-x-auto">
                            <DashboardContributionGraph 
-                             data={analyticsData} 
+                             data={dashboardData} 
                              selectedYear={selectedYear} 
                              setSelectedYear={setSelectedYear} 
                            />
@@ -323,20 +330,24 @@ function DashboardPage() {
                       {/* 4. Mid Level: Topics (Approx 40%) & Transmissions (Approx 60%) */}
                       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
                         <div className="xl:col-span-5 h-full">
-                          <TopicMastery />
+                          <TopicMastery topics={dashboardData?.topics} />
                         </div>
                         <div className="xl:col-span-7 h-full">
-                          <RecentTransmissions />
+                          <RecentTransmissions recentSubmissions={dashboardData?.recentSubmissions} />
                         </div>
                       </div>
 
                       {/* 5. Lower Level: Execution (Approx 33%) & Growth (Approx 66%) */}
                       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
                         <div className="xl:col-span-4 h-full">
-                          <ExecutionIntelligence />
+                          <ExecutionIntelligence 
+                            languages={dashboardData?.languages} 
+                            errors={dashboardData?.errors} 
+                            recentIncidents={dashboardData?.recentIncidents}
+                          />
                         </div>
                         <div className="xl:col-span-8 h-full flex flex-col">
-                          <GrowthTrajectory />
+                          <GrowthTrajectory growth={dashboardData?.growth} />
                         </div>
                       </div>
                       
