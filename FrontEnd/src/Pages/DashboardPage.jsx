@@ -12,6 +12,7 @@ import ActiveSessions from "../components/ActiveSessions";
 import RecentSessions from "../components/RecentSessions";
 import CreateSessionModal from "../components/CreateSessionModal";
 import DashboardContributionGraph from "../components/dashboard/DashboardContributionGraph";
+import DashboardContributionGraph2 from "../components/dashboard/DashboardContributionGraph2.jsx";
 import StatsCards from "../components/StatsCards.jsx";
 
 // New Analytics Components
@@ -22,6 +23,8 @@ import TopicMastery from "../components/dashboard/TopicMastery";
 import RecentTransmissions from "../components/dashboard/RecentTransmissions";
 import ExecutionIntelligence from "../components/dashboard/ExecutionIntelligence";
 import GrowthTrajectory from "../components/dashboard/GrowthTrajectory";
+import UpcomingEvents from "../components/dashboard/UpcommingEvents.jsx"; 
+import RecommendedConnections from "../components/dashboard/RecommendedConnections.jsx"; 
 
 function DashboardPage() {
   const navigate = useNavigate();
@@ -207,14 +210,14 @@ function DashboardPage() {
             {/* LEFT COLUMN: Profile & Stats — ALWAYS VISIBLE */}
             <div className="xl:col-span-3 flex flex-col gap-5">
 
-              <div className="bg-[#1b1b1f] border border-[#231c2f] rounded-2xl p-5 w-full shadow-sm">
+              <div className="bg-[#16161a] border border-[#231c2f] rounded-2xl p-5 w-full shadow-sm">
                 <div className="flex items-center gap-4 mb-5">
                   <div className="relative shrink-0">
                     {profileData.profilePic ? (
                       <img
                         src={profileData.profilePic}
                         alt="Profile"
-                        className="w-20 h-20 rounded-xl object-cover" 
+                        className="w-20 h-20 rounded-xl object-cover"
                       />
                     ) : (
                       <div className="w-20 h-20 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-2xl font-bold text-white">
@@ -237,7 +240,7 @@ function DashboardPage() {
 
                 <button
                   onClick={() => setIsEditModalOpen(true)}
-                  className="w-full py-2 mb-5 bg-[#2a2538] hover:bg-[#342e45] text-indigo-300 font-medium rounded-lg border border-[#3b3350] transition-colors text-sm"
+                  className="w-full py-2 mb-5 bg-[#1c1c21] hover:bg-[#232329] text-indigo-200 font-medium rounded-lg border border-[#3b3350]/30 transition-colors text-sm"
                 >
                   Edit Profile
                 </button>
@@ -272,21 +275,49 @@ function DashboardPage() {
                 </div>
               </div>
 
-              <StatsCards />
+              <div className="xl:sticky xl:top-[80px] z-10">
+                <StatsCards languages={dashboardData?.languages} topics={dashboardData?.topics} />
+              </div>
+
             </div>
 
             {/* RIGHT COLUMN: Toggles between Sessions and Analytics */}
             <div className="xl:col-span-9 flex flex-col gap-6">
 
+
               {/* ===== DEFAULT DASHBOARD CONTENT ===== */}
               {!showAnalytics && (
                 <>
-                  {/* Kept outside the wrapper here for your default view if desired, or you can wrap it */}
-                  <div className="bg-[#1b1b1f] border border-[#231c2f] rounded-2xl p-6">
-                    <DashboardContributionGraph data={analyticsData} selectedYear={selectedYear} setSelectedYear={setSelectedYear} />
+                  {/* --- NEW: Graph and Events Layout --- */}
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
+                    <div className="lg:col-span-8 h-full">
+                      <DashboardContributionGraph2 
+                        data={analyticsData} 
+                        selectedYear={selectedYear} 
+                        setSelectedYear={setSelectedYear} 
+                      />
+                    </div>
+                    <div className="lg:col-span-4 h-full">
+                      <UpcomingEvents />
+                    </div>
                   </div>
+                  
                   <WelcomeSection onCreateSession={() => setShowCreateModal(true)} />
-                  <ActiveSessions sessions={activeSessions} isLoading={loadingActiveSessions} isUserInSession={isUserInSession} />
+                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full items-stretch">
+                  
+                  <div className="lg:col-span-4 h-full">
+                    <RecommendedConnections />
+                  </div>
+
+                  <div className="lg:col-span-8 h-full">
+                    <ActiveSessions 
+                      sessions={activeSessions} 
+                      isLoading={loadingActiveSessions} 
+                      isUserInSession={isUserInSession} 
+                    />
+                  </div>
+                  
+                </div>
                   <RecentSessions sessions={recentSessions} isLoading={loadingRecentSessions} />
                 </>
               )}
@@ -301,10 +332,10 @@ function DashboardPage() {
                     </div>
                   ) : (
                     <div className="flex flex-col gap-6 animate-in fade-in duration-500 w-full">
-                      
+
                       {/* 1. Header Area */}
                       <DashboardHeader currentStreak={dashboardData?.overview?.currentStreak} />
-                      
+
                       {/* 2. Top Level: 4 Stats (Left 66%) + Difficulty (Right 33%) */}
                       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
                         <div className="xl:col-span-8">
@@ -316,16 +347,13 @@ function DashboardPage() {
                       </div>
 
                       {/* 3. Activity Pulse (100% Width) */}
-                      
-                       
-                        <div className="w-full overflow-x-auto">
-                           <DashboardContributionGraph 
-                             data={dashboardData} 
-                             selectedYear={selectedYear} 
-                             setSelectedYear={setSelectedYear} 
-                           />
-                        </div>
-                      
+                      <div className="w-full overflow-x-auto">
+                        <DashboardContributionGraph
+                          data={dashboardData}
+                          selectedYear={selectedYear}
+                          setSelectedYear={setSelectedYear}
+                        />
+                      </div>
 
                       {/* 4. Mid Level: Topics (Approx 40%) & Transmissions (Approx 60%) */}
                       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
@@ -340,9 +368,9 @@ function DashboardPage() {
                       {/* 5. Lower Level: Execution (Approx 33%) & Growth (Approx 66%) */}
                       <div className="grid grid-cols-1 xl:grid-cols-12 gap-6">
                         <div className="xl:col-span-4 h-full">
-                          <ExecutionIntelligence 
-                            languages={dashboardData?.languages} 
-                            errors={dashboardData?.errors} 
+                          <ExecutionIntelligence
+                            languages={dashboardData?.languages}
+                            errors={dashboardData?.errors}
                             recentIncidents={dashboardData?.recentIncidents}
                           />
                         </div>
@@ -350,7 +378,7 @@ function DashboardPage() {
                           <GrowthTrajectory growth={dashboardData?.growth} />
                         </div>
                       </div>
-                      
+
                     </div>
                   )}
                 </>
@@ -359,62 +387,64 @@ function DashboardPage() {
             </div>
           </div>
         </div>
-      </div>
+      </div >
 
       <CreateSessionModal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} roomConfig={roomConfig} setRoomConfig={setRoomConfig} onCreateRoom={handleCreateRoom} isCreating={createSessionMutation.isPending} />
 
       {/* --- Edit Profile Modal --- */}
-      {isEditModalOpen && (
-        <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
-          <div className="bg-[#1b1b1f] border border-[#231c2f] w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col">
-            <div className="px-6 py-4 border-b border-[#231c2f] flex justify-between items-center bg-[#151518]">
-              <h2 className="text-lg font-bold text-white">Edit Profile</h2>
-              <button onClick={() => setIsEditModalOpen(false)} className="text-gray-400 hover:text-white transition-colors">
-                <X size={20} />
-              </button>
-            </div>
-            <div className="p-6 flex flex-col gap-5">
-              <div className="flex flex-col items-center gap-2">
-                <div className="relative group">
-                  {draftData.profilePic ? (
-                    <img src={draftData.profilePic} alt="Draft Profile" className="w-24 h-24 rounded-full border-2 border-[#3a3a45] object-cover" />
-                  ) : (
-                    <div className="w-24 h-24 rounded-full border-2 border-[#3a3a45] bg-[#111113] flex items-center justify-center text-2xl font-bold text-white">
-                      {userInitials}
-                    </div>
-                  )}
-                  <input type="file" id="profileImageUpload" accept="image/*" className="hidden" onChange={handleImageChange} />
-                  <label htmlFor="profileImageUpload" className="absolute bottom-0 right-0 bg-indigo-600 hover:bg-indigo-500 text-white p-2 rounded-full cursor-pointer transition-colors shadow-lg border-2 border-[#1b1b1f]" title="Upload new picture">
-                    <Camera size={14} />
-                  </label>
-                </div>
-                <span className="text-xs text-gray-500">Allowed: JPG, PNG, GIF</span>
+      {
+        isEditModalOpen && (
+          <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm px-4">
+            <div className="bg-[#1b1b1f] border border-[#231c2f] w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+              <div className="px-6 py-4 border-b border-[#231c2f] flex justify-between items-center bg-[#151518]">
+                <h2 className="text-lg font-bold text-white">Edit Profile</h2>
+                <button onClick={() => setIsEditModalOpen(false)} className="text-gray-400 hover:text-white transition-colors">
+                  <X size={20} />
+                </button>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-semibold text-gray-300">Name</label>
-                  <input type="text" value={draftData.name} onChange={(e) => setDraftData({ ...draftData, name: e.target.value })} className="w-full bg-[#111113] border border-[#3a3a45] rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-indigo-500 transition-colors" />
+              <div className="p-6 flex flex-col gap-5">
+                <div className="flex flex-col items-center gap-2">
+                  <div className="relative group">
+                    {draftData.profilePic ? (
+                      <img src={draftData.profilePic} alt="Draft Profile" className="w-24 h-24 rounded-full border-2 border-[#3a3a45] object-cover" />
+                    ) : (
+                      <div className="w-24 h-24 rounded-full border-2 border-[#3a3a45] bg-[#111113] flex items-center justify-center text-2xl font-bold text-white">
+                        {userInitials}
+                      </div>
+                    )}
+                    <input type="file" id="profileImageUpload" accept="image/*" className="hidden" onChange={handleImageChange} />
+                    <label htmlFor="profileImageUpload" className="absolute bottom-0 right-0 bg-indigo-600 hover:bg-indigo-500 text-white p-2 rounded-full cursor-pointer transition-colors shadow-lg border-2 border-[#1b1b1f]" title="Upload new picture">
+                      <Camera size={14} />
+                    </label>
+                  </div>
+                  <span className="text-xs text-gray-500">Allowed: JPG, PNG, GIF</span>
                 </div>
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-sm font-semibold text-gray-300">Nickname</label>
-                  <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">@</span>
-                    <input type="text" value={draftData.nickname} onChange={(e) => setDraftData({ ...draftData, nickname: e.target.value })} className="w-full bg-[#111113] border border-[#3a3a45] rounded-lg pl-7 pr-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-indigo-500 transition-colors" />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-sm font-semibold text-gray-300">Name</label>
+                    <input type="text" value={draftData.name} onChange={(e) => setDraftData({ ...draftData, name: e.target.value })} className="w-full bg-[#111113] border border-[#3a3a45] rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-indigo-500 transition-colors" />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="text-sm font-semibold text-gray-300">Nickname</label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 text-sm">@</span>
+                      <input type="text" value={draftData.nickname} onChange={(e) => setDraftData({ ...draftData, nickname: e.target.value })} className="w-full bg-[#111113] border border-[#3a3a45] rounded-lg pl-7 pr-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-indigo-500 transition-colors" />
+                    </div>
                   </div>
                 </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-sm font-semibold text-gray-300">Description</label>
+                  <textarea value={draftData.description} onChange={(e) => setDraftData({ ...draftData, description: e.target.value })} rows={4} placeholder="Write something about yourself..." className="w-full bg-[#111113] border border-[#3a3a45] rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-indigo-500 transition-colors resize-none" />
+                </div>
               </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-sm font-semibold text-gray-300">Description</label>
-                <textarea value={draftData.description} onChange={(e) => setDraftData({ ...draftData, description: e.target.value })} rows={4} placeholder="Write something about yourself..." className="w-full bg-[#111113] border border-[#3a3a45] rounded-lg px-3 py-2 text-sm text-gray-200 focus:outline-none focus:border-indigo-500 transition-colors resize-none" />
+              <div className="px-6 py-4 border-t border-[#231c2f] flex justify-end gap-3 bg-[#151518]">
+                <button onClick={() => setIsEditModalOpen(false)} className="px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white transition-colors">Cancel</button>
+                <button onClick={handleSaveProfile} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-medium transition-colors">Save Changes</button>
               </div>
-            </div>
-            <div className="px-6 py-4 border-t border-[#231c2f] flex justify-end gap-3 bg-[#151518]">
-              <button onClick={() => setIsEditModalOpen(false)} className="px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white transition-colors">Cancel</button>
-              <button onClick={handleSaveProfile} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-medium transition-colors">Save Changes</button>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
     </>
   );

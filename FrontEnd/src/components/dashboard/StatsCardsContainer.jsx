@@ -54,7 +54,7 @@ const StatsCardsContainer = ({ overview = {} }) => {
       {stats.map((stat, idx) => (
         <div
           key={idx}
-          className="bg-[#1b1b1f] border border-[#2a2a35] rounded-2xl p-6 flex flex-col justify-between shadow-sm min-h-[200px]"
+          className="bg-[#16161a] border border-[#2a2a35] rounded-2xl p-6 flex flex-col justify-between shadow-sm min-h-[200px]"
         >
           <h3 className="text-[10px] font-bold uppercase tracking-widest text-gray-400 leading-snug w-2/3">
             {stat.title}

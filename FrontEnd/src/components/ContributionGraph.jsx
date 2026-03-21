@@ -19,9 +19,8 @@ const MONTHS = [
 
 const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
-// Adjusted colors: Level 0 is now a subtle visible square, not a black hole.
 const CONTRIBUTION_COLORS = [
-  "bg-white/[0.04]",      // Level 0 - Empty cell (subtle faint square)
+  "bg-[#232329]/40",         // Level 0 - Solid dark block
   "bg-indigo-500/30",     // Level 1
   "bg-indigo-500/50",     // Level 2
   "bg-indigo-500/80",     // Level 3
@@ -201,22 +200,29 @@ export function ContributionGraph({
 
   return (
     <div className={`contribution-graph relative w-full ${className}`}>
-      <div className="overflow-x-auto overflow-y-hidden pb-2 scrollbar-hide">
-        {/* Slightly increased border spacing to let the grid breathe */}
-        <table className="border-collapse" style={{ borderSpacing: '5px', borderCollapse: 'separate' }}>
+      
+      {/* CHANGED HERE:
+        Replaced the custom scrollbar styles with utility classes to hide it completely across all browsers:
+        - [&::-webkit-scrollbar]:hidden (Chrome/Safari/Edge)
+        - [-ms-overflow-style:none] (IE 10+)
+        - [scrollbar-width:none] (Firefox)
+      */}
+      <div className="overflow-x-auto overflow-y-hidden pb-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+        
+        <table className="border-collapse min-w-max" style={{ borderSpacing: '4px', borderCollapse: 'separate' }}>
           <caption className="sr-only">Contribution Graph for {year}</caption>
 
           {/* Month Headers */}
           <thead>
             <tr>
-              <td className="w-[32px]" />
+              <td className="w-[30px]" />
               {monthHeaders.map((header) => (
                 <td
-                  className="text-left pb-1.5"
+                  className="text-left pb-2"
                   colSpan={header.colspan}
                   key={`${header.month}-${header.startWeek}`}
                 >
-                  <span className="text-[12px] text-gray-400">{header.month}</span>
+                  <span className="text-[13px] font-medium text-gray-400">{header.month}</span>
                 </td>
               ))}
             </tr>
@@ -227,9 +233,9 @@ export function ContributionGraph({
             {Array.from({ length: DAYS_IN_WEEK }, (_, dayIndex) => (
               <tr key={DAYS[dayIndex]}>
                 {/* Day Labels */}
-                <td className="w-[32px] pr-2 text-right relative">
+                <td className="w-[30px] pr-3 text-right relative">
                   {[1, 3, 5].includes(dayIndex) && (
-                    <span className="text-[11px] text-gray-500 absolute top-1/2 -translate-y-1/2 right-2">
+                    <span className="text-[12px] font-medium text-gray-500 absolute top-1/2 -translate-y-1/2 right-2">
                       {DAYS[dayIndex]}
                     </span>
                   )}
@@ -243,7 +249,7 @@ export function ContributionGraph({
                   if (!dayData?.date) {
                     return (
                       <td className="p-0" key={cellKey}>
-                        <div className="w-[11px] h-[11px]" />
+                        <div className="w-[14px] h-[14px]" />
                       </td>
                     );
                   }
@@ -256,8 +262,7 @@ export function ContributionGraph({
                       onMouseLeave={handleDayLeave}
                     >
                       <div
-                        // Increased cell size to 11px and adjusted hover ring
-                        className={`w-[11px] h-[11px] rounded-[3px] transition-colors ${CONTRIBUTION_COLORS[dayData.level]} hover:ring-[1.5px] hover:ring-indigo-400/60 z-10 cursor-pointer`}
+                        className={`w-[14px] h-[14px] rounded-[4px] transition-all duration-200 ${CONTRIBUTION_COLORS[dayData.level]} hover:ring-[2px] hover:ring-indigo-400/60 z-10 cursor-pointer`}
                       />
                     </td>
                   );
@@ -269,16 +274,16 @@ export function ContributionGraph({
       </div>
 
       {/* Legend & Help Link Area */}
-      <div className="mt-5 flex flex-col sm:flex-row items-center justify-between text-[12px] text-gray-500 px-1">
-        <a href="#" className="hover:text-indigo-400 transition-colors mb-2 sm:mb-0">
+      <div className="mt-4 flex flex-col sm:flex-row items-center justify-between text-[13px] text-gray-500 px-1">
+        <a href="#" className="hover:text-white transition-colors mb-2 sm:mb-0">
           Learn how we count activites
         </a>
         <div className="flex items-center gap-2">
           <span>Less</span>
-          <div className="flex gap-[3px]">
+          <div className="flex gap-[4px]">
             {CONTRIBUTION_LEVELS.map((level) => (
               <div
-                className={`w-[11px] h-[11px] rounded-[3px] ${CONTRIBUTION_COLORS[level]}`}
+                className={`w-[14px] h-[14px] rounded-[4px] ${CONTRIBUTION_COLORS[level]}`}
                 key={level}
               />
             ))}
@@ -290,20 +295,20 @@ export function ContributionGraph({
       {/* Tooltip */}
       {hoveredDay && (
         <motion.div
-          animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, scale: 1 }}
-          className="pointer-events-none fixed z-50 rounded-md border border-[#3a3a45] bg-[#111113] px-3 py-2 text-sm shadow-xl flex gap-1.5 items-center"
-          exit={shouldReduceMotion ? { opacity: 0, transition: { duration: 0 } } : { opacity: 0, scale: 0.95 }}
-          initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, scale: 0.95 }}
+          animate={shouldReduceMotion ? { opacity: 1 } : { opacity: 1, scale: 1, y: 0 }}
+          className="pointer-events-none fixed z-50 rounded-lg border border-white/10 bg-[#16161a] px-3.5 py-2.5 text-sm shadow-xl flex gap-2 items-center"
+          exit={shouldReduceMotion ? { opacity: 0, transition: { duration: 0 } } : { opacity: 0, scale: 0.95, y: 4 }}
+          initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0, scale: 0.95, y: 4 }}
           style={{
             left: tooltipPosition.x + TOOLTIP_OFFSET_X,
             top: tooltipPosition.y - TOOLTIP_OFFSET_Y,
           }}
-          transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.1 }}
+          transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.15, ease: "easeOut" }}
         >
-          <span className="font-semibold text-gray-200">
+          <span className="font-semibold text-white">
             {hoveredDay.count === 0 ? "No" : hoveredDay.count} contributions
           </span>
-          <span className="text-gray-400 text-xs">on {formatDate(hoveredDay.date)}</span>
+          <span className="text-gray-400 text-[13px]">on {formatDate(hoveredDay.date)}</span>
         </motion.div>
       )}
     </div>

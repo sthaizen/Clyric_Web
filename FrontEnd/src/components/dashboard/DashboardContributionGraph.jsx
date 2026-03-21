@@ -22,7 +22,7 @@ const DashboardContributionGraph = ({ data, selectedYear, setSelectedYear }) => 
 
   return (
     // 1. Made the outer wrapper the main card matching your top row
-    <div className="w-full flex flex-col md:flex-row gap-6 font-sans bg-[#1b1b1f] p-6 rounded-xl border border-[#231c2f] shadow-sm">
+    <div className="w-full flex flex-col md:flex-row gap-6 font-sans bg-[#16161a] p-6 rounded-xl border border-[#231c2f] shadow-sm">
       
       {/* Main Left Content */}
       <div className="flex-1 min-w-0">

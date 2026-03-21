@@ -52,21 +52,21 @@ const GrowthTrajectory = ({ growth = {} }) => {
     <div className="flex flex-col h-full gap-6">
       
       <div className="grid grid-cols-3 gap-6">
-        <div className="bg-[#1b1b1f] border border-[#2a2a35] p-5 rounded-2xl flex flex-col gap-3 shadow-sm">
+        <div className="bg-[#16161a] border border-[#2a2a35] p-5 rounded-2xl flex flex-col gap-3 shadow-sm">
           <FileText size={18} className="text-[#6366f1]" />
           <div>
             <div className="text-[22px] font-bold text-gray-100">{notesCreated}</div>
             <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mt-1">NOTES CREATED</div>
           </div>
         </div>
-        <div className="bg-[#1b1b1f] border border-[#2a2a35] p-5 rounded-2xl flex flex-col gap-3 shadow-sm">
+        <div className="bg-[#16161a] border border-[#2a2a35] p-5 rounded-2xl flex flex-col gap-3 shadow-sm">
           <Lightbulb size={18} className="text-yellow-400" />
           <div>
             <div className="text-[22px] font-bold text-gray-100">{hintsUsed}</div>
             <div className="text-[9px] font-bold uppercase tracking-widest text-gray-400 mt-1">HINTS USED</div>
           </div>
         </div>
-        <div className="bg-[#1b1b1f] border border-[#2a2a35] p-5 rounded-2xl flex flex-col gap-3 shadow-sm">
+        <div className="bg-[#16161a] border border-[#2a2a35] p-5 rounded-2xl flex flex-col gap-3 shadow-sm">
           <BrainCircuit size={18} className="text-[#6366f1]" />
           <div>
             <div className="text-[22px] font-bold text-gray-100">{independentSolvePercent}%</div>
@@ -75,7 +75,7 @@ const GrowthTrajectory = ({ growth = {} }) => {
         </div>
       </div>
 
-      <div className="bg-[#1b1b1f] border border-[#2a2a35] rounded-2xl p-6 flex flex-col flex-1 shadow-sm">
+      <div className="bg-[#16161a] border border-[#2a2a35] rounded-2xl p-6 flex flex-col flex-1 shadow-sm">
         <div className="flex justify-between items-center mb-8">
           <h3 className="text-[17px] font-bold text-gray-100">
             Growth Trajectory <span className="text-gray-400 font-normal text-sm ml-1">(Last {attemptCount} Attempts)</span>
@@ -104,7 +104,7 @@ const GrowthTrajectory = ({ growth = {} }) => {
         </div>
       </div>
 
-      <div className="bg-[#1b1b1f] border border-[#2a2a35] rounded-2xl p-6 grid grid-cols-3 gap-4 shadow-sm">
+      <div className="bg-[#16161a] border border-[#2a2a35] rounded-2xl p-6 grid grid-cols-3 gap-4 shadow-sm">
         <div className="flex flex-col items-center justify-center">
           <span className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-2">TOTAL CODING TIME</span>
           <span className="text-[20px] font-bold text-gray-100">{totalCodingTimeDisplay}</span>
