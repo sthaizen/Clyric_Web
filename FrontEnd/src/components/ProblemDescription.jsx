@@ -15,6 +15,7 @@ import {
 import { useState, useEffect, useCallback } from "react";
 import ReactQuill from "react-quill-new";
 import "quill/dist/quill.snow.css";
+import SolutionsDiagramTab from "./SolutionsDiagramTab";
 import { trackProblemEvent } from "../lib/api/analytics";
 import { useAuth } from "@clerk/clerk-react";
 import debounce from "lodash.debounce";
@@ -250,55 +251,50 @@ function ProblemDescription({ problem, currentProblemId }) {
       <div className="flex items-center bg-[#1b1b1f] border-b border-[#111113] text-[13px] font-medium text-gray-400 overflow-x-auto select-none shrink-0">
         <div
           onClick={() => setActiveTab("Description")}
-          className={`flex items-center gap-1.5 px-4 py-2 cursor-pointer transition-colors ${
-            activeTab === "Description"
-              ? "text-white bg-[#111113] border-b-2 border-b-[#2cbb5d]"
-              : "hover:text-gray-200 border-b-2 border-b-transparent"
-          }`}
+          className={`flex items-center gap-1.5 px-4 py-2 cursor-pointer transition-colors ${activeTab === "Description"
+            ? "text-white bg-[#111113] border-b-2 border-b-[#2cbb5d]"
+            : "hover:text-gray-200 border-b-2 border-b-transparent"
+            }`}
         >
           <FileText className="w-4 h-4 text-blue-400" /> Description
         </div>
 
         <div
           onClick={() => setActiveTab("Editorial")}
-          className={`flex items-center gap-1.5 px-4 py-2 cursor-pointer transition-colors ${
-            activeTab === "Editorial"
-              ? "text-white bg-[#111113] border-b-2 border-b-[#2cbb5d]"
-              : "hover:text-gray-200 border-b-2 border-b-transparent"
-          }`}
+          className={`flex items-center gap-1.5 px-4 py-2 cursor-pointer transition-colors ${activeTab === "Editorial"
+            ? "text-white bg-[#151519] border-b-2 border-b-[#2cbb5d]"
+            : "hover:text-gray-200 border-b-2 border-b-transparent"
+            }`}
         >
           <BookOpen className="w-4 h-4 text-yellow-500" /> Editorial
         </div>
 
         <div
           onClick={() => setActiveTab("Solutions")}
-          className={`flex items-center gap-1.5 px-4 py-2 cursor-pointer transition-colors ${
-            activeTab === "Solutions"
-              ? "text-white bg-[#111113] border-b-2 border-b-[#2cbb5d]"
-              : "hover:text-gray-200 border-b-2 border-b-transparent"
-          }`}
+          className={`flex items-center gap-1.5 px-4 py-2 cursor-pointer transition-colors ${activeTab === "Solutions"
+            ? "text-white bg-[#151519] border-b-2 border-b-[#2cbb5d]"
+            : "hover:text-gray-200 border-b-2 border-b-transparent"
+            }`}
         >
-          <FlaskConical className="w-4 h-4 text-blue-500" /> Solutions
+          <FlaskConical className="w-4 h-4 text-blue-500" /> Visualizer
         </div>
 
         <div
           onClick={() => setActiveTab("Submissions")}
-          className={`flex items-center gap-1.5 px-4 py-2 cursor-pointer transition-colors ${
-            activeTab === "Submissions"
-              ? "text-white bg-[#111113] border-b-2 border-b-[#2cbb5d]"
-              : "hover:text-gray-200 border-b-2 border-b-transparent"
-          }`}
+          className={`flex items-center gap-1.5 px-4 py-2 cursor-pointer transition-colors ${activeTab === "Submissions"
+            ? "text-white bg-[#151519] border-b-2 border-b-[#2cbb5d]"
+            : "hover:text-gray-200 border-b-2 border-b-transparent"
+            }`}
         >
           <History className="w-4 h-4" /> Submissions
         </div>
 
         <div
           onClick={() => setActiveTab("Notes")}
-          className={`flex items-center gap-1.5 px-4 py-2 cursor-pointer transition-colors ${
-            activeTab === "Notes"
-              ? "text-white bg-[#111113] border-b-2 border-b-[#2cbb5d]"
-              : "hover:text-gray-200 border-b-2 border-b-transparent"
-          }`}
+          className={`flex items-center gap-1.5 px-4 py-2 cursor-pointer transition-colors ${activeTab === "Notes"
+            ? "text-white bg-[#151519] border-b-2 border-b-[#2cbb5d]"
+            : "hover:text-gray-200 border-b-2 border-b-transparent"
+            }`}
         >
           <PenLine className="w-4 h-4 text-purple-400" /> Notes
         </div>
@@ -397,7 +393,7 @@ function ProblemDescription({ problem, currentProblemId }) {
                 <div
                   key={item}
                   onClick={() => {
-                     if (item.includes("Hint")) handleHintClick(idx);
+                    if (item.includes("Hint")) handleHintClick(idx);
                   }}
                   className="flex items-center justify-between py-2.5 text-sm hover:text-white cursor-pointer group"
                 >
@@ -458,7 +454,11 @@ function ProblemDescription({ problem, currentProblemId }) {
           </div>
         )}
 
-        {activeTab !== "Description" && activeTab !== "Notes" && (
+        {activeTab === "Solutions" && (
+          <SolutionsDiagramTab currentProblemId={currentProblemId} problem={problem} />
+        )}
+
+        {activeTab !== "Description" && activeTab !== "Notes" && activeTab !== "Solutions" && (
           <div className="flex items-center justify-center p-5 text-gray-500 h-full">
             {activeTab} view not implemented.
           </div>
