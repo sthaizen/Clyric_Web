@@ -19,7 +19,7 @@ const COMPANIES = [
   { name: "Goldman Sachs", count: 283 }, { name: "Citadel", count: 95 },
   { name: "Salesforce", count: 193 }, { name: "tcs", count: 217 },
   { name: "Nvidia", count: 138 },
-  
+
 ];
 
 const CAL_DAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
@@ -46,11 +46,11 @@ export default function LeetCodeClone() {
       const now = new Date();
       const tomorrow = new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1);
       const diff = tomorrow - now;
-      
+
       const h = String(Math.floor((diff / (1000 * 60 * 60)) % 24)).padStart(2, '0');
       const m = String(Math.floor((diff / 1000 / 60) % 60)).padStart(2, '0');
       const s = String(Math.floor((diff / 1000) % 60)).padStart(2, '0');
-      
+
       setTimeLeft(`${h}:${m}:${s} left`);
     }, 1000);
     return () => clearInterval(timer);
@@ -59,7 +59,7 @@ export default function LeetCodeClone() {
   // --- CALENDAR LOGIC ---
   const daysInMonth = new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 0).getDate();
   const firstDayOfMonth = new Date(viewDate.getFullYear(), viewDate.getMonth(), 1).getDay();
-  
+
   const calendarGrid = [
     ...Array(firstDayOfMonth).fill(null),
     ...Array.from({ length: daysInMonth }, (_, i) => i + 1)
@@ -69,23 +69,23 @@ export default function LeetCodeClone() {
   const handleNextMonth = () => setViewDate(new Date(viewDate.getFullYear(), viewDate.getMonth() + 1, 1));
 
   const isToday = (day) => {
-    return day === today.getDate() && 
-           viewDate.getMonth() === today.getMonth() && 
-           viewDate.getFullYear() === today.getFullYear();
+    return day === today.getDate() &&
+      viewDate.getMonth() === today.getMonth() &&
+      viewDate.getFullYear() === today.getFullYear();
   };
 
   // --- COMPANIES PAGINATION & SEARCH LOGIC ---
   const COMPANIES_PER_PAGE = 10;
-  
+
   const filteredCompanies = useMemo(() => {
     return COMPANIES.filter(c => c.name.toLowerCase().includes(companySearch.toLowerCase()));
   }, [companySearch]);
 
   const totalCompanyPages = Math.ceil(filteredCompanies.length / COMPANIES_PER_PAGE);
-  
+
   const visibleCompanies = useMemo(() => {
     return filteredCompanies.slice(
-      companyPage * COMPANIES_PER_PAGE, 
+      companyPage * COMPANIES_PER_PAGE,
       (companyPage + 1) * COMPANIES_PER_PAGE
     );
   }, [filteredCompanies, companyPage]);
@@ -106,7 +106,7 @@ export default function LeetCodeClone() {
       setIsLoading(true);
       try {
         const [probRes, metaRes] = await Promise.all([
-          getProblems({ limit: 1000 }), 
+          getProblems({ limit: 1000 }),
           getTopicMetadata()
         ]);
         setAllProblems(probRes.problems || []);
@@ -140,166 +140,166 @@ export default function LeetCodeClone() {
     });
 
     return filtered;
-  }, [allProblems, activeDifficulty, searchQuery, activeCategory, sortOrder]); 
+  }, [allProblems, activeDifficulty, searchQuery, activeCategory, sortOrder]);
 
   const diffColor = (d) => d === 'Easy' ? '#00b8a3' : d === 'Medium' ? '#ffc01e' : d === 'Hard' ? '#ef4743' : '#9ca3af';
   const diffBg = (d) => d === 'Easy' ? 'rgba(0,184,163,0.15)' : d === 'Medium' ? 'rgba(255,192,30,0.15)' : 'rgba(239,71,67,0.15)';
 
   const Bars = () => (
-    <div style={{ display:'flex', alignItems:'flex-end', gap:2, height:14, opacity:0.55 }}>
-      {[5,8,11,14].map((h,i) => (
-        <div key={i} style={{ width:2, height:h, background:'#9ca3af', borderRadius:1 }}/>
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 14, opacity: 0.55 }}>
+      {[5, 8, 11, 14].map((h, i) => (
+        <div key={i} style={{ width: 2, height: h, background: '#9ca3af', borderRadius: 1 }} />
       ))}
     </div>
   );
 
   const DIFF_TABS = [
-    { id: 'All',    label: 'All Topics', count: allProblems.length },
-    { id: 'Easy',   label: 'Easy',       count: counts.Easy },
-    { id: 'Medium', label: 'Medium',     count: counts.Medium },
-    { id: 'Hard',   label: 'Hard',       count: counts.Hard },
+    { id: 'All', label: 'All Topics', count: allProblems.length },
+    { id: 'Easy', label: 'Easy', count: counts.Easy },
+    { id: 'Medium', label: 'Medium', count: counts.Medium },
+    { id: 'Hard', label: 'Hard', count: counts.Hard },
   ];
 
   const visibleTopics = isExpanded ? dynamicTopics : dynamicTopics.slice(0, 8);
 
   return (
-    <div style={{ minHeight:'100vh', background:'#111113', color:'#eff1f6', fontFamily:'"Segoe UI", system-ui, sans-serif', display:'flex', flexDirection:'column', fontSize:14 }}>
+    <div style={{ minHeight: '100vh', background: '#111113', color: '#eff1f6', fontFamily: '"Segoe UI", system-ui, sans-serif', display: 'flex', flexDirection: 'column', fontSize: 14 }}>
 
       {/* NAV */}
-     <nav style={{ height:56, background:'#1b1b1f', borderBottom:'1px solid #2c2c35', display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 16px', position:'sticky', top:0, zIndex:100, flexShrink:0 }}>
-  <div style={{ display:'flex', alignItems:'center' }}>
-    {/* Wrapped logo in an anchor tag pointing to "/" */}
-    <a href="/" style={{ display:'flex', alignItems:'center', gap:6, marginRight:20, cursor:'pointer', textDecoration:'none' }}>
-      {/* Logo */}
-      <div className="flex flex-col gap-[2px]">
-        <div className="w-[16px] h-[4px] rounded-[2px] rounded-tl-sm bg-[#F3F3EF]"></div>
-        <div className="flex gap-[2px]">
-          <div className="w-[4px] h-[4px] rounded-[2px] bg-[#F3F3EF]"></div>
-          <div className="w-[12px] h-[4px] rounded-[2px] bg-[#fba120]"></div>
-        </div>
-        <div className="flex gap-[2px]">
-          <div className="w-[10px] h-[4px] bg-transparent"></div>
-          <div className="w-[6px] h-[6px] rounded-[2px] rounded-br-sm bg-[#F3F3EF]"></div>
-        </div>
-      </div>
-      <span style={{ color:'#fff', fontWeight:700, fontSize:17, letterSpacing:'-0.2px' }}>Clyric</span>
-    </a>
-    
-    {[
-      { label:'Dashboard', link:'/dashboard' },
-      { label:'Problems', link:'/problems', active:true },
-      { label:'Contest', link:'/contest' },
-      { label:'Discuss', link:'/discuss' },
-      { label:'Interview', link:'/interview', caret:true },
-      { label:'Store', link:'/store', caret:true, gold:true },
-    ].map(({label, link, active, caret, gold}) => (
-      <a
-        key={label}
-        href={link}
-        style={{
-          height:56,
-          display:'flex',
-          alignItems:'center',
-          padding:'0 12px',
-          cursor:'pointer',
-          color: active ? '#fff' : gold ? '#ffa116' : '#9ca3af',
-          borderBottom: active ? '2px solid #8a6bfe' : '2px solid transparent',
-          fontSize:13.5,
-          fontWeight: active ? 500 : 400,
-          gap:4,
-          textDecoration:'none',
-        }}
-      >
-        {label}{caret && <ChevronDown size={13}/>}
-      </a>
-    ))}
-  </div>
-  <div style={{ display:'flex', alignItems:'center', gap:12 }}>
-    <div style={{ display:'flex', alignItems:'center', background:'#2c2c35', borderRadius:8, padding:'6px 12px', gap:8, width:200 }}>
-      <Search size={14} color="#6b7280"/>
-      <input placeholder="Search" style={{ background:'transparent', border:'none', outline:'none', color:'#d1d5db', fontSize:13, width:'100%' }}/>
-    </div>
-     <SignedOut>
-          <SignInButton mode="modal">
-            <button className="text-[13px] font-medium hover:opacity-60 transition-opacity">
-              Register or Login
-            </button>
-          </SignInButton>
-        </SignedOut>
+      <nav style={{ height: 56, background: '#1b1b1f', borderBottom: '1px solid #2c2c35', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', position: 'sticky', top: 0, zIndex: 100, flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          {/* Wrapped logo in an anchor tag pointing to "/" */}
+          <a href="/" style={{ display: 'flex', alignItems: 'center', gap: 6, marginRight: 20, cursor: 'pointer', textDecoration: 'none' }}>
+            {/* Logo */}
+            <div className="flex flex-col gap-[2px]">
+              <div className="w-[16px] h-[4px] rounded-[2px] rounded-tl-sm bg-[#F3F3EF]"></div>
+              <div className="flex gap-[2px]">
+                <div className="w-[4px] h-[4px] rounded-[2px] bg-[#F3F3EF]"></div>
+                <div className="w-[12px] h-[4px] rounded-[2px] bg-[#fba120]"></div>
+              </div>
+              <div className="flex gap-[2px]">
+                <div className="w-[10px] h-[4px] bg-transparent"></div>
+                <div className="w-[6px] h-[6px] rounded-[2px] rounded-br-sm bg-[#F3F3EF]"></div>
+              </div>
+            </div>
+            <span style={{ color: '#fff', fontWeight: 700, fontSize: 17, letterSpacing: '-0.2px' }}>Clyric</span>
+          </a>
 
-        <SignedIn>
-          <UserButton afterSignOutUrl="/" />
-        </SignedIn>
-    <button
-      onClick={() => window.location.href = '/premium'}
-      style={{ background:'#524026', color:'#fba121', border:'none', borderRadius:6, padding:'6px 14px', fontWeight:600, fontSize:13, cursor:'pointer' }}
-    >
-      Premium
-    </button>
-  </div>
-</nav>
+          {[
+            { label: 'Dashboard', link: '/dashboard' },
+            { label: 'Problems', link: '/problems', active: true },
+            { label: 'Contest', link: '/contest' },
+            { label: 'Discuss', link: '/discuss' },
+            { label: 'Interview', link: '/interview', caret: true },
+            { label: 'Store', link: '/store', caret: true, gold: true },
+          ].map(({ label, link, active, caret, gold }) => (
+            <a
+              key={label}
+              href={link}
+              style={{
+                height: 56,
+                display: 'flex',
+                alignItems: 'center',
+                padding: '0 12px',
+                cursor: 'pointer',
+                color: active ? '#fff' : gold ? '#ffa116' : '#9ca3af',
+                borderBottom: active ? '2px solid #8a6bfe' : '2px solid transparent',
+                fontSize: 13.5,
+                fontWeight: active ? 500 : 400,
+                gap: 4,
+                textDecoration: 'none',
+              }}
+            >
+              {label}{caret && <ChevronDown size={13} />}
+            </a>
+          ))}
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', background: '#2c2c35', borderRadius: 8, padding: '6px 12px', gap: 8, width: 200 }}>
+            <Search size={14} color="#6b7280" />
+            <input placeholder="Search" style={{ background: 'transparent', border: 'none', outline: 'none', color: '#d1d5db', fontSize: 13, width: '100%' }} />
+          </div>
+          <SignedOut>
+            <SignInButton mode="modal">
+              <button className="text-[13px] font-medium hover:opacity-60 transition-opacity">
+                Register or Login
+              </button>
+            </SignInButton>
+          </SignedOut>
+
+          <SignedIn>
+            <UserButton afterSignOutUrl="/" />
+          </SignedIn>
+          <button
+            onClick={() => window.location.href = '/premium'}
+            style={{ background: '#524026', color: '#fba121', border: 'none', borderRadius: 6, padding: '6px 14px', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}
+          >
+            Premium
+          </button>
+        </div>
+      </nav>
       {/* BODY */}
-      <div style={{ display:'flex', flex:1, maxWidth:1700, margin:'0 auto', width:'100%', overflow:'hidden' }}>
+      <div style={{ display: 'flex', flex: 1, maxWidth: 1700, margin: '0 auto', width: '100%', overflow: 'hidden' }}>
 
         {/* LEFT SIDEBAR */}
-        <aside style={{ width:200, borderRight:'1px solid #2c2c35', padding:'16px 8px', display:'flex', flexDirection:'column', gap:2, flexShrink:0, overflowY:'auto' }}>
+        <aside style={{ width: 200, borderRight: '1px solid #2c2c35', padding: '16px 8px', display: 'flex', flexDirection: 'column', gap: 2, flexShrink: 0, overflowY: 'auto' }}>
           {[
-            { icon:<LayoutList size={16}/>, label:'Library', active:true },
-            { icon:<Target size={16}/>, label:'Quest', badge:'New' },
-            { icon:<GraduationCap size={16}/>, label:'Study Plan' },
-          ].map(({icon, label, active, badge}) => (
+            { icon: <LayoutList size={16} />, label: 'Library', active: true },
+            { icon: <Target size={16} />, label: 'Quest', badge: 'New' },
+            { icon: <GraduationCap size={16} />, label: 'Study Plan' },
+          ].map(({ icon, label, active, badge }) => (
             <button key={label} style={{
-              display:'flex', alignItems:'center', gap:10, padding:'8px 12px', borderRadius:6,
-              background: active ? '#2c2c35' : 'transparent', border:'none', cursor:'pointer',
-              color: active ? '#fff' : '#9ca3af', fontSize:13.5, fontWeight: active ? 500 : 400,
-              justifyContent:'space-between', width:'100%'
+              display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 6,
+              background: active ? '#2c2c35' : 'transparent', border: 'none', cursor: 'pointer',
+              color: active ? '#fff' : '#9ca3af', fontSize: 13.5, fontWeight: active ? 500 : 400,
+              justifyContent: 'space-between', width: '100%'
             }}>
-              <div style={{ display:'flex', alignItems:'center', gap:10 }}>{icon}{label}</div>
-              {badge && <span style={{ background:'#2563eb', color:'#fff', fontSize:10, padding:'1px 6px', borderRadius:999, fontWeight:700 }}>{badge}</span>}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>{icon}{label}</div>
+              {badge && <span style={{ background: '#2563eb', color: '#fff', fontSize: 10, padding: '1px 6px', borderRadius: 999, fontWeight: 700 }}>{badge}</span>}
             </button>
           ))}
-          <div style={{ marginTop:24, paddingTop:16, borderTop:'1px solid #2c2c35', display:'flex', flexDirection:'column', alignItems:'center', gap:12 }}>
-            <p style={{ color:'#6b7280', fontSize:12, textAlign:'center', lineHeight:1.5 }}>Sign in to view lists and track study progress.</p>
-            <button style={{ display:'flex', alignItems:'center', gap:8, background:'#8a6bfe', color:'#fff', border:'none', borderRadius:999, padding:'7px 18px', fontWeight:600, fontSize:13, cursor:'pointer', width:'100%', justifyContent:'center' }}>
-              <User size={15}/> Sign in
+          <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid #2c2c35', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+            <p style={{ color: '#6b7280', fontSize: 12, textAlign: 'center', lineHeight: 1.5 }}>Sign in to view lists and track study progress.</p>
+            <button style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#8a6bfe', color: '#fff', border: 'none', borderRadius: 999, padding: '7px 18px', fontWeight: 600, fontSize: 13, cursor: 'pointer', width: '100%', justifyContent: 'center' }}>
+              <User size={15} /> Sign in
             </button>
           </div>
         </aside>
 
         {/* CENTER */}
-        <main style={{ flex:1, padding:'20px 24px', overflowY:'auto', minWidth:0 }}>
+        <main style={{ flex: 1, padding: '20px 24px', overflowY: 'auto', minWidth: 0 }}>
 
           {/* Promo Banners */}
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:12, marginBottom:24 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 24 }}>
             {[
               'https://assets.leetcode.com/users/images/dba14729-0f89-4a5a-a181-b2a7ec1fb0ec_1772459043.341392.png',
               'https://assets.leetcode.com/users/images/942e9e91-7f81-4513-8544-c462980a5d3a_1738741032.3553998.png',
               'https://assets.leetcode.com/users/images/b0a08a5c-c575-48f6-9110-b6ae4e011e98_1655746322.579097.png',
               assets.img,
             ].map((src, i) => (
-              <div key={i} style={{ height:110, borderRadius:12, overflow:'hidden', cursor:'pointer', transition:'transform 0.2s' }}
-                onMouseEnter={e=>e.currentTarget.style.transform='scale(1.02)'}
-                onMouseLeave={e=>e.currentTarget.style.transform='scale(1)'}>
-                <img src={src} alt="" style={{ width:'100%', height:'100%', objectFit:'cover' }}/>
+              <div key={i} style={{ height: 110, borderRadius: 12, overflow: 'hidden', cursor: 'pointer', transition: 'transform 0.2s' }}
+                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'}
+                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
+                <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
               </div>
             ))}
           </div>
 
           {/* Topics row */}
-          <div style={{ display:'flex', flexWrap:'wrap', gap:16, marginBottom:18, fontSize:13, color:'#9ca3af', alignItems: 'center' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginBottom: 18, fontSize: 13, color: '#9ca3af', alignItems: 'center' }}>
             {visibleTopics.map(t => {
               const isActive = activeCategory === t.name;
               return (
                 <span key={t.name} onClick={() => setActiveCategory(isActive ? null : t.name)}
-                  style={{ 
-                    display:'flex', alignItems:'center', gap:5, cursor:'pointer',
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer',
                     color: isActive ? '#fff' : '#9ca3af', background: isActive ? '#3a3a47' : 'transparent',
                     padding: isActive ? '4px 10px' : '4px 2px', borderRadius: 999, transition: 'all 0.2s ease'
                   }}
-                  onMouseEnter={e => { if (!isActive) e.currentTarget.style.color='#fff' }}
-                  onMouseLeave={e => { if (!isActive) e.currentTarget.style.color='#9ca3af' }}>
+                  onMouseEnter={e => { if (!isActive) e.currentTarget.style.color = '#fff' }}
+                  onMouseLeave={e => { if (!isActive) e.currentTarget.style.color = '#9ca3af' }}>
                   {t.name}
-                  <span style={{ background: isActive ? '#4a4a59' : '#2c2c35', padding:'1px 7px', borderRadius:999, fontSize:11, color: isActive ? '#fff' : '#6b7280' }}>
+                  <span style={{ background: isActive ? '#4a4a59' : '#2c2c35', padding: '1px 7px', borderRadius: 999, fontSize: 11, color: isActive ? '#fff' : '#6b7280' }}>
                     {t.count}
                   </span>
                 </span>
@@ -307,16 +307,16 @@ export default function LeetCodeClone() {
             })}
             {dynamicTopics.length > 8 && (
               <span onClick={() => setIsExpanded(!isExpanded)}
-                style={{ color:'#6b7280', cursor:'pointer', display:'flex', alignItems:'center', gap:2, padding: '4px 2px' }}
-                onMouseEnter={e => e.currentTarget.style.color='#fff'}
-                onMouseLeave={e => e.currentTarget.style.color='#6b7280'}>
-                {isExpanded ? 'Show Less' : 'Expand'} {isExpanded ? <ChevronUp size={13}/> : <ChevronDown size={13}/>}
+                style={{ color: '#6b7280', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 2, padding: '4px 2px' }}
+                onMouseEnter={e => e.currentTarget.style.color = '#fff'}
+                onMouseLeave={e => e.currentTarget.style.color = '#6b7280'}>
+                {isExpanded ? 'Show Less' : 'Expand'} {isExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
               </span>
             )}
           </div>
 
           {/* DIFFICULTY FILTER TABS */}
-          <div style={{ display:'flex', gap:8, marginBottom:20, flexWrap:'wrap' }}>
+          <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
             {DIFF_TABS.map(tab => {
               const isAll = tab.id === 'All';
               const isActive = activeDifficulty === tab.id;
@@ -325,18 +325,18 @@ export default function LeetCodeClone() {
               return (
                 <button key={tab.id} onClick={() => setActiveDifficulty(tab.id)}
                   style={{
-                    display:'flex', alignItems:'center', gap:8, padding:'7px 16px', borderRadius:999, cursor:'pointer',
-                    fontSize:13, fontWeight: isActive ? 600 : 400, transition:'all 0.15s',
+                    display: 'flex', alignItems: 'center', gap: 8, padding: '7px 16px', borderRadius: 999, cursor: 'pointer',
+                    fontSize: 13, fontWeight: isActive ? 600 : 400, transition: 'all 0.15s',
                     border: isActive ? (isAll ? 'none' : `1px solid ${color}`) : '1px solid #2c2c35',
                     background: isActive ? (isAll ? '#fff' : bg) : '#1b1b1f',
                     color: isActive ? (isAll ? '#000' : color) : (isAll ? '#d1d5db' : '#9ca3af'),
                   }}>
                   {!isAll && (
-                    <span style={{ width:8, height:8, borderRadius:'50%', background: isActive ? color : '#6b7280', display:'inline-block', flexShrink:0, transition:'background 0.15s' }}/>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: isActive ? color : '#6b7280', display: 'inline-block', flexShrink: 0, transition: 'background 0.15s' }} />
                   )}
-                  {isAll && <LayoutList size={14}/>}
+                  {isAll && <LayoutList size={14} />}
                   {tab.label}
-                  <span style={{ fontSize:11, padding:'1px 7px', borderRadius:999, background: isActive ? (isAll ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.15)') : '#2c2c35', color: isActive ? (isAll ? '#000' : color) : '#6b7280', fontWeight:600 }}>
+                  <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 999, background: isActive ? (isAll ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.15)') : '#2c2c35', color: isActive ? (isAll ? '#000' : color) : '#6b7280', fontWeight: 600 }}>
                     {tab.count}
                   </span>
                 </button>
@@ -345,67 +345,67 @@ export default function LeetCodeClone() {
           </div>
 
           {/* Search + Controls */}
-          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12 }}>
-            <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-              <div style={{ position:'relative', display:'flex', alignItems:'center' }}>
-                <Search size={14} color="#6b7280" style={{ position:'absolute', left:10 }}/>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                <Search size={14} color="#6b7280" style={{ position: 'absolute', left: 10 }} />
                 <input
-                  placeholder="Search questions" value={searchQuery} onChange={e=>setSearchQuery(e.target.value)}
-                  style={{ background:'#111113', border:'1px solid #2c2c35', borderRadius:6, padding:'7px 10px 7px 32px', color:'#fff', fontSize:13, outline:'none', width:220 }}
+                  placeholder="Search questions" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                  style={{ background: '#111113', border: '1px solid #2c2c35', borderRadius: 6, padding: '7px 10px 7px 32px', color: '#fff', fontSize: 13, outline: 'none', width: 220 }}
                 />
               </div>
-              
+
               <button onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-                style={{ background: sortOrder === 'desc' ? '#3a3a47' : '#1b1b1f', border:'1px solid #2c2c35', borderRadius:6, padding:'7px 10px', color: sortOrder === 'desc' ? '#fff' : '#9ca3af', cursor:'pointer', display:'flex', alignItems:'center', transition: 'all 0.2s' }}
+                style={{ background: sortOrder === 'desc' ? '#3a3a47' : '#1b1b1f', border: '1px solid #2c2c35', borderRadius: 6, padding: '7px 10px', color: sortOrder === 'desc' ? '#fff' : '#9ca3af', cursor: 'pointer', display: 'flex', alignItems: 'center', transition: 'all 0.2s' }}
                 title={sortOrder === 'asc' ? "Sort Descending" : "Sort Ascending"}>
-                <ArrowUpDown size={15}/>
+                <ArrowUpDown size={15} />
               </button>
 
-              <button style={{ background:'#1b1b1f', border:'1px solid #2c2c35', borderRadius:6, padding:'7px 10px', color:'#9ca3af', cursor:'pointer', display:'flex', alignItems:'center' }}>
-                <SlidersHorizontal size={15}/>
+              <button style={{ background: '#1b1b1f', border: '1px solid #2c2c35', borderRadius: 6, padding: '7px 10px', color: '#9ca3af', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                <SlidersHorizontal size={15} />
               </button>
             </div>
-            <div style={{ display:'flex', alignItems:'center', gap:16, fontSize:13, color:'#6b7280' }}>
-              <span style={{ display:'flex', alignItems:'center', gap:6 }}>
-                <CheckCircle2 size={15} color="#2c2c35"/> 0/{allProblems.length} Solved
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, fontSize: 13, color: '#6b7280' }}>
+              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <CheckCircle2 size={15} color="#2c2c35" /> 0/{allProblems.length} Solved
               </span>
-              <Shuffle size={15} color="#00b8a3" style={{ cursor:'pointer' }}/>
+              <Shuffle size={15} color="#00b8a3" style={{ cursor: 'pointer' }} />
             </div>
           </div>
 
           {/* Problem List */}
           <div>
-            <div style={{ display:'grid', gridTemplateColumns:'1fr 80px 70px 80px', padding:'8px 12px', fontSize:12, color:'#6b7280', borderBottom:'1px solid #2c2c35', marginBottom:4 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 70px 80px', padding: '8px 12px', fontSize: 12, color: '#6b7280', borderBottom: '1px solid #2c2c35', marginBottom: 4 }}>
               <span>Title</span>
-              <span style={{ textAlign:'right' }}>Acceptance</span>
-              <span style={{ textAlign:'right' }}>Difficulty</span>
-              <span style={{ textAlign:'right' }}>Frequency</span>
+              <span style={{ textAlign: 'right' }}>Acceptance</span>
+              <span style={{ textAlign: 'right' }}>Difficulty</span>
+              <span style={{ textAlign: 'right' }}>Frequency</span>
             </div>
 
             {isLoading ? (
-              <div style={{ padding:40, textAlign:'center', color:'#6b7280' }}>Loading problems...</div>
+              <div style={{ padding: 40, textAlign: 'center', color: '#6b7280' }}>Loading problems...</div>
             ) : filteredProblems.length === 0 ? (
-              <div style={{ padding:40, textAlign:'center', color:'#6b7280' }}>No problems found matching your filters.</div>
+              <div style={{ padding: 40, textAlign: 'center', color: '#6b7280' }}>No problems found matching your filters.</div>
             ) : filteredProblems.map((problem, idx) => (
               <Link key={problem.id} to={`/problem/${problem.id}`}
                 style={{
-                  display:'grid', gridTemplateColumns:'1fr 80px 70px 80px', padding:'10px 12px', borderRadius:6, textDecoration:'none',
-                  background: idx % 2 !== 0 ? '#16161a' : 'transparent', alignItems:'center', transition:'background 0.1s'
+                  display: 'grid', gridTemplateColumns: '1fr 80px 70px 80px', padding: '10px 12px', borderRadius: 6, textDecoration: 'none',
+                  background: idx % 2 !== 0 ? '#16161a' : 'transparent', alignItems: 'center', transition: 'background 0.1s'
                 }}
-                onMouseEnter={e=>e.currentTarget.style.background='#1f1f24'}
-                onMouseLeave={e=>e.currentTarget.style.background=idx%2!==0?'#16161a':'transparent'}>
-                <span style={{ color:'#eff1f6', fontSize:13.5 }}>
+                onMouseEnter={e => e.currentTarget.style.background = '#1f1f24'}
+                onMouseLeave={e => e.currentTarget.style.background = idx % 2 !== 0 ? '#16161a' : 'transparent'}>
+                <span style={{ color: '#eff1f6', fontSize: 13.5 }}>
                   {idx + 1}. {problem.title}
                 </span>
-                <span style={{ textAlign:'right', color:'#9ca3af', fontSize:13 }}>
+                <span style={{ textAlign: 'right', color: '#9ca3af', fontSize: 13 }}>
                   {problem.acceptance || '57.0%'}
                 </span>
-                <span style={{ textAlign:'right', fontSize:13, fontWeight:500, color: diffColor(problem.difficulty) }}>
+                <span style={{ textAlign: 'right', fontSize: 13, fontWeight: 500, color: diffColor(problem.difficulty) }}>
                   {problem.difficulty === 'Medium' ? 'Med.' : problem.difficulty}
                 </span>
-                <div style={{ display:'flex', alignItems:'center', justifyContent:'flex-end', gap:10 }}>
-                  <Bars/>
-                  <Lock size={13} color="#6b7280"/>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10 }}>
+                  <Bars />
+                  <Lock size={13} color="#6b7280" />
                 </div>
               </Link>
             ))}
@@ -413,110 +413,110 @@ export default function LeetCodeClone() {
         </main>
 
         {/* --- RIGHT SIDEBAR (NOW FULLY FUNCTIONAL) --- */}
-        <aside style={{ width:300, borderLeft:'1px solid #2c2c35', padding:'16px', display:'flex', flexDirection:'column', gap:16, flexShrink:0, overflowY:'auto' }}>
+        <aside style={{ width: 300, borderLeft: '1px solid #2c2c35', padding: '16px', display: 'flex', flexDirection: 'column', gap: 16, flexShrink: 0, overflowY: 'auto' }}>
 
           {/* Calendar Section */}
-        <div style={{ background:'#1b1b1f', borderRadius:10, padding:16, border:'1px solid #2c2c35' }}>
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12 }}>
-              <span style={{ fontSize:13, color:'#fcfdff', display: 'flex', alignItems: 'center', gap: 6 }}>
-                Day {today.getDate()} <span style={{ color:'#d1d5db', fontSize:11 }}>{timeLeft}</span>
+          <div style={{ background: '#16161a', borderRadius: 10, padding: 16, border: '1px solid #2c2c35' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+              <span style={{ fontSize: 13, color: '#fcfdff', display: 'flex', alignItems: 'center', gap: 6 }}>
+                Day {today.getDate()} <span style={{ color: '#d1d5db', fontSize: 11 }}>{timeLeft}</span>
               </span>
-              <div style={{ display:'flex', gap:8 }}>
-                <ChevronLeft onClick={handlePrevMonth} size={15} color="#9ca3af" style={{ cursor:'pointer' }}/>
-                <ChevronRight onClick={handleNextMonth} size={15} color="#9ca3af" style={{ cursor:'pointer' }}/>
+              <div style={{ display: 'flex', gap: 8 }}>
+                <ChevronLeft onClick={handlePrevMonth} size={15} color="#9ca3af" style={{ cursor: 'pointer' }} />
+                <ChevronRight onClick={handleNextMonth} size={15} color="#9ca3af" style={{ cursor: 'pointer' }} />
               </div>
             </div>
-            
+
             <div style={{ textAlign: 'center', color: '#9ca3af', fontSize: 12, marginBottom: 8, fontWeight: 500 }}>
-                {viewDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
+              {viewDate.toLocaleString('default', { month: 'long', year: 'numeric' })}
             </div>
 
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:2, marginBottom:6 }}>
-              {CAL_DAYS.map((d,i) => (
-                <div key={i} style={{ textAlign:'center', fontSize:11, color:'#6b7280', fontWeight:500, padding:'2px 0' }}>{d}</div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 2, marginBottom: 6 }}>
+              {CAL_DAYS.map((d, i) => (
+                <div key={i} style={{ textAlign: 'center', fontSize: 11, color: '#6b7280', fontWeight: 500, padding: '2px 0' }}>{d}</div>
               ))}
             </div>
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:2 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7,1fr)', gap: 2 }}>
               {calendarGrid.map((day, i) => (
                 <div key={i} style={{
-                  textAlign:'center', fontSize:12, borderRadius:999,
+                  textAlign: 'center', fontSize: 12, borderRadius: 999,
                   background: isToday(day) ? '#eb5a56' : 'transparent',
                   color: isToday(day) ? '#fff' : day ? '#9ca3af' : 'transparent', // Changed from #000 to #fff
                   fontWeight: isToday(day) ? 700 : 400,
-                  cursor: day ? 'pointer' : 'default', lineHeight:'24px', height:24
+                  cursor: day ? 'pointer' : 'default', lineHeight: '24px', height: 24
                 }}>{day}</div>
               ))}
             </div>
-            
-            <div style={{ marginTop:14, background:'#3e3427', border:'1px solid #2c2c35', borderRadius:8, padding:'10px 12px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-              <div style={{ display:'flex', alignItems:'center', gap:4 }}>
+
+            <div style={{ marginTop: 14, background: '#3e3427', border: '1px solid #2c2c35', borderRadius: 8, padding: '10px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                 {/* Changed text and lock icon from #ffa116 to #fff */}
-                <span style={{ color:'#ffa116', fontSize:12, fontWeight:600 }}>Weekly Premium</span>
-                <Lock size={11} color="#ffa116"/> 
+                <span style={{ color: '#ffa116', fontSize: 12, fontWeight: 600 }}>Weekly Premium</span>
+                <Lock size={11} color="#ffa116" />
               </div>
-              <span style={{ color:'#6b7280', fontSize:11 }}>4 days left</span>
+              <span style={{ color: '#6b7280', fontSize: 11 }}>4 days left</span>
             </div>
 
-            
+
             {/* Week Selector */}
-           <div style={{ display:'flex', gap:6, marginTop:10 }}>
-            {['W1','W2','W3','W4','W5'].map((w,i) => (
-              <div key={w} onClick={() => setActiveWeek(i)} style={{
-                flex:1, textAlign:'center', padding:'4px 0', borderRadius:6, fontSize:11,
-                background: activeWeek === i ? '#ef5a55' : '#2c2c35',
-                color: activeWeek === i ? '#fff' : '#9ca3af', // Changed from #000 to #fff
-                fontWeight: activeWeek === i ? 700 : 400, 
-                cursor:'pointer', transition: 'all 0.2s'
-              }}>{w}</div>
-            ))}
-          </div>
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginTop:12, fontSize:12 }}>
-              <div style={{ display:'flex', alignItems:'center', gap:6 }}>
-                <span style={{ color:'#4ade80', fontSize:16 }}>⬡</span>
-                <span style={{ color:'#fff', fontWeight:700 }}>0</span>
+            <div style={{ display: 'flex', gap: 6, marginTop: 10 }}>
+              {['W1', 'W2', 'W3', 'W4', 'W5'].map((w, i) => (
+                <div key={w} onClick={() => setActiveWeek(i)} style={{
+                  flex: 1, textAlign: 'center', padding: '4px 0', borderRadius: 6, fontSize: 11,
+                  background: activeWeek === i ? '#ef5a55' : '#2c2c35',
+                  color: activeWeek === i ? '#fff' : '#9ca3af', // Changed from #000 to #fff
+                  fontWeight: activeWeek === i ? 700 : 400,
+                  cursor: 'pointer', transition: 'all 0.2s'
+                }}>{w}</div>
+              ))}
+            </div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 12, fontSize: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                <span style={{ color: '#4ade80', fontSize: 16 }}>⬡</span>
+                <span style={{ color: '#fff', fontWeight: 700 }}>0</span>
               </div>
-              <span style={{ color:'#6b7280', fontSize:11, cursor:'pointer' }}>Rules</span>
+              <span style={{ color: '#6b7280', fontSize: 11, cursor: 'pointer' }}>Rules</span>
             </div>
           </div>
 
           {/* Trending Companies Section */}
-          <div style={{ background:'#1b1b1f', borderRadius:10, padding:16, border:'1px solid #2c2c35' }}>
-            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:12 }}>
-              <span style={{ color:'#fff', fontWeight:600, fontSize:14 }}>Trending Companies</span>
-              <div style={{ display:'flex', gap:6 }}>
-                <ChevronLeft onClick={handlePrevCompanyPage} size={15} color={companyPage > 0 ? "#fff" : "#6b7280"} style={{ cursor: companyPage > 0 ? 'pointer' : 'default' }}/>
-                <ChevronRight onClick={handleNextCompanyPage} size={15} color={companyPage < totalCompanyPages - 1 ? "#fff" : "#6b7280"} style={{ cursor: companyPage < totalCompanyPages - 1 ? 'pointer' : 'default' }}/>
+          <div style={{ background: '#16161a', borderRadius: 10, padding: 16, border: '1px solid #2c2c35' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <span style={{ color: '#fff', fontWeight: 600, fontSize: 14 }}>Trending Companies</span>
+              <div style={{ display: 'flex', gap: 6 }}>
+                <ChevronLeft onClick={handlePrevCompanyPage} size={15} color={companyPage > 0 ? "#fff" : "#6b7280"} style={{ cursor: companyPage > 0 ? 'pointer' : 'default' }} />
+                <ChevronRight onClick={handleNextCompanyPage} size={15} color={companyPage < totalCompanyPages - 1 ? "#fff" : "#6b7280"} style={{ cursor: companyPage < totalCompanyPages - 1 ? 'pointer' : 'default' }} />
               </div>
             </div>
-            <div style={{ position:'relative', marginBottom:12 }}>
-              <Search size={13} color="#6b7280" style={{ position:'absolute', left:10, top:'50%', transform:'translateY(-50%)' }}/>
-              <input 
-                placeholder="Search for a company..." 
+            <div style={{ position: 'relative', marginBottom: 12 }}>
+              <Search size={13} color="#6b7280" style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)' }} />
+              <input
+                placeholder="Search for a company..."
                 value={companySearch}
                 onChange={(e) => setCompanySearch(e.target.value)}
                 style={{
-                  background:'#2c2c35', border:'none', borderRadius:6, padding:'7px 10px 7px 30px',
-                  color:'#d1d5db', fontSize:12, outline:'none', width:'100%'
+                  background: '#2c2c35', border: 'none', borderRadius: 6, padding: '7px 10px 7px 30px',
+                  color: '#d1d5db', fontSize: 12, outline: 'none', width: '100%'
                 }}
               />
             </div>
-            
+
             {visibleCompanies.length === 0 ? (
-                <div style={{ color: '#6b7280', fontSize: 12, textAlign: 'center', padding: '10px 0' }}>No companies found.</div>
+              <div style={{ color: '#6b7280', fontSize: 12, textAlign: 'center', padding: '10px 0' }}>No companies found.</div>
             ) : (
-                <div style={{ display:'flex', flexWrap:'wrap', gap:8, minHeight: 90, alignContent: 'flex-start' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, minHeight: 90, alignContent: 'flex-start' }}>
                 {visibleCompanies.map(c => (
-                    <div key={c.name} style={{
-                    display:'flex', alignItems:'center', gap:6, background:'#2c2c35',
-                    borderRadius:999, padding:'5px 10px', cursor:'pointer', fontSize:12, transition:'background 0.15s'
-                    }}
-                    onMouseEnter={e=>e.currentTarget.style.background='#3a3a47'}
-                    onMouseLeave={e=>e.currentTarget.style.background='#2c2c35'}>
-                    <span style={{ color:'#d1d5db' }}>{c.name}</span>
-                    <span style={{ background:'#ffa116', color:'#000', fontSize:10, padding:'1px 6px', borderRadius:999, fontWeight:700 }}>{c.count}</span>
-                    </div>
+                  <div key={c.name} style={{
+                    display: 'flex', alignItems: 'center', gap: 6, background: '#2c2c35',
+                    borderRadius: 999, padding: '5px 10px', cursor: 'pointer', fontSize: 12, transition: 'background 0.15s'
+                  }}
+                    onMouseEnter={e => e.currentTarget.style.background = '#3a3a47'}
+                    onMouseLeave={e => e.currentTarget.style.background = '#2c2c35'}>
+                    <span style={{ color: '#d1d5db' }}>{c.name}</span>
+                    <span style={{ background: '#ffa116', color: '#000', fontSize: 10, padding: '1px 6px', borderRadius: 999, fontWeight: 700 }}>{c.count}</span>
+                  </div>
                 ))}
-                </div>
+              </div>
             )}
           </div>
 

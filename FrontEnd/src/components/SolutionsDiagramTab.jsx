@@ -255,9 +255,9 @@ export default function SolutionsDiagramTab({ currentProblemId, problem }) {
       {/* Top Navigation Bar - Removed transparency to match the solid background */}
       <div className="px-6 py-4 border-b border-white/5 bg-[#1b1b1f] flex items-center justify-between z-20 shrink-0">
         <div className="flex items-center gap-3">
-          <FlaskConical className="w-4 h-4 text-[#2cbb5d]" />
+          <FlaskConical className="w-6 h-6 text-[#2cbb5d]" />
           <div>
-            <h1 className="text-sm font-semibold text-[#e1e1e3] tracking-wide">FlowChart Workspace</h1>
+            <h1 className="text-lg font-semibold text-[#e1e1e3] tracking-wide">FlowChart Workspace</h1>
             <p className="text-xs text-gray-400 mt-0.5 font-medium">
               Visualize your approach before coding
             </p>

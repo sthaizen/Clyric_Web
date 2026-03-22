@@ -16,6 +16,7 @@ import { useState, useEffect, useCallback } from "react";
 import ReactQuill from "react-quill-new";
 import "quill/dist/quill.snow.css";
 import SolutionsDiagramTab from "./SolutionsDiagramTab";
+import SubmissionsTab from "./SubmissionsTab";
 import { trackProblemEvent } from "../lib/api/analytics";
 import { useAuth } from "@clerk/clerk-react";
 import debounce from "lodash.debounce";
@@ -422,8 +423,8 @@ function ProblemDescription({ problem, currentProblemId }) {
         )}
 
         {activeTab === "Notes" && (
-          <div className="p-0 h-full flex flex-col min-h-0 relative bg-[#111113]">
-            <div className="px-6 py-4 border-b border-[#111113] bg-[#1b1b1f] flex items-center justify-between shadow-sm z-10">
+          <div className="p-0 h-full flex flex-col min-h-0 relative bg-[#16161a]">
+            <div className="px-6 py-4 border-b border-[#16161a] bg-[#1b1b1f] flex items-center justify-between shadow-sm z-10">
               <div>
                 <h1 className="text-lg font-bold text-white flex items-center gap-2">
                   <PenLine className="w-4 h-4 text-[#2cbb5d]" />
@@ -458,7 +459,11 @@ function ProblemDescription({ problem, currentProblemId }) {
           <SolutionsDiagramTab currentProblemId={currentProblemId} problem={problem} />
         )}
 
-        {activeTab !== "Description" && activeTab !== "Notes" && activeTab !== "Solutions" && (
+        {activeTab === "Submissions" && (
+          <SubmissionsTab problem={problem} />
+        )}
+
+        {activeTab !== "Description" && activeTab !== "Notes" && activeTab !== "Solutions" && activeTab !== "Submissions" && (
           <div className="flex items-center justify-center p-5 text-gray-500 h-full">
             {activeTab} view not implemented.
           </div>
