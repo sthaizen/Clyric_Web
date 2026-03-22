@@ -41,9 +41,9 @@ const App = () => {
       <div className="root-container dark:bg-black relative min-h-screen w-full">
         <Routes>
           {/* Main Landing Page Route */}
-          <Route 
-            path="/" 
-            element={<LandingPage theme={theme} setTheme={setTheme} />} 
+          <Route
+            path="/"
+            element={<LandingPage theme={theme} setTheme={setTheme} />}
           />
 
           <Route

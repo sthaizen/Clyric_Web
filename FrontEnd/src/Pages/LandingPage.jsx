@@ -1,7 +1,6 @@
 import React, { useRef } from "react";
-import { Navigate } from "react-router-dom";
 import { motion, useScroll, useTransform, useMotionTemplate } from "framer-motion";
-import { useUser } from "@clerk/clerk-react";
+import { useUser } from "@clerk/clerk-react"; // You can keep this if you plan to use user data later, otherwise it can be removed entirely
 
 // Component Imports
 import Navbar from "../components/Navbar";
@@ -17,7 +16,8 @@ import CAT from "../components/CAT";
 import Footer from "../components/Footer";
 
 const LandingPage = ({ theme, setTheme }) => {
-  const { isSignedIn } = useUser();
+  // Removed isSignedIn check from here
+  const { user } = useUser();
   const coverSectionRef = useRef(null);
 
   const { scrollYProgress } = useScroll({
@@ -31,9 +31,7 @@ const LandingPage = ({ theme, setTheme }) => {
   const filter = useMotionTemplate`brightness(${brightness})`;
   const bgDarkOpacity = useTransform(scrollYProgress, [0, 0.3, 1], [0, 0, 0.7]);
 
-  if (isSignedIn) {
-    return <Navigate to="/dashboard" />;
-  }
+
 
   return (
     <div className="relative bg-[#0b0b0b] min-h-screen">
