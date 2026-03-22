@@ -31,3 +31,15 @@ export async function getTopicMetadata() {
   }
   return response.json();
 }
+
+export async function getUserSubmissions(slug, token) {
+  const response = await fetch(`${API_URL}/submissions/${slug}`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  if (!response.ok) {
+    throw new Error("Failed to fetch submissions");
+  }
+  return response.json();
+}

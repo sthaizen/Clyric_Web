@@ -18,6 +18,7 @@ import codeExecutionRoutes from "./routes/codeExecutionRoutes.js";
 import problemRoutes from "./routes/problemRoutes.js";
 import analyticsRoutes from "./routes/analyticsRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
+import submissionRoutes from "./routes/submissionRoutes.js";
 
 const app = express();
 const __filename = fileURLToPath(import.meta.url);
@@ -57,6 +58,7 @@ app.use("/api/code", codeExecutionRoutes);
 app.use("/api/problems", problemRoutes);
 app.use("/api/problem-analytics", analyticsRoutes);
 app.use("/api/dashboard", dashboardRoutes);
+app.use("/api/submissions", submissionRoutes);
 
 app.get("/health", (req, res) => {
   res.status(200).json({ msg: "success api is running" });

@@ -2,6 +2,8 @@
 
 import { runUserCode } from "../services/codeExecutionService.js";
 import { judgeSubmission } from "../services/judgeService.js";
+import Submission from "../models/Submission.js";
+import AdvancedProblem from "../models/AdvancedProblem.js";
 
 // Maximum sizes to prevent DoS attacks
 const MAX_CODE_SIZE = 64 * 1024;   // 64KB
@@ -113,6 +115,30 @@ export const submitCode = async (req, res) => {
       language.toLowerCase(),
       code
     );
+
+    // Save submission to database if user is authenticated via Clerk
+    const userId = req.auth?.userId;
+    if (userId) {
+      try {
+        const problem = await AdvancedProblem.findOne({ slug: problemId.toLowerCase() });
+        if (problem) {
+          await Submission.create({
+            userId,
+            problemId: problem._id,
+            problemSlug: problem.slug,
+            code,
+            language: language.toLowerCase(),
+            verdict: result.verdict,
+            testCasesPassed: result.testCasesPassed || 0,
+            totalTestCases: result.totalTestCases || 0,
+            runtimeMs: result.executionTime || 0,
+          });
+        }
+      } catch (saveError) {
+        console.error("[submitCode] Error saving submission:", saveError);
+        // We don't fail the request if saving history fails
+      }
+    }
 
     return res.status(200).json({ success: true, ...result });
   } catch (error) {
