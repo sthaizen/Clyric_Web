@@ -28,8 +28,10 @@ const NotesModal = ({ isOpen, onClose, problemId }) => {
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm">
-      <div className="bg-[#111113] w-full max-w-4xl h-[80vh] rounded-xl shadow-2xl flex flex-col overflow-hidden border border-[#3e3e42] animate-in zoom-in-95 duration-200">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#3e3e42] bg-[#1b1b1f]">
+      {/* Changed bg-[#111113] to bg-[#16161a] */}
+      <div className="bg-[#16161a] w-full max-w-4xl h-[80vh] rounded-xl shadow-2xl flex flex-col overflow-hidden border border-[#3e3e42] animate-in zoom-in-95 duration-200">
+        {/* Changed bg-[#1b1b1f] to bg-[#16161a] */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-[#3e3e42] bg-[#16161a]">
           <h2 className="text-xl font-bold text-gray-200">My Notes</h2>
           <button
             onClick={onClose}
@@ -39,7 +41,7 @@ const NotesModal = ({ isOpen, onClose, problemId }) => {
           </button>
         </div>
 
-        <div className="flex-1 p-6 bg-[#111113] text-gray-100 overflow-hidden flex flex-col quill-dark-theme">
+        <div className="flex-1 p-6 bg-[#16161a] text-gray-100 overflow-hidden flex flex-col quill-dark-theme">
           <ReactQuill
             theme="snow"
             value={notes}
@@ -53,7 +55,7 @@ const NotesModal = ({ isOpen, onClose, problemId }) => {
       {/* Required style overrides for Quill in dark mode */}
       <style>{`
         .quill-dark-theme .ql-toolbar {
-          background: #1b1b1f;
+          background: #16161a;
           border-color: #3e3e42;
           border-top-left-radius: 0.5rem;
           border-top-right-radius: 0.5rem;
@@ -81,8 +83,9 @@ const NotesModal = ({ isOpen, onClose, problemId }) => {
         .quill-dark-theme .ql-picker-label {
           color: #9ca3af;
         }
+        /* Changed background-color from #1b1b1f to #16161a */
         .quill-dark-theme .ql-picker-options {
-          background-color: #1b1b1f;
+          background-color: #16161a;
           border-color: #3e3e42;
         }
         .quill-dark-theme .ql-picker-item {

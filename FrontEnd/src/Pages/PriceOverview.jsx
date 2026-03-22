@@ -194,7 +194,7 @@ export default function PricingComponent() {
             <div 
               key={index} 
               // Note: transition-colors and transition-shadow prevent conflicts with GSAP transforms
-              className="gsap-header bg-[#2D2D2D] rounded-[20px] p-2 relative flex flex-col border border-transparent hover:border-gray-500 transition-colors transition-shadow duration-300 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)]"
+              className="gsap-header bg-[#2D2D2D] rounded-[20px] p-2 relative flex flex-col border border-transparent transition-colors transition-shadow duration-300 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)]"
             >
               
               {plan.badge && (
@@ -244,7 +244,7 @@ export default function PricingComponent() {
               2.800+ companies automate their expense management with 
               <span className="text-white font-medium flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-white inline-block"></span>
-                Circula
+                Clyric
               </span>
             </div>
 
