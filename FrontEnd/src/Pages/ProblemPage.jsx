@@ -66,7 +66,8 @@ function ProblemPage() {
 
   // --- LAYOUT & AI STATES ---
   const [isLayoutMenuOpen, setIsLayoutMenuOpen] = useState(false);
-  const [layoutMode, setLayoutMode] = useState("default"); // 'default' | 'columns' | 'focus'
+  const [layoutMode, setLayoutMode] = useState("default"); // 'default' | 'columns' | 'focus' | 'editor-only'
+  const [previousLayoutMode, setPreviousLayoutMode] = useState("default");
   const [isAiChatOpen, setIsAiChatOpen] = useState(false); // <-- NEW AI STATE
 
   const currentProblemId = id || "";
@@ -92,7 +93,7 @@ function ProblemPage() {
       try {
         const problemData = await getProblemBySlug(id);
         setCurrentProblem(problemData);
-        
+
         const defaultCodes = {};
         if (problemData && problemData.starterCode) {
           Object.entries(problemData.starterCode).forEach(([lang, src]) => {
@@ -235,7 +236,7 @@ function ProblemPage() {
     do {
       randomIndex = Math.floor(Math.random() * problemList.length);
     } while (randomIndex === currentIndex);
-    
+
     handleProblemChange(problemList[randomIndex].id);
   };
 
@@ -259,33 +260,33 @@ function ProblemPage() {
     const actualLines = result.stdout ? result.stdout.trim().split('\n').map(line => line.trim()) : [];
 
     for (let i = 0; i < currentProblem.examples.length; i++) {
-        const example = currentProblem.examples[i];
-        
-        const actual = actualLines[i] || "";
-        const expectedNormalized = String(example.output).replace(/\s/g, '');
-        const actualNormalized = actual.replace(/\s/g, '');
+      const example = currentProblem.examples[i];
 
-        let passed = false;
-        if (!anyError && actualNormalized === expectedNormalized) {
-            passed = true;
-        } else {
-            allPassed = false;
-        }
+      const actual = actualLines[i] || "";
+      const expectedNormalized = String(example.output).replace(/\s/g, '');
+      const actualNormalized = actual.replace(/\s/g, '');
 
-        results.push({
-            ...result,
-            expected: example.output,
-            actual: actual,
-            passed: passed,
-            stdin: example.input
-        });
+      let passed = false;
+      if (!anyError && actualNormalized === expectedNormalized) {
+        passed = true;
+      } else {
+        allPassed = false;
+      }
+
+      results.push({
+        ...result,
+        expected: example.output,
+        actual: actual,
+        passed: passed,
+        stdin: example.input
+      });
     }
 
     let finalVerdict = "Wrong Answer";
     if (anyError) {
-       finalVerdict = result.verdict || "Error";
+      finalVerdict = result.verdict || "Error";
     } else if (allPassed) {
-       finalVerdict = "Accepted";
+      finalVerdict = "Accepted";
     }
 
     setOutput({
@@ -360,6 +361,15 @@ function ProblemPage() {
     }
   };
 
+  const handleToggleMaximize = () => {
+    if (layoutMode === "editor-only") {
+      setLayoutMode(previousLayoutMode || "default");
+    } else {
+      setPreviousLayoutMode(layoutMode);
+      setLayoutMode("editor-only");
+    }
+  };
+
   // --- RENDER LOGIC ---
   if (isLoading) {
     return (
@@ -384,7 +394,7 @@ function ProblemPage() {
     <div className="h-screen bg-[#111113] flex flex-col overflow-hidden">
 
       {/* RENDER THE EXTERNAL NAVBAR */}
-      <ProblemNavbar 
+      <ProblemNavbar
         isFirstProblem={isFirstProblem}
         isLastProblem={isLastProblem}
         handlePrevProblem={handlePrevProblem}
@@ -470,16 +480,16 @@ function ProblemPage() {
                         setIsProblemListOpen(false); // Optional: auto-close on selection
                       }}
                       className={`flex items-center justify-between px-4 py-3 cursor-pointer text-[13px] rounded-lg transition-colors ${isActive
-                          ? 'bg-[#3e3e42] text-white'
-                          : 'bg-[#1b1b1f] text-gray-300 hover:bg-[#3e3e42]/80'
+                        ? 'bg-[#3e3e42] text-white'
+                        : 'bg-[#1b1b1f] text-gray-300 hover:bg-[#3e3e42]/80'
                         }`}
                     >
                       <span className={`truncate pr-4 ${isActive ? 'font-medium' : ''}`}>
                         {index + 1}. {p.title}
                       </span>
                       <span className={`text-[12px] font-medium ${p.difficulty === 'Easy' ? 'text-[#00b8a3]' :
-                          p.difficulty === 'Medium' ? 'text-[#ffc01e]' :
-                            'text-[#ff375f]'
+                        p.difficulty === 'Medium' ? 'text-[#ffc01e]' :
+                          'text-[#ff375f]'
                         } shrink-0`}>
                         {p.difficulty === 'Medium' ? 'Med.' : p.difficulty}
                       </span>
@@ -493,29 +503,31 @@ function ProblemPage() {
         )}
 
         {/* Dynamic Resizable Panel Groups based on Layout Mode */}
-        
+
         {/* --- DEFAULT LAYOUT --- */}
         {layoutMode === 'default' && (
           <PanelGroup direction="horizontal" className="flex-1">
             <Panel defaultSize={isAiChatOpen ? 40 : 50} minSize={25} className="bg-[#1b1b1f] rounded-lg border border-[#111113] flex flex-col overflow-hidden transition-all duration-300">
               <ProblemDescription problem={currentProblem} currentProblemId={currentProblemId} onProblemChange={handleProblemChange} allProblems={problemList} />
             </Panel>
-            
+
             <PanelResizeHandle className="w-2 cursor-col-resize hover:bg-[#3e3e42]/50 transition-colors" />
-            
+
             <Panel defaultSize={isAiChatOpen ? 35 : 50} minSize={25} className="flex flex-col transition-all duration-300">
               <PanelGroup direction="vertical">
                 <Panel defaultSize={60} minSize={30} className="bg-[#1b1b1f] rounded-lg border border-[#111113] flex flex-col overflow-hidden">
-                  <CodeEditorPanel 
-                    selectedLanguage={selectedLanguage} 
-                    code={currentCode} 
-                    isRunning={isRunning} 
-                    isSubmitting={isSubmitting} 
-                    onLanguageChange={handleLanguageChange} 
-                    onCodeChange={handleCodeChange} 
-                    onRunCode={handleRunCode} 
-                    onResetCode={handleResetCode} 
-                    settings={editorSettings} 
+                  <CodeEditorPanel
+                    selectedLanguage={selectedLanguage}
+                    code={currentCode}
+                    isRunning={isRunning}
+                    isSubmitting={isSubmitting}
+                    onLanguageChange={handleLanguageChange}
+                    onCodeChange={handleCodeChange}
+                    onRunCode={handleRunCode}
+                    onResetCode={handleResetCode}
+                    settings={editorSettings}
+                    onToggleMaximize={handleToggleMaximize}
+                    isMaximized={layoutMode === "editor-only"}
                   />
                 </Panel>
                 <PanelResizeHandle className="h-2 cursor-row-resize hover:bg-[#3e3e42]/50 transition-colors" />
@@ -545,21 +557,23 @@ function ProblemPage() {
             </Panel>
             <PanelResizeHandle className="w-2 cursor-col-resize hover:bg-[#3e3e42]/50 transition-colors" />
             <Panel defaultSize={isAiChatOpen ? 25 : 33} minSize={20} className="bg-[#1b1b1f] rounded-lg border border-[#111113] flex flex-col overflow-hidden transition-all duration-300">
-              <CodeEditorPanel 
-                selectedLanguage={selectedLanguage} 
-                code={currentCode} 
-                isRunning={isRunning} 
-                isSubmitting={isSubmitting} 
-                onLanguageChange={handleLanguageChange} 
-                onCodeChange={handleCodeChange} 
-                onRunCode={handleRunCode} 
-                onResetCode={handleResetCode} 
+              <CodeEditorPanel
+                selectedLanguage={selectedLanguage}
+                code={currentCode}
+                isRunning={isRunning}
+                isSubmitting={isSubmitting}
+                onLanguageChange={handleLanguageChange}
+                onCodeChange={handleCodeChange}
+                onRunCode={handleRunCode}
+                onResetCode={handleResetCode}
                 settings={editorSettings}
+                onToggleMaximize={handleToggleMaximize}
+                isMaximized={layoutMode === "editor-only"}
               />
             </Panel>
             <PanelResizeHandle className="w-2 cursor-col-resize hover:bg-[#3e3e42]/50 transition-colors" />
             <Panel defaultSize={isAiChatOpen ? 25 : 34} minSize={20} className="bg-[#1b1b1f] rounded-lg border border-[#111113] flex flex-col overflow-hidden transition-all duration-300">
-               <OutputPanel output={output} testCases={currentProblem.examples} />
+              <OutputPanel output={output} testCases={currentProblem.examples} />
             </Panel>
 
             {/* AI Panel Appended to the right */}
@@ -579,23 +593,25 @@ function ProblemPage() {
           <PanelGroup direction="horizontal" className="flex-1">
             <Panel defaultSize={isAiChatOpen ? 75 : 100} minSize={50} className="flex flex-col transition-all duration-300">
               <PanelGroup direction="vertical" className="flex-1">
-                 <Panel defaultSize={70} minSize={30} className="bg-[#1b1b1f] rounded-lg border border-[#111113] flex flex-col overflow-hidden shadow-2xl">
-                   <CodeEditorPanel 
-                     selectedLanguage={selectedLanguage} 
-                     code={currentCode} 
-                     isRunning={isRunning} 
-                     isSubmitting={isSubmitting} 
-                     onLanguageChange={handleLanguageChange} 
-                     onCodeChange={handleCodeChange} 
-                     onRunCode={handleRunCode} 
-                     onResetCode={handleResetCode} 
-                     settings={editorSettings}
-                   />
-                 </Panel>
-                 <PanelResizeHandle className="h-2 cursor-row-resize hover:bg-[#3e3e42]/50 transition-colors" />
-                 <Panel defaultSize={30} minSize={20} className="bg-[#1b1b1f] rounded-lg border border-[#111113] flex flex-col overflow-hidden shadow-xl">
-                   <OutputPanel output={output} testCases={currentProblem.examples} />
-                 </Panel>
+                <Panel defaultSize={70} minSize={30} className="bg-[#1b1b1f] rounded-lg border border-[#111113] flex flex-col overflow-hidden shadow-2xl">
+                  <CodeEditorPanel
+                    selectedLanguage={selectedLanguage}
+                    code={currentCode}
+                    isRunning={isRunning}
+                    isSubmitting={isSubmitting}
+                    onLanguageChange={handleLanguageChange}
+                    onCodeChange={handleCodeChange}
+                    onRunCode={handleRunCode}
+                    onResetCode={handleResetCode}
+                    settings={editorSettings}
+                    onToggleMaximize={handleToggleMaximize}
+                    isMaximized={layoutMode === "editor-only"}
+                  />
+                </Panel>
+                <PanelResizeHandle className="h-2 cursor-row-resize hover:bg-[#3e3e42]/50 transition-colors" />
+                <Panel defaultSize={30} minSize={20} className="bg-[#1b1b1f] rounded-lg border border-[#111113] flex flex-col overflow-hidden shadow-xl">
+                  <OutputPanel output={output} testCases={currentProblem.examples} />
+                </Panel>
               </PanelGroup>
             </Panel>
 
@@ -611,11 +627,30 @@ function ProblemPage() {
           </PanelGroup>
         )}
 
+        {/* --- EDITOR-ONLY LAYOUT --- */}
+        {layoutMode === 'editor-only' && (
+          <div className="flex-1 bg-[#1b1b1f] rounded-lg border border-[#111113] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200">
+            <CodeEditorPanel
+              selectedLanguage={selectedLanguage}
+              code={currentCode}
+              isRunning={isRunning}
+              isSubmitting={isSubmitting}
+              onLanguageChange={handleLanguageChange}
+              onCodeChange={handleCodeChange}
+              onRunCode={handleRunCode}
+              onResetCode={handleResetCode}
+              settings={editorSettings}
+              onToggleMaximize={handleToggleMaximize}
+              isMaximized={true}
+            />
+          </div>
+        )}
+
       </div>
 
       {/* RENDER THE SETTINGS MODAL */}
-      <SettingsModal 
-        isOpen={isSettingsModalOpen} 
+      <SettingsModal
+        isOpen={isSettingsModalOpen}
         onClose={() => setIsSettingsModalOpen(false)}
         settings={editorSettings}
         setSettings={setEditorSettings}

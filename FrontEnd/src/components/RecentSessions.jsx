@@ -25,11 +25,17 @@ function RecentSessions({ sessions, isLoading }) {
           /* Exact Loading State from Screenshot */
           <div className="flex flex-col items-center justify-center flex-grow text-gray-500 min-h-[150px]">
             <Loader2Icon className="w-8 h-8 animate-spin text-indigo-500 mb-3" />
-            <span className="text-sm">Finding active sessions...</span> {/* Matched the text from the image, you might want to change this to "Loading history..." in reality */}
+            <span className="text-sm">Finding active sessions...</span> 
           </div>
         ) : sessions?.length > 0 ? (
-          /* I have updated this grid layout slightly to match the flatter card styling used in the Active Sessions component above, ensuring consistency across your new dashboard. */
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-2">
+          
+          /* UPDATED: Added max-h-[380px], overflow-y-auto, and styled the scrollbar slightly */
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mt-2 max-h-[400px] overflow-y-auto pr-2 pb-2 
+            [&::-webkit-scrollbar]:w-2 
+            [&::-webkit-scrollbar-track]:bg-transparent 
+            [&::-webkit-scrollbar-thumb]:bg-[#2a2538] 
+            [&::-webkit-scrollbar-thumb]:rounded-full 
+            hover:[&::-webkit-scrollbar-thumb]:bg-[#3b3350]">
             {sessions.map((session) => {
               const isActive = session.status === "active";
               const difficultyCapitalized = session.difficulty.charAt(0).toUpperCase() + session.difficulty.slice(1);

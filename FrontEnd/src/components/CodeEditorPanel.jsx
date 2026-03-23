@@ -1,7 +1,7 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { socket } from "../lib/socket";
 import Editor from "@monaco-editor/react";
-import { Code2, Maximize2, RotateCcw, Bookmark, Code } from "lucide-react";
+import { Code2, Maximize2, Minimize2, RotateCcw, Bookmark, Code } from "lucide-react";
 import { LANGUAGE_CONFIG } from "../data/problem";
 
 function CodeEditorPanel({
@@ -13,9 +13,13 @@ function CodeEditorPanel({
   onResetCode,
   roomId, // Passed if collaboration is needed
   user,    // Current user context
-  onRemoteLanguageChange // Added callback if parent needs notification
+  onRemoteLanguageChange, // Added callback if parent needs notification
+  onToggleMaximize,
+  isMaximized,
+  settings // Added settings prop
 }) {
   const isRemoteUpdate = useRef(false);
+  const [editorInstance, setEditorInstance] = useState(null);
 
   // --- COLLABORATION LOGIC ---
   useEffect(() => {
@@ -103,6 +107,50 @@ function CodeEditorPanel({
     });
   };
 
+  const handleEditorDidMount = (editor, monaco) => {
+    setEditorInstance(editor);
+  };
+
+  // Map font family from settings to CSS font-family strings
+  const getFontFamily = (font) => {
+    switch (font) {
+      case "JetBrains Mono":
+        return "'JetBrains Mono', monospace";
+      case "Fira Code":
+        return "'Fira Code', monospace";
+      case "Consolas":
+        return "Consolas, 'Courier New', monospace";
+      case "Default":
+      default:
+        return "'JetBrains Mono', 'Fira Code', monospace";
+    }
+  };
+
+  // React to settings changes
+  useEffect(() => {
+    if (!editorInstance) return;
+
+    const editor = editorInstance;
+    
+    // Update global editor options
+    editor.updateOptions({
+      fontSize: settings?.fontSize || 14,
+      fontFamily: getFontFamily(settings?.fontFamily),
+      fontLigatures: settings?.fontLigatures || false,
+      wordWrap: settings?.wordWrap ? "on" : "off",
+      lineNumbers: settings?.relativeLineNumbers ? "relative" : "on",
+    });
+
+    // Update model options for tab size and spacing
+    const model = editor.getModel();
+    if (model) {
+      model.updateOptions({
+        tabSize: settings?.tabSize || 4,
+        insertSpaces: true,
+      });
+    }
+  }, [settings]);
+
   return (
     <div className="h-full flex flex-col bg-[#111113] relative">
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#1b1b1f] border-b border-[#111113]">
@@ -147,26 +195,41 @@ function CodeEditorPanel({
 
           <button className="hidden" onClick={onRunCode}></button>
 
-          <Maximize2 className="w-4 h-4 cursor-pointer hover:text-white transition-colors" />
+          <button
+            onClick={onToggleMaximize}
+            className="hover:text-white transition-colors"
+            title={isMaximized ? "Minimize" : "Maximize"}
+          >
+            {isMaximized ? (
+              <Minimize2 className="w-4 h-4 cursor-pointer" />
+            ) : (
+              <Maximize2 className="w-4 h-4 cursor-pointer" />
+            )}
+          </button>
         </div>
       </div>
 
       <div className="flex-1 overflow-hidden bg-[#020817]">
         <Editor
           beforeMount={handleEditorWillMount}
+          onMount={handleEditorDidMount}
           height="100%"
           language={LANGUAGE_CONFIG[selectedLanguage]?.monacoLang || "javascript"}
           value={code}
           onChange={handleLocalCodeChange}
           theme="customNavyTheme"
           options={{
-            fontSize: 14,
-            lineNumbers: "on",
+            fontSize: settings?.fontSize || 14,
+            fontFamily: getFontFamily(settings?.fontFamily),
+            fontLigatures: settings?.fontLigatures || false,
+            tabSize: settings?.tabSize || 4,
+            wordWrap: settings?.wordWrap ? "on" : "off",
+            lineNumbers: settings?.relativeLineNumbers ? "relative" : "on",
+            insertSpaces: true,
             scrollBeyondLastLine: false,
             automaticLayout: true,
             minimap: { enabled: false },
             padding: { top: 16 },
-            fontFamily: "'JetBrains Mono', 'Fira Code', monospace",
           }}
         />
       </div>
