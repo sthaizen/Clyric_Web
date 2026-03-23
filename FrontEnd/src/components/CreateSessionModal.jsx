@@ -8,7 +8,11 @@ import {
   BookOpen,
   ActivityIcon,
   HashIcon,
-  CpuIcon
+  CpuIcon,
+  GlobeIcon,
+  LockIcon,
+  EyeIcon,
+  EyeOffIcon
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { getProblems } from "../lib/api/problems.js";
@@ -23,6 +27,8 @@ function CreateSessionModal({
 }) {
   const [problems, setProblems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [showPassword, setShowPassword] = useState(false);
+
 
   useEffect(() => {
     async function fetchProblems() {
@@ -206,8 +212,67 @@ function CreateSessionModal({
 
                 </div>
 
+                {/* Session Visibility Toggle */}
+                <div className="mt-6 border-t border-white/[0.08] pt-5">
+                  <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-3">Session Visibility</p>
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setRoomConfig({ ...roomConfig, visibility: "public", password: "" })}
+                      className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border text-[13px] font-medium transition-all ${
+                        (roomConfig.visibility || "public") === "public"
+                          ? "bg-indigo-500/10 text-indigo-300 border-indigo-500/30"
+                          : "bg-white/[0.02] text-gray-400 border-white/[0.05] hover:bg-white/[0.04]"
+                      }`}
+                    >
+                      <GlobeIcon className="w-4 h-4" />
+                      Public
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRoomConfig({ ...roomConfig, visibility: "private" })}
+                      className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border text-[13px] font-medium transition-all ${
+                        roomConfig.visibility === "private"
+                          ? "bg-amber-500/10 text-amber-300 border-amber-500/30"
+                          : "bg-white/[0.02] text-gray-400 border-white/[0.05] hover:bg-white/[0.04]"
+                      }`}
+                    >
+                      <LockIcon className="w-4 h-4" />
+                      Private
+                    </button>
+                  </div>
+
+                  {/* Password input for private sessions */}
+                  {roomConfig.visibility === "private" && (
+                    <div className="mt-4 animate-in fade-in slide-in-from-top-2 duration-200">
+                      <div className="flex items-center gap-2 mb-2">
+                        <EyeOffIcon className="w-3.5 h-3.5 text-gray-500" />
+                        <label className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider">Room Password (optional)</label>
+                      </div>
+                      <div className="relative">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Enter a password for extra security"
+                          value={roomConfig.password || ""}
+                          onChange={(e) => setRoomConfig({ ...roomConfig, password: e.target.value })}
+                          className="w-full bg-[#0b0b0c] border border-white/[0.08] rounded-lg px-3 py-2.5 text-[13px] text-gray-200 placeholder-gray-600 focus:outline-none focus:border-amber-500/40 transition-colors pr-10"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300 transition-colors"
+                        >
+                          {showPassword ? <EyeIcon className="w-4 h-4" /> : <EyeOffIcon className="w-4 h-4" />}
+                        </button>
+                      </div>
+                      <p className="text-[11px] text-gray-600 mt-2">A unique room code will be generated. Share it with your partner to join.</p>
+
+                    </div>
+                  )}
+                </div>
+
                 {/* Minimal Session Details */}
-                <div className="mt-6 flex items-center justify-between border-t border-white/[0.08] pt-5">
+                <div className="mt-5 flex items-center justify-between border-t border-white/[0.08] pt-5">
                   <div>
                     <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wider mb-1">Session Mode</p>
                     <p className="text-[13px] text-gray-200">1-on-1 Collaborative</p>

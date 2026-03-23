@@ -2,6 +2,7 @@ import { useNavigate } from "react-router";
 import { useUser, SignInButton, SignedOut, SignedIn, UserButton } from "@clerk/clerk-react";
 import { useState, useEffect } from "react";
 import { useActiveSessions, useCreateSession, useMyRecentSessions } from "../hooks/useSessions.js";
+import toast from "react-hot-toast";
 import { useAnalytics } from "../hooks/useAnalytics.js";
 import { useDashboard } from "../hooks/useDashboard.js";
 import { CodeIcon, ActivityIcon, ChevronDown, Search, X, Camera, BarChart3 } from "lucide-react";
@@ -30,7 +31,7 @@ function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useUser();
   const [showCreateModal, setShowCreateModal] = useState(false);
-  const [roomConfig, setRoomConfig] = useState({ problem: "", difficulty: "" });
+  const [roomConfig, setRoomConfig] = useState({ problem: "", difficulty: "", visibility: "public", password: "" });
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [dashboardRefreshKey, setDashboardRefreshKey] = useState(0);
@@ -65,10 +66,16 @@ function DashboardPage() {
       {
         problem: roomConfig.problem,
         difficulty: roomConfig.difficulty.toLowerCase(),
+        visibility: roomConfig.visibility || "public",
+        password: roomConfig.visibility === "private" ? roomConfig.password : undefined,
       },
       {
         onSuccess: (data) => {
           setShowCreateModal(false);
+          // Show room code for private sessions so host can share it
+          if (data.session.roomId) {
+            toast.success(`Room Code: ${data.session.roomId}`, { duration: 10000 });
+          }
           navigate(`/session/${data.session._id}`);
         },
       }

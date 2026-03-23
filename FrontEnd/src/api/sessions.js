@@ -28,8 +28,12 @@ export const sessionApi = {
     const response = await axiosInstance.post(`/sessions/${id}/end`);
     return response.data;
   },
+  joinSessionByCode: async ({ roomId, password }) => {
+    const response = await axiosInstance.post("/sessions/join-by-code", { roomId, password });
+    return response.data;
+  },
   getStreamToken: async () => {
     const response = await axiosInstance.get(`/chat/token`);
     return response.data;
   },
-};
+};
