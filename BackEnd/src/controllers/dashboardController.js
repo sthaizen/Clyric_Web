@@ -322,13 +322,13 @@ export const getRecommendedPeers = async (req, res) => {
   try {
     const userId = req.user._id;
 
-    // 1. Find sessions involving the user
+    // 1. Find sessions involving the user to identify peers
     const sessions = await Session.find({
       $or: [{ host: userId }, { participant: userId }],
-      status: "completed" // Usually peers are from completed sessions
+      status: "completed"
     })
     .sort({ createdAt: -1 })
-    .limit(50); // Scan a reasonable amount of history
+    .limit(100); // Scan more history for accurate counting
 
     const peersMap = new Map();
 
@@ -336,27 +336,33 @@ export const getRecommendedPeers = async (req, res) => {
       const isHost = session.host.toString() === userId.toString();
       const peerId = isHost ? session.participant : session.host;
 
-      if (!peerId) continue; // Session might not have a participant yet
+      if (!peerId) continue;
 
       const peerIdStr = peerId.toString();
       if (!peersMap.has(peerIdStr)) {
         peersMap.set(peerIdStr, {
           peerId: peerId,
           lastProblem: session.problem,
-          lastDifficulty: session.difficulty
+          lastDifficulty: session.difficulty,
+          collabCount: 0 // Will count below
         });
       }
       
-      if (peersMap.size >= 5) break; // Limit to 5 unique peers
+      // Increment collab count for this specific peer from the scanned history
+      peersMap.get(peerIdStr).collabCount += 1;
     }
 
-    const peerIds = Array.from(peersMap.keys());
+    // Take top 5 unique peers
+    const sortedPeers = Array.from(peersMap.values())
+      .sort((a, b) => b.collabCount - a.collabCount)
+      .slice(0, 5);
+
+    const peerIds = sortedPeers.map(p => p.peerId);
     
     // 2. Fetch User profiles and Presence
     const users = await User.find({ _id: { $in: peerIds } });
     
-    // Get clerkIds for presence lookup
-    const clerkIds = users.map(u => u.clerkId);
+    const clerkIds = users.filter(u => u.clerkId).map(u => u.clerkId);
     const presences = await Presence.find({ userId: { $in: clerkIds } });
     
     const presenceMap = new Map();
@@ -369,8 +375,9 @@ export const getRecommendedPeers = async (req, res) => {
         name: user.nickname || user.name,
         avatar: user.profileImage,
         isOnline: presenceMap.get(user.clerkId) === "online",
-        role: peerData.lastProblem, // Using problem name as the "tag" or "role"
-        statusText: presenceMap.get(user.clerkId) === "online" ? "online" : "offline"
+        role: peerData.lastProblem,
+        statusText: presenceMap.get(user.clerkId) === "online" ? "online" : "offline",
+        collabCount: peerData.collabCount
       };
     });
 
@@ -380,3 +387,4 @@ export const getRecommendedPeers = async (req, res) => {
     res.status(500).json({ message: "Server error fetching recommended peers" });
   }
 };
+

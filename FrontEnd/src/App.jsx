@@ -27,12 +27,23 @@ const App = () => {
 
   useEffect(() => {
     if (isLoaded && isSignedIn && user) {
-      if (!socket.connected) {
+      const onConnect = () => {
+        socket.emit("user-connected", user.id);
+      };
+
+      socket.on("connect", onConnect);
+
+      if (socket.connected) {
+        onConnect();
+      } else {
         socket.connect();
       }
-      socket.emit("user-connected", user.id);
+
+      return () => {
+        socket.off("connect", onConnect);
+      };
     }
-  }, [isLoaded, isSignedIn, user]);
+  }, [isLoaded, isSignedIn, user?.id]);
 
   if (!isLoaded) return null;
 

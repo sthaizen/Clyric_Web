@@ -2,6 +2,9 @@ import { Server } from "socket.io";
 import { ENV } from "./env.js";
 import Presence from "../models/Presence.js";
 
+// Map to track number of active connections per userId
+const userConnections = new Map();
+
 export const setupSocket = (server) => {
   const io = new Server(server, {
     cors: {
@@ -14,14 +17,27 @@ export const setupSocket = (server) => {
     console.log("A user connected:", socket.id);
 
     socket.on("user-connected", async (userId) => {
+      // If this socket was already registered with the same user, do nothing
+      if (socket.userId === userId) return;
+
       socket.userId = userId;
+      
+      // Increment connection count
+      const currentCount = userConnections.get(userId) || 0;
+      userConnections.set(userId, currentCount + 1);
+
       try {
-        await Presence.findOneAndUpdate(
-          { userId },
-          { status: "online", lastSeen: new Date() },
-          { upsert: true }
-        );
-        console.log(`User ${userId} is now online`);
+        // Only update DB if this is the first connection
+        if (currentCount === 0) {
+          await Presence.findOneAndUpdate(
+            { userId },
+            { status: "online", lastSeen: new Date() },
+            { upsert: true }
+          );
+          console.log(`User ${userId} is now online (Connections: 1)`);
+        } else {
+          console.log(`User ${userId} connection incremented (Connections: ${currentCount + 1})`);
+        }
       } catch (error) {
         console.error("Error updating presence:", error);
       }
@@ -44,15 +60,26 @@ export const setupSocket = (server) => {
 
     socket.on("disconnect", async () => {
       console.log("User disconnected:", socket.id);
-      if (socket.userId) {
-        try {
-          await Presence.findOneAndUpdate(
-            { userId: socket.userId },
-            { status: "offline", lastSeen: new Date() }
-          );
-          console.log(`User ${socket.userId} is now offline`);
-        } catch (error) {
-          console.error("Error updating presence on disconnect:", error);
+      const userId = socket.userId;
+      
+      if (userId) {
+        const currentCount = userConnections.get(userId) || 0;
+        const newCount = Math.max(0, currentCount - 1);
+        
+        if (newCount === 0) {
+          userConnections.delete(userId);
+          try {
+            await Presence.findOneAndUpdate(
+              { userId },
+              { status: "offline", lastSeen: new Date() }
+            );
+            console.log(`User ${userId} is now offline (Last connection closed)`);
+          } catch (error) {
+            console.error("Error updating presence on disconnect:", error);
+          }
+        } else {
+          userConnections.set(userId, newCount);
+          console.log(`User ${userId} connection decremented (Connections: ${newCount})`);
         }
       }
     });
@@ -60,3 +87,4 @@ export const setupSocket = (server) => {
 
   return io;
 };
+

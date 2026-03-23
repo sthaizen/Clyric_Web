@@ -5,8 +5,9 @@ export function useRecommendedPeers() {
   return useQuery({
     queryKey: ["recommendedPeers"],
     queryFn: fetchRecommendedPeers,
-    refetchInterval: 60000, // Refresh every 60 seconds
-    staleTime: 30000,       // Consider data stale after 30 seconds
+    refetchInterval: 15000, // Refresh every 15 seconds for snappier status
+    staleTime: 10000,       // Consider data stale after 10 seconds
     retry: 2               // Retry twice on failure
   });
 }
+
