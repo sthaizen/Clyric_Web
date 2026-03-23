@@ -2,6 +2,7 @@ import { chatClient, streamClient } from "../lib/streamTemp.js";
 import Session from "../models/Session.js";
 import ProblemAnalytics from "../models/ProblemAnalytics.js";
 import AdvancedProblem from "../models/AdvancedProblem.js";
+import { generateRoomId, hashPassword, verifyPassword } from "../lib/cryptoUtils.js";
 
 async function trackSessionJoin(userIdStr, problemSlug, isHost) {
   try {
@@ -49,7 +50,7 @@ async function trackSessionJoin(userIdStr, problemSlug, isHost) {
 
 export async function createSession(req, res) {
   try {
-    const { problem, difficulty } = req.body;
+    const { problem, difficulty, visibility, password } = req.body;
     const userId = req.user._id;
     const clerkId = req.user.clerkId;
 
@@ -59,12 +60,37 @@ export async function createSession(req, res) {
 
     const callId = `session_${Date.now()}_${Math.random().toString(36).substring(7)}`;
 
-    const session = await Session.create({
+    const sessionData = {
       problem,
       difficulty,
       host: userId,
       callId,
-    });
+      visibility: visibility || "public",
+    };
+
+    // Generate roomId for private sessions
+    if (visibility === "private") {
+      let roomId;
+      let attempts = 0;
+      do {
+        roomId = generateRoomId();
+        const existing = await Session.findOne({ roomId });
+        if (!existing) break;
+        attempts++;
+      } while (attempts < 5);
+
+      if (attempts >= 5) {
+        return res.status(500).json({ message: "Failed to generate unique room code. Please try again." });
+      }
+      sessionData.roomId = roomId;
+
+      // Hash password if provided
+      if (password) {
+        sessionData.password = hashPassword(password, roomId);
+      }
+    }
+
+    const session = await Session.create(sessionData);
 
     await streamClient.video.call("default", callId).getOrCreate({
       data: {
@@ -97,7 +123,8 @@ export async function createSession(req, res) {
 
 export async function getActiveSessions(_, res) {
   try {
-    const sessions = await Session.find({ status: "active" })
+    // Only return public active sessions
+    const sessions = await Session.find({ status: "active", visibility: "public" })
       .populate("host", "name profileImage email clerkId")
       .sort({ createdAt: -1 })
       .limit(20);
@@ -181,6 +208,59 @@ export async function joinSession(req, res) {
   }
 }
 
+
+export async function joinSessionByCode(req, res) {
+  try {
+    const { roomId, password } = req.body;
+    const userId = req.user._id;
+    const clerkId = req.user.clerkId;
+
+    if (!roomId) {
+      return res.status(400).json({ message: "Room code is required" });
+    }
+
+    const session = await Session.findOne({ roomId: roomId.toUpperCase(), status: "active" });
+
+    if (!session) return res.status(404).json({ message: "No active session found with this code" });
+
+    // Check password if the session has one
+    if (session.password) {
+      if (!password) {
+        return res.status(403).json({ message: "Password is required for this session" });
+      }
+      if (!verifyPassword(password, session.roomId, session.password)) {
+        return res.status(403).json({ message: "Incorrect password" });
+      }
+    }
+
+    if (session.host.toString() === userId.toString()) {
+      // Host is rejoining their own session
+      return res.status(200).json({ session });
+    }
+
+    if (session.participant) {
+      if (session.participant.toString() === userId.toString()) {
+        // Participant is rejoining
+        return res.status(200).json({ session });
+      }
+      return res.status(409).json({ message: "Session is full" });
+    }
+
+    session.participant = userId;
+    await session.save();
+
+    const channel = chatClient.channel("messaging", session.callId);
+    await channel.addMembers([clerkId]);
+
+    // Track for graph
+    trackSessionJoin(userId.toString(), session.problem, false);
+
+    res.status(200).json({ session });
+  } catch (error) {
+    console.log("Error in joinSessionByCode controller:", error.message);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+}
 
 export async function endSession(req,res){
      try {

@@ -30,6 +30,23 @@ const sessionSchema = new mongoose.Schema({
         type: String,
         default: "",
     },
+    // Session visibility: public (default) or private
+    visibility:{
+        type: String,
+        enum: ["public", "private"],
+        default: "public",
+    },
+    // Short room code for private sessions (e.g., "A3X-9K2")
+    roomId:{
+        type: String,
+        unique: true,
+        sparse: true,
+    },
+    // Hashed password for private sessions (optional)
+    password:{
+        type: String,
+        default: null,
+    },
 },
     {timestamps: true}
 )
