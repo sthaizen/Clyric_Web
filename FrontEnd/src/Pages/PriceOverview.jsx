@@ -13,26 +13,26 @@ import Chatbot from '../components/Chatbot';
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 const CheckIcon = () => (
-  <svg className="w-5 h-5 min-w-[20px] text-green-500" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" fill="currentColor"/>
-    <path d="M7.5 12L10.5 15L16.5 9" stroke="#2A2A2A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-  </svg>
+ <svg className="w-6 h-6 min-w-[20px] text-[#43a346]" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" fill="currentColor"/>
+  <path d="M7.5 12L10.5 15L16.5 9" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+</svg>
 );
 
 const ReceiptIcon = () => (
-  <svg className="w-5 h-5 text-gray-300 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+  <svg className="w-7 h-7 text-gray-300 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
 );
 
 const CreditCardIcon = () => (
-  <svg className="w-5 h-5 text-gray-300 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+  <svg className="w-7 h-7 text-gray-300 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
 );
 
 const DocumentIcon = () => (
-  <svg className="w-5 h-5 text-gray-300 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>
+  <svg className="w-7 h-7 text-gray-300 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7v8a2 2 0 002 2h6M8 7V5a2 2 0 012-2h4.586a1 1 0 01.707.293l4.414 4.414a1 1 0 01.293.707V15a2 2 0 01-2 2h-2M8 7H6a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2v-2" /></svg>
 );
 
 const GiftIcon = () => (
-  <svg className="w-5 h-5 text-gray-300 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" /></svg>
+  <svg className="w-7 h-7 text-gray-300 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" /></svg>
 );
 
 export default function PricingComponent() {
@@ -40,94 +40,90 @@ export default function PricingComponent() {
   // Theme state for the Navbar, defaulting to 'dark' to match the pricing section background
   const [theme, setTheme] = useState('dark');
 
-  const plans = [
-    {
-      title: "Practice Pack (Popular)",
-      icon: <ReceiptIcon />,
-      badge: { text: "Popular", color: "bg-green-600", textColor: "text-white" },
-      price: "NPR 499",
-      subtext: "per user / month",
-      buttonText: "Start your free trial",
-      description: "For consistent daily prep — without the extra noise.",
-      features: [
-        "Topic-wise problem sets",
-        "Difficulty filters (Easy/Med/Hard)",
-        "Basic timed mode",
-        "Run code in-editor (limited)",
-        "Submission history",
-        "Progress tracker (accuracy + time)",
-        "Bookmarks & notes",
-        "Weekly activity summary"
-      ]
-    },
-    {
-      title: "Code Rooms",
-      icon: <CreditCardIcon />,
-      price: "NPR 999",
-      subtext: "per user / month",
-      buttonText: "Book a meeting",
-      description: "For practice that feels like real rounds — together.",
-      features: [
-        "Everything in Practice Pack, plus:",
-        "Collaborative coding rooms",
-        "Invite links for partners",
-        "Live cursor + presence indicators",
-        "Multi-language execution (higher limits)",
-        "Session chat + quick notes",
-        "Share solutions & snippets",
-        "Save room history",
-        "Lightweight session reviews",
-        "Team/partner access controls",
-        "Faster execution queue"
-      ]
-    },
-    {
-      title: "Interview Studio (Coming soon)",
-      icon: <DocumentIcon />,
-      badge: { text: "Coming Soon", color: "bg-gray-500", textColor: "text-white" },
-      price: "NPR 1,499",
-      subtext: "per user / month",
-      buttonText: "Book a meeting",
-      description: "For structured mock interviews — schedule, run, review.",
-      features: [
-        "Everything in Code Rooms, plus:",
-        "Schedule mock interview sessions",
-        "Video + screen share inside Cyric",
-        "Interview templates (DSA / SD / HR)",
-        "Session timer + agenda",
-        "Feedback forms + scoring",
-        "Session recap & action items",
-        "Review past sessions timeline",
-        "Export session notes (PDF)",
-        "Candidate profile & growth summary",
-        "Ratings + improvement streaks"
-      ]
-    },
-    {
-      title: "Career Plus (Best value)",
-      icon: <GiftIcon />,
-      badge: { text: "Best Value", color: "bg-green-600", textColor: "text-white" },
-      price: "NPR 1,999",
-      subtext: "per user / month",
-      buttonText: "Book a meeting",
-      description: "For serious prep mode — the full toolkit to get interview-ready faster.",
-      features: [
-        "Everything in Interview Studio, plus:",
-        "Full problem bank access (all topics)",
-        "Advanced analytics (weak spots, trends)",
-        "Smart practice plans (daily/weekly goals)",
-        "Company-style tracks (e.g., Google OA)",
-        "Difficulty ramp recommendations",
-        "Leaderboard + competitive challenges",
-        "Timed contest mode",
-        "Priority execution resources",
-        "Priority support",
-        "Early access to new features",
-        "Personalized review checklist",
-        "Profile share link (for mentors/partners)"
-      ]
-    }
-  ];
+const plans = [
+  {
+    title: "Practice Pack",
+    icon: <ReceiptIcon />,
+    badge: { text: "Popular", color: "bg-green-600", textColor: "text-white" },
+    price: "NPR 200",
+    subtext: "per user / month",
+    buttonText: "Start your free trial",
+    description: "For beginners building consistency with core practice tools.",
+    features: [
+      "Access to Easy problems",
+      "Basic progress tracking",
+      "Solved and attempted counts",
+      "Standard code execution",
+      "Up to 50 code runs per day",
+      "Join public sessions",
+      "3 AI hints per day",
+      "Bookmarks and notes"
+    ]
+  },
+  {
+    title: "Code Rooms",
+    icon: <CreditCardIcon />,
+    price: "NPR 400",
+    subtext: "per user / month",
+    buttonText: "Upgrade to Pro",
+    description: "For serious learners who want deeper practice, analytics, and AI help.",
+    features: [
+      "Everything in Practice Pack, plus:",
+      "Access to Medium and Hard problems",
+      "Advanced dashboard analytics",
+      "Growth trajectory tracking",
+      "Independent solve ratio tracking",
+      "Unlimited code runs",
+      "Priority code execution queue",
+      "20 AI hints per day",
+      "AI chatbot assistance",
+      "Host private sessions"
+    ]
+  },
+  {
+    title: "Interview Studio",
+    icon: <DocumentIcon />,
+    badge: { text: "Best for Teams", color: "bg-gray-700", textColor: "text-white" },
+    price: "NPR 600",
+    subtext: "per user / month",
+    buttonText: "Get Interview Studio",
+    description: "For collaborative coding, pair practice, and real-time interview simulation.",
+    features: [
+      "Everything in Code Rooms, plus:",
+      "Unlimited hosting of code rooms",
+      "Unlimited real-time collaboration sessions",
+      "Invite links for partners",
+      "Live cursor and presence indicators",
+      "Session chat and shared notes",
+      "Shared editor collaboration",
+      "Save room history",
+      "Recommended peers access",
+      "Custom editor themes and advanced workspace layouts"
+    ]
+  },
+  {
+    title: "Career Plus",
+    icon: <GiftIcon />,
+    badge: { text: "Best Value", color: "bg-green-600", textColor: "text-white" },
+    price: "NPR 800",
+    subtext: "per user / month",
+    buttonText: "Go Career Plus",
+    description: "For full interview preparation with advanced tools, tracks, and career-focused insights.",
+    features: [
+      "Everything in Interview Studio, plus:",
+      "Company-specific preparation tracks",
+      "Mock OA preparation",
+      "Full interview workflow access",
+      "Feedback forms and scoring tools",
+      "Session recap and action items",
+      "Export session notes as PDF",
+      "Community benchmarking",
+      "Recruiter-ready profile summaries",
+      "Priority support",
+      "Dedicated preparation resources"
+    ]
+  }
+];
 
   useGSAP(() => {
     // Creating the timeline linked to scroll
@@ -166,7 +162,7 @@ export default function PricingComponent() {
   }, { scope: containerRef }); // Scope ensures animations only happen inside this component
 
   return (
-                <div className="w-full min-h-screen flex flex-col bg-[linear-gradient(198deg,#202020,#010101)]">
+                <div className="w-full min-h-screen flex flex-col bg-[linear-gradient(180deg,#1b1b1b_0%,#000000_20%,#000000_100%)]">
       {/* Navbar Section */}
       <div className="sticky top-0 w-full z-[100]">
         <Navbar theme={theme} setTheme={setTheme} />
@@ -194,7 +190,7 @@ export default function PricingComponent() {
             <div 
               key={index} 
               // Note: transition-colors and transition-shadow prevent conflicts with GSAP transforms
-              className="gsap-header bg-[#2D2D2D] rounded-[20px] p-2 relative flex flex-col border border-transparent transition-colors transition-shadow duration-300 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)]"
+              className="gsap-card bg-[#414141] rounded-[20px] p-2 relative flex flex-col border border-transparent transition-colors transition-shadow duration-300 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)]"
             >
               
               {plan.badge && (
@@ -203,18 +199,18 @@ export default function PricingComponent() {
                 </div>
               )}
 
-              <div className="flex items-center px-4 pt-4 pb-6">
+              <div className="flex items-center px-4 pt-4 pb-10 pt-5">
                 {plan.icon}
-                <h3 className="text-[17px] font-medium text-gray-100">{plan.title}</h3>
+                <h3 className="text-[21px] font-medium text-gray-100">{plan.title}</h3>
               </div>
 
-              <div className="bg-[#404040] rounded-2xl p-6 mb-6">
-                <div className="text-[26px] mb-2 text-white">
+              <div className="bg-[#646464] rounded-2xl p-6 mb-6">
+                <div className="text-[26px] mb-2 mt-5 text-white">
                   <span className="text-gray-300 text-3xl mr-1">Starting from</span> 
                   {plan.price}
                 </div>
                 <p className="text-[13px] text-gray-300 mb-15 h-8">{plan.subtext}</p>
-                <button className="bg-white text-black font-medium text-sm px-6 py-2.5 rounded-full hover:bg-gray-200 transition-colors w-full">
+                <button className="bg-white text-[#222222] font-medium text-[16.5px] px-[37px] py-[14px] rounded-full hover:bg-gray-200 transition-colors w-fit block ">
                   {plan.buttonText}
                 </button>
               </div>
@@ -226,7 +222,7 @@ export default function PricingComponent() {
                 
                 <ul className="space-y-4 flex-grow">
                   {plan.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-start text-[14px] text-gray-200">
+                    <li key={idx} className="flex items-start text-[16px] text-gray-200">
                       <span className="mr-3 mt-0.5"><CheckIcon /></span>
                       <span className="leading-snug">{feature}</span>
                     </li>
@@ -236,6 +232,10 @@ export default function PricingComponent() {
             </div>
           ))}
         </div>
+
+
+
+
 
         {/* Trust Badge Section */}
         <div className="max-w-[1580px] w-full flex flex-col gap-12 mt-4">
