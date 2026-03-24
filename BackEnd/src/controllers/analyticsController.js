@@ -1,5 +1,6 @@
 import ProblemAnalytics from "../models/ProblemAnalytics.js";
 import AdvancedProblem from "../models/AdvancedProblem.js";
+import { evaluateQuestProgress } from "../services/questService.js";
 
 // POST /api/problem-analytics/track
 export const trackEvent = async (req, res) => {
@@ -131,6 +132,21 @@ export const trackEvent = async (req, res) => {
 
     await analytics.save();
     
+    // Evaluate Quest Progress Asynchronously
+    if (actionType === "submit" && verdict === "Accepted") {
+      evaluateQuestProgress(userId, {
+        problemSlug,
+        difficulty: problem.difficulty,
+        categories: problem.categories,
+        isFirstTimeSolved: analytics.acceptedSubmissions === 1,
+        language,
+        mode,
+        tags: problem.tags,
+        relatedTopics: problem.relatedTopics,
+        isCollaborative: !!req.body.roomId 
+      }).catch(err => console.error("Quest evaluation failed:", err));
+    }
+
     res.json({ success: true, analyticsId: analytics._id });
 
   } catch (error) {

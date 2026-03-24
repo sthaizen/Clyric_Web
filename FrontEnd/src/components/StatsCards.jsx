@@ -1,11 +1,20 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { RadioIcon, CheckSquare, MessageCircle, Star } from "lucide-react";
+import QuestWidget from './quests/QuestWidget';
 
 function StatsCards({ activeSessionsCount = "1.9B", recentSessionsCount = "2.6K" }) {
+  const navigate = useNavigate();
+
   return (
-    <div className="w-full bg-[#16161a] border border-[#231c2f] text-white p-6 rounded-xl font-sans shadow-sm">
+    <div className="w-full flex flex-col gap-5">
       
-      {/* --- Community Stats --- */}
+      {/* --- Quest Progression --- */}
+      <QuestWidget onClick={() => navigate('/problems')} />
+
+      <div className="w-full bg-[#16161a] border border-[#231c2f] text-white p-6 rounded-xl font-sans shadow-sm">
+        
+        {/* --- Community Stats --- */}
       <div>
         <h2 className="text-lg font-medium text-white mb-6 tracking-wide">Community Stats</h2>
         <div className="flex flex-col gap-5">
@@ -156,6 +165,7 @@ function StatsCards({ activeSessionsCount = "1.9B", recentSessionsCount = "2.6K"
           </div>
         </div>
         
+        </div>
       </div>
     </div>
   );
