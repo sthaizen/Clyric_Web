@@ -29,11 +29,12 @@ const Navbar = () => {
                     }`}
             />
 
-            <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ease-in-out ${activeMenu
-                    ? 'bg-[#f0efee] shadow-sm py-4 text-gray-900'
+            <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ease-in-out ${isScrolled ? 'py-2' : 'py-4'
+                } ${activeMenu
+                    ? 'bg-[#f0efee] shadow-sm text-gray-900'
                     : isScrolled
-                        ? 'bg-white/95 backdrop-blur-md shadow-sm py-2 text-gray-900'
-                        : 'bg-transparent py-4 text-white border-b border-white/20'
+                        ? 'bg-white/95 backdrop-blur-md shadow-sm text-gray-900'
+                        : 'bg-transparent text-white border-b border-white/20'
                 }`}>
                 <nav className="max-w-[1560px] mx-auto px-6 md:px-5 flex items-center justify-between">
 
@@ -233,7 +234,7 @@ const Navbar = () => {
                         <SignedOut>
                             <SignInButton mode="modal">
                                 <button className="text-[13px] font-medium hover:opacity-60 transition-opacity">
-                                   Register or Login
+                                    Register or Login
                                 </button>
                             </SignInButton>
                         </SignedOut>
@@ -245,8 +246,8 @@ const Navbar = () => {
                         <Link
                             to="/coding"
                             className={`text-[14px] font-medium px-8 py-2 rounded-full transition-colors duration-300 ${isLightMode
-                                    ? 'bg-[#18181B] text-white hover:bg-black'
-                                    : 'bg-white/10 backdrop-blur-md border border-white/10 text-white hover:bg-[#18181B]/60'
+                                ? 'bg-[#18181B] text-white hover:bg-black'
+                                : 'bg-white/10 backdrop-blur-md border border-white/10 text-white hover:bg-[#18181B]/60'
                                 }`}
                         >
                             Book a demo

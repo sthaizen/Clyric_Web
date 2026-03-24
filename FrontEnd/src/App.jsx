@@ -20,6 +20,7 @@ import Connection from "./components/Connection";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import SessionPage from "./Pages/SessionPage";
+import CosmicCheckout from "./Pages/CheckOutPage";
 
 const App = () => {
   const { isSignedIn, isLoaded, user } = useUser();
@@ -70,6 +71,7 @@ const App = () => {
           <Route path="/coding" element={<CodingEnvironemt />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/price" element={<PriceOverview />} />
+          <Route path="/checkout" element={<CosmicCheckout />} />
         </Routes>
       </div>
       <Toaster />
