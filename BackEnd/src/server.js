@@ -19,8 +19,10 @@ import problemRoutes from "./routes/problemRoutes.js";
 import analyticsRoutes from "./routes/analyticsRoutes.js";
 import dashboardRoutes from "./routes/dashboardRoutes.js";
 import submissionRoutes from "./routes/submissionRoutes.js";
+import questRoutes from "./routes/questRoutes.js";
 
 const app = express();
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -59,6 +61,7 @@ app.use("/api/problems", problemRoutes);
 app.use("/api/problem-analytics", analyticsRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/submissions", submissionRoutes);
+app.use("/api/quests", questRoutes);
 
 app.get("/health", (req, res) => {
   res.status(200).json({ msg: "success api is running" });

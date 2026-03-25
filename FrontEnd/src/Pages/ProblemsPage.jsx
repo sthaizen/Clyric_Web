@@ -8,6 +8,8 @@ import {
   Lock, Settings, Shuffle, ChevronDown, ChevronUp, ArrowUpDown, SlidersHorizontal,
   Target, GraduationCap, User
 } from 'lucide-react';
+import QuestWidget from '../components/quests/QuestWidget';
+import QuestDashboardView from '../components/quests/QuestDashboardView';
 
 const COMPANIES = [
   { name: "Amazon", count: 1943 }, { name: "Uber", count: 372 },
@@ -30,6 +32,7 @@ export default function LeetCodeClone() {
   const [activeCategory, setActiveCategory] = useState(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [sortOrder, setSortOrder] = useState('asc');
+  const [activeMainView, setActiveMainView] = useState('library'); // 'library', 'quest', 'study_plan'
 
   // --- RIGHT SIDEBAR STATES ---
   const [viewDate, setViewDate] = useState(new Date());
@@ -244,11 +247,11 @@ export default function LeetCodeClone() {
         {/* LEFT SIDEBAR */}
         <aside style={{ width: 200, borderRight: '1px solid #2c2c35', padding: '16px 8px', display: 'flex', flexDirection: 'column', gap: 2, flexShrink: 0, overflowY: 'auto' }}>
           {[
-            { icon: <LayoutList size={16} />, label: 'Library', active: true },
-            { icon: <Target size={16} />, label: 'Quest', badge: 'New' },
-            { icon: <GraduationCap size={16} />, label: 'Study Plan' },
-          ].map(({ icon, label, active, badge }) => (
-            <button key={label} style={{
+            { icon: <LayoutList size={16} />, label: 'Library', active: activeMainView === 'library', action: () => setActiveMainView('library') },
+            { icon: <Target size={16} />, label: 'Quest', badge: 'New', active: activeMainView === 'quest', action: () => setActiveMainView('quest') },
+            { icon: <GraduationCap size={16} />, label: 'Study Plan', active: activeMainView === 'study_plan', action: () => setActiveMainView('study_plan') },
+          ].map(({ icon, label, active, badge, action }) => (
+            <button key={label} onClick={action} style={{
               display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 6,
               background: active ? '#2c2c35' : 'transparent', border: 'none', cursor: 'pointer',
               color: active ? '#fff' : '#9ca3af', fontSize: 13.5, fontWeight: active ? 500 : 400,
@@ -267,9 +270,21 @@ export default function LeetCodeClone() {
         </aside>
 
         {/* CENTER */}
-        <main style={{ flex: 1, padding: '20px 24px', overflowY: 'auto', minWidth: 0 }}>
+        <main style={{ flex: 1, padding: '20px 24px', overflowY: 'auto', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
 
-          {/* Promo Banners */}
+          {activeMainView === 'quest' && <QuestDashboardView onNavigateToLibrary={() => setActiveMainView('library')} />}
+
+          {activeMainView === 'study_plan' && (
+            <div className="flex flex-col items-center justify-center py-20 text-gray-500 h-full">
+              <GraduationCap className="w-16 h-16 opacity-20 mb-4" />
+              <h3 className="text-xl font-semibold text-gray-400">Study Plan</h3>
+              <p className="mt-2 text-sm">Coming soon in a future update.</p>
+            </div>
+          )}
+
+          {activeMainView === 'library' && (
+            <>
+              {/* Promo Banners */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 24 }}>
             {[
               'https://assets.leetcode.com/users/images/dba14729-0f89-4a5a-a181-b2a7ec1fb0ec_1772459043.341392.png',
@@ -410,10 +425,16 @@ export default function LeetCodeClone() {
               </Link>
             ))}
           </div>
+          </>
+        )}
         </main>
 
         {/* --- RIGHT SIDEBAR (NOW FULLY FUNCTIONAL) --- */}
+
         <aside style={{ width: 300, borderLeft: '1px solid #2c2c35', padding: '16px', display: 'flex', flexDirection: 'column', gap: 16, flexShrink: 0, overflowY: 'auto' }}>
+
+          {/* New Quest Widget */}
+          <QuestWidget onClick={() => setActiveMainView('quest')} />
 
           {/* Calendar Section */}
           <div style={{ background: '#16161a', borderRadius: 10, padding: 16, border: '1px solid #2c2c35' }}>
