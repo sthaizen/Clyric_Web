@@ -1,15 +1,57 @@
 import React, { useState } from 'react';
-import { ArrowLeft, ChevronDown, CreditCard, Wallet, Smartphone, ShieldCheck, Lock, CheckCircle2 } from 'lucide-react';
+import axios from 'axios';
+import toast from 'react-hot-toast';
+import { ArrowLeft, ChevronDown, CreditCard, Wallet, Smartphone, ShieldCheck, Lock, CheckCircle2, Loader2 } from 'lucide-react';
 
 const Checkout = () => {
-  const [paymentMethod, setPaymentMethod] = useState('card');
-  const [esewaNumber, setEsewaNumber] = useState('');
+  const [paymentMethod, setPaymentMethod] = useState('esewa');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handlePayment = (e) => {
+  const handlePayment = async (e) => {
     e.preventDefault();
-    if (paymentMethod === 'esewa') {
-      // Logic to trigger eSewa redirect/API would go here
-      console.log('Initiating eSewa payment for:', esewaNumber || 'Guest');
+    
+    if (paymentMethod === 'card') {
+      return toast.error("Card payments are coming soon. Use eSewa or Khalti.");
+    }
+
+    setIsLoading(true);
+    try {
+      const planId = "career-plus"; // Default for this one-page checkout
+      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+      const endpoint = baseUrl.endsWith('/api') 
+          ? `${baseUrl}/payments/initiate` 
+          : `${baseUrl}/api/payments/initiate`;
+
+      const { data } = await axios.post(
+        endpoint,
+        { planId, gateway: paymentMethod },
+        { withCredentials: true }
+      );
+
+      if (!data.success) throw new Error(data.message);
+
+      if (paymentMethod === 'esewa') {
+        const form = document.createElement("form");
+        form.setAttribute("method", "POST");
+        form.setAttribute("action", data.paymentUrl);
+
+        for (const key in data.formData) {
+          const hiddenField = document.createElement("input");
+          hiddenField.setAttribute("type", "hidden");
+          hiddenField.setAttribute("name", key);
+          hiddenField.setAttribute("value", data.formData[key]);
+          form.appendChild(hiddenField);
+        }
+
+        document.body.appendChild(form);
+        form.submit();
+      } else {
+        window.location.href = data.paymentUrl;
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error(error.response?.data?.message || "Failed to initiate payment");
+      setIsLoading(false);
     }
   };
 
@@ -216,14 +258,16 @@ const Checkout = () => {
               <div className="pt-6 border-t border-gray-200">
                 <button
                   type="submit"
-                  className={`w-full font-bold text-white text-base py-4 rounded-xl transition-all shadow-sm active:scale-[0.99] flex justify-center items-center gap-2 ${paymentMethod === 'esewa' ? 'bg-[#60BB46] hover:bg-[#52a33b]' :
+                  disabled={isLoading}
+                  className={`w-full font-bold text-white text-base py-4 rounded-xl transition-all shadow-sm active:scale-[0.99] flex justify-center items-center gap-2 ${isLoading ? 'opacity-70 cursor-not-allowed' : ''} ${paymentMethod === 'esewa' ? 'bg-[#60BB46] hover:bg-[#52a33b]' :
                       paymentMethod === 'khalti' ? 'bg-[#5C2D91] hover:bg-[#4d257a]' :
                         'bg-gray-900 hover:bg-black'
                     }`}
                 >
-                  {paymentMethod === 'esewa' ? 'Pay with eSewa' :
+                  {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : null}
+                  {isLoading ? 'Processing...' : (paymentMethod === 'esewa' ? 'Pay with eSewa' :
                     paymentMethod === 'khalti' ? 'Pay with Khalti' :
-                      'Pay NPR 7,200.00'}
+                      'Pay NPR 7,200.00')}
                 </button>
                 <div className="text-center mt-6">
                   <p className="text-xs text-gray-400 font-medium">

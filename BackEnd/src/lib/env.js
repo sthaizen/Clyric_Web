@@ -17,4 +17,15 @@ export const ENV={
     CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
 
     CLIENT_URL: process.env.CLIENT_URL || "http://localhost:5173",
+
+    // --- eSewa ---
+    ESEWA_MERCHANT_CODE: process.env.ESEWA_MERCHANT_CODE,
+    ESEWA_SECRET_KEY: process.env.ESEWA_SECRET_KEY,
+    ESEWA_PAYMENT_URL: process.env.ESEWA_PAYMENT_URL,
+    ESEWA_STATUS_URL: process.env.ESEWA_STATUS_URL,
+
+    // --- Khalti ---
+    KHALTI_SECRET_KEY: process.env.KHALTI_SECRET_KEY,
+    KHALTI_INITIATE_URL: process.env.KHALTI_INITIATE_URL,
+    KHALTI_LOOKUP_URL: process.env.KHALTI_LOOKUP_URL,
 }

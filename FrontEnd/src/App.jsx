@@ -21,6 +21,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import SessionPage from "./Pages/SessionPage";
 import CosmicCheckout from "./Pages/CheckOutPage";
+import PaymentListener from "./components/PaymentListener";
 
 const App = () => {
   const { isSignedIn, isLoaded, user } = useUser();
@@ -51,6 +52,7 @@ const App = () => {
   return (
     <ReactLenis root>
       <div className="root-container dark:bg-black relative min-h-screen w-full">
+        <PaymentListener />
         <Routes>
           {/* Main Landing Page Route */}
           <Route

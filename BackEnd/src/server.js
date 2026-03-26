@@ -21,6 +21,7 @@ import dashboardRoutes from "./routes/dashboardRoutes.js";
 import submissionRoutes from "./routes/submissionRoutes.js";
 import questRoutes from "./routes/questRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import paymentRoutes from "./routes/paymentRoutes.js";
 
 const app = express();
 
@@ -64,6 +65,7 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/submissions", submissionRoutes);
 app.use("/api/quests", questRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/payments", paymentRoutes);
 
 app.get("/health", (req, res) => {
   res.status(200).json({ msg: "success api is running" });
