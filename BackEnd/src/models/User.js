@@ -27,7 +27,19 @@ const userSchema = new mongoose.Schema({
     description: {
         type: String,
         default: "Hey there! I'm using Clyric.", 
-    }
+    },
+
+    role: {
+        type: String,
+        enum: ["user", "admin"],
+        default: "user",
+    },
+
+    status: {
+        type: String,
+        enum: ["active", "suspended", "banned"],
+        default: "active",
+    },
 }, { timestamps: true });
 
 const User = mongoose.model("User", userSchema);

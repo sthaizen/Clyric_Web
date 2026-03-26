@@ -2,13 +2,14 @@ import React, { useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
-import { Link } from 'react-router-dom';
+// import { Link } from 'react-router-dom'; // You can remove this if you aren't using it elsewhere
 
 // Import Navbar and Footer components
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import Pricesummery from '../components/Pricesummery';
 import Chatbot from '../components/Chatbot';
+import CheckoutModal from '../components/CheckoutModal'; // Import the new modal
 
 // Register plugins outside the component to avoid re-registering on every render
 gsap.registerPlugin(useGSAP, ScrollTrigger);
@@ -38,8 +39,17 @@ const GiftIcon = () => (
 
 export default function PricingComponent() {
   const containerRef = useRef(null);
-  // Theme state for the Navbar, defaulting to 'dark' to match the pricing section background
   const [theme, setTheme] = useState('dark');
+
+  // State to manage the Checkout Modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState(null);
+
+  // Function to handle clicking the upgrade/start button
+  const handleUpgradeClick = (plan) => {
+    setSelectedPlan(plan);
+    setIsModalOpen(true);
+  };
 
   const plans = [
     {
@@ -127,7 +137,6 @@ export default function PricingComponent() {
   ];
 
   useGSAP(() => {
-    // Creating the timeline linked to scroll
     const tl = gsap.timeline({
       scrollTrigger: {
         trigger: containerRef.current,
@@ -136,31 +145,27 @@ export default function PricingComponent() {
       }
     });
 
-    // 1. Header animation
     tl.fromTo('.gsap-header',
       { y: 40, opacity: 0 },
       { y: 0, opacity: 1, duration: 1.2, stagger: 0.15, ease: 'power4.out' }
     )
-      // 2. Card animation
       .fromTo('.gsap-card',
         { y: 80, opacity: 0, scale: 0.96 },
         { y: 0, opacity: 1, scale: 1, duration: 1.4, stagger: 0.12, ease: 'expo.out' },
         "-=0.9"
       )
-      // 3. Feature list staggering
       .fromTo('.gsap-feature',
         { opacity: 0, x: -10 },
         { opacity: 1, x: 0, duration: 0.6, stagger: 0.015, ease: 'power2.out' },
         "-=0.8"
       )
-      // 4. Footer fade in
       .fromTo('.gsap-footer',
         { opacity: 0, y: 20 },
         { opacity: 1, y: 0, duration: 1, ease: 'power3.out' },
         "-=0.5"
       );
 
-  }, { scope: containerRef }); // Scope ensures animations only happen inside this component
+  }, { scope: containerRef });
 
   return (
     <div className="w-full min-h-screen flex flex-col bg-[linear-gradient(180deg,#1b1b1b_0%,#000000_20%,#000000_100%)]">
@@ -190,7 +195,6 @@ export default function PricingComponent() {
           {plans.map((plan, index) => (
             <div
               key={index}
-              // Note: transition-colors and transition-shadow prevent conflicts with GSAP transforms
               className="gsap-card bg-[#414141] rounded-[20px] p-2 relative flex flex-col border border-transparent transition-colors transition-shadow duration-300 hover:shadow-[0_20px_40px_rgba(0,0,0,0.4)]"
             >
 
@@ -211,12 +215,14 @@ export default function PricingComponent() {
                   {plan.price}
                 </div>
                 <p className="text-[13px] text-gray-300 mb-15 h-8">{plan.subtext}</p>
-                <Link
-                  to="/checkout"
-                  className="bg-white text-[#222222] font-medium text-[16.5px] px-[37px] py-[14px] rounded-full hover:bg-gray-200 transition-colors w-fit block text-center"
+
+                {/* Updated Action Button */}
+                <button
+                  onClick={() => handleUpgradeClick(plan)}
+                  className="bg-white text-[#222222] font-medium text-[16.5px] px-[37px] py-[14px] rounded-full hover:bg-gray-200 transition-colors w-fit block text-center cursor-pointer"
                 >
                   {plan.buttonText}
-                </Link>
+                </button>
               </div>
 
               <div className="px-4 pb-6 flex-grow flex flex-col">
@@ -245,9 +251,6 @@ export default function PricingComponent() {
             <span className="text-[16px] text-gray-100 font-medium tracking-wide">Prices stated per month, billed annually</span>
           </div>
         </div>
-
-
-
 
         {/* Trust Badge Section */}
         <div className="max-w-[1580px] w-full flex flex-col gap-12 mt-10 mb-10">
@@ -288,6 +291,13 @@ export default function PricingComponent() {
       <Pricesummery />
       {/* Footer Section */}
       <Footer />
+
+      {/* The Checkout Modal Rendering */}
+      <CheckoutModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        plan={selectedPlan}
+      />
     </div>
   );
 }

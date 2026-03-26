@@ -210,7 +210,7 @@ const Navbar = () => {
                             </div>
                         </div>
 
-                        <Link to="/customers" className="text-[13px] font-medium hover:opacity-60 transition-opacity">
+                        <Link to="/admin" className="text-[13px] font-medium hover:opacity-60 transition-opacity">
                             Customers
                         </Link>
                         <Link to="/price" className="text-[13px] font-medium hover:opacity-60 transition-opacity">
