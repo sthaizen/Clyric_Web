@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { getProblems, getTopicMetadata } from '../lib/api/problems';
 import assets from "../assets/assets";
-import { SignInButton, SignedOut, SignedIn, UserButton } from "@clerk/clerk-react";
+import { useUser, SignInButton, SignedOut, SignedIn, UserButton } from "@clerk/clerk-react";
 import {
   Search, ChevronLeft, ChevronRight, LayoutList, CheckCircle2,
   Lock, Settings, Shuffle, ChevronDown, ChevronUp, ArrowUpDown, SlidersHorizontal,
@@ -27,6 +27,7 @@ const COMPANIES = [
 const CAL_DAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
 export default function LeetCodeClone() {
+  const { user } = useUser();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeDifficulty, setActiveDifficulty] = useState('All');
   const [activeCategory, setActiveCategory] = useState(null);
@@ -235,9 +236,26 @@ export default function LeetCodeClone() {
           </SignedIn>
           <button
             onClick={() => window.location.href = '/premium'}
-            style={{ background: '#524026', color: '#fba121', border: 'none', borderRadius: 6, padding: '6px 14px', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}
+            style={{
+              background: '#1a1a1a',
+              color: '#fff',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '6px',
+              padding: '8px 24px',
+              fontWeight: 600,
+              fontSize: 13,
+              cursor: 'pointer',
+              textTransform: 'capitalize',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+              transition: 'all 0.2s ease',
+              letterSpacing: '-0.01em'
+            }}
+            onMouseOver={(e) => e.currentTarget.style.background = '#000'}
+            onMouseOut={(e) => e.currentTarget.style.background = '#1a1a1a'}
           >
-            Premium
+            {user?.publicMetadata?.subscriptionTier ?
+              (user.publicMetadata.subscriptionTier.replace(/-/g, ' ')) :
+              'Premium'}
           </button>
         </div>
       </nav>
@@ -285,148 +303,148 @@ export default function LeetCodeClone() {
           {activeMainView === 'library' && (
             <>
               {/* Promo Banners */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 24 }}>
-            {[
-              'https://assets.leetcode.com/users/images/dba14729-0f89-4a5a-a181-b2a7ec1fb0ec_1772459043.341392.png',
-              'https://assets.leetcode.com/users/images/942e9e91-7f81-4513-8544-c462980a5d3a_1738741032.3553998.png',
-              'https://assets.leetcode.com/users/images/b0a08a5c-c575-48f6-9110-b6ae4e011e98_1655746322.579097.png',
-              assets.img,
-            ].map((src, i) => (
-              <div key={i} style={{ height: 110, borderRadius: 12, overflow: 'hidden', cursor: 'pointer', transition: 'transform 0.2s' }}
-                onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'}
-                onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
-                <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              </div>
-            ))}
-          </div>
-
-          {/* Topics row */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginBottom: 18, fontSize: 13, color: '#9ca3af', alignItems: 'center' }}>
-            {visibleTopics.map(t => {
-              const isActive = activeCategory === t.name;
-              return (
-                <span key={t.name} onClick={() => setActiveCategory(isActive ? null : t.name)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer',
-                    color: isActive ? '#fff' : '#9ca3af', background: isActive ? '#3a3a47' : 'transparent',
-                    padding: isActive ? '4px 10px' : '4px 2px', borderRadius: 999, transition: 'all 0.2s ease'
-                  }}
-                  onMouseEnter={e => { if (!isActive) e.currentTarget.style.color = '#fff' }}
-                  onMouseLeave={e => { if (!isActive) e.currentTarget.style.color = '#9ca3af' }}>
-                  {t.name}
-                  <span style={{ background: isActive ? '#4a4a59' : '#2c2c35', padding: '1px 7px', borderRadius: 999, fontSize: 11, color: isActive ? '#fff' : '#6b7280' }}>
-                    {t.count}
-                  </span>
-                </span>
-              );
-            })}
-            {dynamicTopics.length > 8 && (
-              <span onClick={() => setIsExpanded(!isExpanded)}
-                style={{ color: '#6b7280', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 2, padding: '4px 2px' }}
-                onMouseEnter={e => e.currentTarget.style.color = '#fff'}
-                onMouseLeave={e => e.currentTarget.style.color = '#6b7280'}>
-                {isExpanded ? 'Show Less' : 'Expand'} {isExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
-              </span>
-            )}
-          </div>
-
-          {/* DIFFICULTY FILTER TABS */}
-          <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
-            {DIFF_TABS.map(tab => {
-              const isAll = tab.id === 'All';
-              const isActive = activeDifficulty === tab.id;
-              const color = isAll ? null : diffColor(tab.id);
-              const bg = isAll ? null : diffBg(tab.id);
-              return (
-                <button key={tab.id} onClick={() => setActiveDifficulty(tab.id)}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 8, padding: '7px 16px', borderRadius: 999, cursor: 'pointer',
-                    fontSize: 13, fontWeight: isActive ? 600 : 400, transition: 'all 0.15s',
-                    border: isActive ? (isAll ? 'none' : `1px solid ${color}`) : '1px solid #2c2c35',
-                    background: isActive ? (isAll ? '#fff' : bg) : '#1b1b1f',
-                    color: isActive ? (isAll ? '#000' : color) : (isAll ? '#d1d5db' : '#9ca3af'),
-                  }}>
-                  {!isAll && (
-                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: isActive ? color : '#6b7280', display: 'inline-block', flexShrink: 0, transition: 'background 0.15s' }} />
-                  )}
-                  {isAll && <LayoutList size={14} />}
-                  {tab.label}
-                  <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 999, background: isActive ? (isAll ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.15)') : '#2c2c35', color: isActive ? (isAll ? '#000' : color) : '#6b7280', fontWeight: 600 }}>
-                    {tab.count}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Search + Controls */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-                <Search size={14} color="#6b7280" style={{ position: 'absolute', left: 10 }} />
-                <input
-                  placeholder="Search questions" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
-                  style={{ background: '#111113', border: '1px solid #2c2c35', borderRadius: 6, padding: '7px 10px 7px 32px', color: '#fff', fontSize: 13, outline: 'none', width: 220 }}
-                />
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 24 }}>
+                {[
+                  'https://assets.leetcode.com/users/images/dba14729-0f89-4a5a-a181-b2a7ec1fb0ec_1772459043.341392.png',
+                  'https://assets.leetcode.com/users/images/942e9e91-7f81-4513-8544-c462980a5d3a_1738741032.3553998.png',
+                  'https://assets.leetcode.com/users/images/b0a08a5c-c575-48f6-9110-b6ae4e011e98_1655746322.579097.png',
+                  assets.img,
+                ].map((src, i) => (
+                  <div key={i} style={{ height: 110, borderRadius: 12, overflow: 'hidden', cursor: 'pointer', transition: 'transform 0.2s' }}
+                    onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'}
+                    onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}>
+                    <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+                ))}
               </div>
 
-              <button onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
-                style={{ background: sortOrder === 'desc' ? '#3a3a47' : '#1b1b1f', border: '1px solid #2c2c35', borderRadius: 6, padding: '7px 10px', color: sortOrder === 'desc' ? '#fff' : '#9ca3af', cursor: 'pointer', display: 'flex', alignItems: 'center', transition: 'all 0.2s' }}
-                title={sortOrder === 'asc' ? "Sort Descending" : "Sort Ascending"}>
-                <ArrowUpDown size={15} />
-              </button>
+              {/* Topics row */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 16, marginBottom: 18, fontSize: 13, color: '#9ca3af', alignItems: 'center' }}>
+                {visibleTopics.map(t => {
+                  const isActive = activeCategory === t.name;
+                  return (
+                    <span key={t.name} onClick={() => setActiveCategory(isActive ? null : t.name)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 5, cursor: 'pointer',
+                        color: isActive ? '#fff' : '#9ca3af', background: isActive ? '#3a3a47' : 'transparent',
+                        padding: isActive ? '4px 10px' : '4px 2px', borderRadius: 999, transition: 'all 0.2s ease'
+                      }}
+                      onMouseEnter={e => { if (!isActive) e.currentTarget.style.color = '#fff' }}
+                      onMouseLeave={e => { if (!isActive) e.currentTarget.style.color = '#9ca3af' }}>
+                      {t.name}
+                      <span style={{ background: isActive ? '#4a4a59' : '#2c2c35', padding: '1px 7px', borderRadius: 999, fontSize: 11, color: isActive ? '#fff' : '#6b7280' }}>
+                        {t.count}
+                      </span>
+                    </span>
+                  );
+                })}
+                {dynamicTopics.length > 8 && (
+                  <span onClick={() => setIsExpanded(!isExpanded)}
+                    style={{ color: '#6b7280', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 2, padding: '4px 2px' }}
+                    onMouseEnter={e => e.currentTarget.style.color = '#fff'}
+                    onMouseLeave={e => e.currentTarget.style.color = '#6b7280'}>
+                    {isExpanded ? 'Show Less' : 'Expand'} {isExpanded ? <ChevronUp size={13} /> : <ChevronDown size={13} />}
+                  </span>
+                )}
+              </div>
 
-              <button style={{ background: '#1b1b1f', border: '1px solid #2c2c35', borderRadius: 6, padding: '7px 10px', color: '#9ca3af', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-                <SlidersHorizontal size={15} />
-              </button>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, fontSize: 13, color: '#6b7280' }}>
-              <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <CheckCircle2 size={15} color="#2c2c35" /> 0/{allProblems.length} Solved
-              </span>
-              <Shuffle size={15} color="#00b8a3" style={{ cursor: 'pointer' }} />
-            </div>
-          </div>
+              {/* DIFFICULTY FILTER TABS */}
+              <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
+                {DIFF_TABS.map(tab => {
+                  const isAll = tab.id === 'All';
+                  const isActive = activeDifficulty === tab.id;
+                  const color = isAll ? null : diffColor(tab.id);
+                  const bg = isAll ? null : diffBg(tab.id);
+                  return (
+                    <button key={tab.id} onClick={() => setActiveDifficulty(tab.id)}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 8, padding: '7px 16px', borderRadius: 999, cursor: 'pointer',
+                        fontSize: 13, fontWeight: isActive ? 600 : 400, transition: 'all 0.15s',
+                        border: isActive ? (isAll ? 'none' : `1px solid ${color}`) : '1px solid #2c2c35',
+                        background: isActive ? (isAll ? '#fff' : bg) : '#1b1b1f',
+                        color: isActive ? (isAll ? '#000' : color) : (isAll ? '#d1d5db' : '#9ca3af'),
+                      }}>
+                      {!isAll && (
+                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: isActive ? color : '#6b7280', display: 'inline-block', flexShrink: 0, transition: 'background 0.15s' }} />
+                      )}
+                      {isAll && <LayoutList size={14} />}
+                      {tab.label}
+                      <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 999, background: isActive ? (isAll ? 'rgba(0,0,0,0.1)' : 'rgba(0,0,0,0.15)') : '#2c2c35', color: isActive ? (isAll ? '#000' : color) : '#6b7280', fontWeight: 600 }}>
+                        {tab.count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
 
-          {/* Problem List */}
-          <div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 70px 80px', padding: '8px 12px', fontSize: 12, color: '#6b7280', borderBottom: '1px solid #2c2c35', marginBottom: 4 }}>
-              <span>Title</span>
-              <span style={{ textAlign: 'right' }}>Acceptance</span>
-              <span style={{ textAlign: 'right' }}>Difficulty</span>
-              <span style={{ textAlign: 'right' }}>Frequency</span>
-            </div>
+              {/* Search + Controls */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+                    <Search size={14} color="#6b7280" style={{ position: 'absolute', left: 10 }} />
+                    <input
+                      placeholder="Search questions" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
+                      style={{ background: '#111113', border: '1px solid #2c2c35', borderRadius: 6, padding: '7px 10px 7px 32px', color: '#fff', fontSize: 13, outline: 'none', width: 220 }}
+                    />
+                  </div>
 
-            {isLoading ? (
-              <div style={{ padding: 40, textAlign: 'center', color: '#6b7280' }}>Loading problems...</div>
-            ) : filteredProblems.length === 0 ? (
-              <div style={{ padding: 40, textAlign: 'center', color: '#6b7280' }}>No problems found matching your filters.</div>
-            ) : filteredProblems.map((problem, idx) => (
-              <Link key={problem.id} to={`/problem/${problem.id}`}
-                style={{
-                  display: 'grid', gridTemplateColumns: '1fr 80px 70px 80px', padding: '10px 12px', borderRadius: 6, textDecoration: 'none',
-                  background: idx % 2 !== 0 ? '#16161a' : 'transparent', alignItems: 'center', transition: 'background 0.1s'
-                }}
-                onMouseEnter={e => e.currentTarget.style.background = '#1f1f24'}
-                onMouseLeave={e => e.currentTarget.style.background = idx % 2 !== 0 ? '#16161a' : 'transparent'}>
-                <span style={{ color: '#eff1f6', fontSize: 13.5 }}>
-                  {idx + 1}. {problem.title}
-                </span>
-                <span style={{ textAlign: 'right', color: '#9ca3af', fontSize: 13 }}>
-                  {problem.acceptance || '57.0%'}
-                </span>
-                <span style={{ textAlign: 'right', fontSize: 13, fontWeight: 500, color: diffColor(problem.difficulty) }}>
-                  {problem.difficulty === 'Medium' ? 'Med.' : problem.difficulty}
-                </span>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10 }}>
-                  <Bars />
-                  <Lock size={13} color="#6b7280" />
+                  <button onClick={() => setSortOrder(prev => prev === 'asc' ? 'desc' : 'asc')}
+                    style={{ background: sortOrder === 'desc' ? '#3a3a47' : '#1b1b1f', border: '1px solid #2c2c35', borderRadius: 6, padding: '7px 10px', color: sortOrder === 'desc' ? '#fff' : '#9ca3af', cursor: 'pointer', display: 'flex', alignItems: 'center', transition: 'all 0.2s' }}
+                    title={sortOrder === 'asc' ? "Sort Descending" : "Sort Ascending"}>
+                    <ArrowUpDown size={15} />
+                  </button>
+
+                  <button style={{ background: '#1b1b1f', border: '1px solid #2c2c35', borderRadius: 6, padding: '7px 10px', color: '#9ca3af', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+                    <SlidersHorizontal size={15} />
+                  </button>
                 </div>
-              </Link>
-            ))}
-          </div>
-          </>
-        )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16, fontSize: 13, color: '#6b7280' }}>
+                  <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <CheckCircle2 size={15} color="#2c2c35" /> 0/{allProblems.length} Solved
+                  </span>
+                  <Shuffle size={15} color="#00b8a3" style={{ cursor: 'pointer' }} />
+                </div>
+              </div>
+
+              {/* Problem List */}
+              <div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 70px 80px', padding: '8px 12px', fontSize: 12, color: '#6b7280', borderBottom: '1px solid #2c2c35', marginBottom: 4 }}>
+                  <span>Title</span>
+                  <span style={{ textAlign: 'right' }}>Acceptance</span>
+                  <span style={{ textAlign: 'right' }}>Difficulty</span>
+                  <span style={{ textAlign: 'right' }}>Frequency</span>
+                </div>
+
+                {isLoading ? (
+                  <div style={{ padding: 40, textAlign: 'center', color: '#6b7280' }}>Loading problems...</div>
+                ) : filteredProblems.length === 0 ? (
+                  <div style={{ padding: 40, textAlign: 'center', color: '#6b7280' }}>No problems found matching your filters.</div>
+                ) : filteredProblems.map((problem, idx) => (
+                  <Link key={problem.id} to={`/problem/${problem.id}`}
+                    style={{
+                      display: 'grid', gridTemplateColumns: '1fr 80px 70px 80px', padding: '10px 12px', borderRadius: 6, textDecoration: 'none',
+                      background: idx % 2 !== 0 ? '#16161a' : 'transparent', alignItems: 'center', transition: 'background 0.1s'
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = '#1f1f24'}
+                    onMouseLeave={e => e.currentTarget.style.background = idx % 2 !== 0 ? '#16161a' : 'transparent'}>
+                    <span style={{ color: '#eff1f6', fontSize: 13.5 }}>
+                      {idx + 1}. {problem.title}
+                    </span>
+                    <span style={{ textAlign: 'right', color: '#9ca3af', fontSize: 13 }}>
+                      {problem.acceptance || '57.0%'}
+                    </span>
+                    <span style={{ textAlign: 'right', fontSize: 13, fontWeight: 500, color: diffColor(problem.difficulty) }}>
+                      {problem.difficulty === 'Medium' ? 'Med.' : problem.difficulty}
+                    </span>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10 }}>
+                      <Bars />
+                      <Lock size={13} color="#6b7280" />
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </>
+          )}
         </main>
 
         {/* --- RIGHT SIDEBAR (NOW FULLY FUNCTIONAL) --- */}

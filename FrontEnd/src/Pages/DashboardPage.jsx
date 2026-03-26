@@ -204,9 +204,17 @@ function DashboardPage() {
             </SignedIn>
             <button
               onClick={() => window.location.href = '/premium'}
-              style={{ background: '#524026', color: '#fba121', border: 'none', borderRadius: 6, padding: '6px 14px', fontWeight: 600, fontSize: 13, cursor: 'pointer' }}
+              style={{ 
+                background: user?.publicMetadata?.subscriptionTier === 'free' ? '#524026' : '#222', 
+                color: user?.publicMetadata?.subscriptionTier === 'free' ? '#fba121' : '#fff', 
+                border: user?.publicMetadata?.subscriptionTier === 'free' ? 'none' : '1px solid #333',
+                borderRadius: 6, padding: '6px 14px', fontWeight: 600, fontSize: 13, cursor: 'pointer',
+                textTransform: 'capitalize'
+              }}
             >
-              Premium
+              {user?.publicMetadata?.subscriptionTier ? 
+                (user.publicMetadata.subscriptionTier.replace(/-/g, ' ')) : 
+                'Premium'}
             </button>
           </div>
         </nav>

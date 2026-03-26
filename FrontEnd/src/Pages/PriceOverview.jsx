@@ -56,7 +56,7 @@ export default function PricingComponent() {
       title: "Practice Pack",
       icon: <ReceiptIcon />,
       badge: { text: "Popular", color: "bg-green-600", textColor: "text-white" },
-      price: "NPR 200",
+      price: "200",
       subtext: "per user / month",
       buttonText: "Start your free trial",
       description: "For beginners building consistency with core practice tools.",
@@ -74,7 +74,7 @@ export default function PricingComponent() {
     {
       title: "Code Rooms",
       icon: <CreditCardIcon />,
-      price: "NPR 400",
+      price: "400",
       subtext: "per user / month",
       buttonText: "Upgrade to Pro",
       description: "For serious learners who want deeper practice, analytics, and AI help.",
@@ -95,7 +95,7 @@ export default function PricingComponent() {
       title: "Interview Studio",
       icon: <DocumentIcon />,
       badge: { text: "Best for Teams", color: "bg-gray-700", textColor: "text-white" },
-      price: "NPR 600",
+      price: "600",
       subtext: "per user / month",
       buttonText: "Get Interview Studio",
       description: "For collaborative coding, pair practice, and real-time interview simulation.",
@@ -116,7 +116,7 @@ export default function PricingComponent() {
       title: "Career Plus",
       icon: <GiftIcon />,
       badge: { text: "Best Value", color: "bg-green-600", textColor: "text-white" },
-      price: "NPR 800",
+      price: "800",
       subtext: "per user / month",
       buttonText: "Go Career Plus",
       description: "For full interview preparation with advanced tools, tracks, and career-focused insights.",
@@ -212,7 +212,7 @@ export default function PricingComponent() {
               <div className="bg-[#646464] rounded-2xl p-6 mb-6">
                 <div className="text-[26px] mb-2 mt-5 text-white">
                   <span className="text-gray-300 text-3xl mr-1">Starting from</span>
-                  {plan.price}
+                  NPR {plan.price}
                 </div>
                 <p className="text-[13px] text-gray-300 mb-15 h-8">{plan.subtext}</p>
 

@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { SignInButton, SignedOut, SignedIn, UserButton } from "@clerk/clerk-react";
+import { useUser, SignInButton, SignedOut, SignedIn, UserButton } from "@clerk/clerk-react";
 import {
   List,
   ChevronLeft,
@@ -25,26 +25,26 @@ export default function ProblemNavbar({
   handlePrevProblem,
   handleNextProblem,
   handleRandomProblem,
-  
+
   // Sidebar State
   isProblemListOpen,
   setIsProblemListOpen,
-  
+
   // Execution
   isRunning,
   isSubmitting,
   handleRunCode,
   handleSubmitCode,
-  
+
   // Layout Options
   isLayoutMenuOpen,
   setIsLayoutMenuOpen,
   layoutMode,
   setLayoutMode,
-  
+
   // Settings
   setIsSettingsModalOpen,
-  
+
   // Timer State & Functions
   isTimerOpen,
   setIsTimerOpen,
@@ -67,6 +67,7 @@ export default function ProblemNavbar({
   isAiChatOpen,
   setIsAiChatOpen
 }) {
+  const { user } = useUser();
   return (
     <nav className="flex items-center justify-between h-[50px] px-4 bg-[#1b1b1f] text-gray-400 text-sm border-b border-[#111113]">
       {/* --- LEFT SECTION --- */}
@@ -154,11 +155,10 @@ export default function ProblemNavbar({
           {/* --- NEW: AI CHAT BUTTON --- */}
           <button
             onClick={() => setIsAiChatOpen(!isAiChatOpen)}
-            className={`p-1.5 rounded-lg transition-colors flex items-center justify-center gap-1.5 border ${
-              isAiChatOpen 
-                ? 'bg-[#ffa116]/10 text-[#ffa116] border-[#ffa116]/30' 
-                : 'text-gray-400 hover:text-white hover:bg-[#3e3e42] border-transparent'
-            }`}
+            className={`p-1.5 rounded-lg transition-colors flex items-center justify-center gap-1.5 border ${isAiChatOpen
+              ? 'bg-[#ffa116]/10 text-[#ffa116] border-[#ffa116]/30'
+              : 'text-gray-400 hover:text-white hover:bg-[#3e3e42] border-transparent'
+              }`}
             title="Ask AI Assistant"
           >
             <Sparkles className="w-4 h-4" />
@@ -340,7 +340,14 @@ export default function ProblemNavbar({
           <UserButton afterSignOutUrl="/" />
         </SignedIn>
         <div className="flex items-center gap-3">
-          <button className="bg-[#ffa116]/20 text-[#ffa116] px-3 py-1 rounded font-medium text-[13px] hover:bg-[#ffa116]/30 transition-colors">Premium</button>
+          <button
+            onClick={() => window.location.href = '/premium'}
+            className="bg-[#1a1a1a] text-white px-6 py-2 rounded-[6px ] font-semibold text-[13px] hover:bg-black transition-all border border-white/10 shadow-lg capitalize tracking-tight"
+          >
+            {user?.publicMetadata?.subscriptionTier ?
+              (user.publicMetadata.subscriptionTier.replace(/-/g, ' ')) :
+              'Premium'}
+          </button>
         </div>
       </div>
     </nav>

@@ -40,6 +40,27 @@ const userSchema = new mongoose.Schema({
         enum: ["active", "suspended", "banned"],
         default: "active",
     },
+
+    // --- Subscription / Payment ---
+    subscriptionTier: {
+        type: String,
+        enum: ["free", "practice-pack", "code-rooms", "interview-studio", "career-plus"],
+        default: "free",
+    },
+    subscriptionExpiry: {
+        type: Date,
+        default: null,
+    },
+    isPro: {
+        type: Boolean,
+        default: false,
+    },
+    paymentHistory: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Transaction",
+        }
+    ],
 }, { timestamps: true });
 
 const User = mongoose.model("User", userSchema);
