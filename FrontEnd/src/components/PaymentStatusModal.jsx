@@ -62,15 +62,10 @@ export default function PaymentStatusModal({ isOpen, onClose, type, message, gat
                     <div className="w-full space-y-3.5 px-2 ">
                         {isSuccess ? (
                             <>
-                                <button
-                                    onClick={() => { onClose(); navigate('/dashboard'); }}
-                                    className=" w-full py-3.5 bg-[#171b26] text-white dm-sans2 text-[14.5px] rounded-xl hover:bg-[#0f121a] transition-all flex items-center justify-center gap-2 shadow-sm"
-                                >
-                                    Go to Dashboard <Home className="w-4 h-4" strokeWidth={2} />
-                                </button>
+
                                 <button
                                     onClick={() => { onClose(); navigate('/problems'); }}
-                                    className="w-full py-3.5 bg-white text-[#171b26] border border-gray-200  text-[14.5px] rounded-xl hover:bg-gray-50 transition-all flex items-center justify-center gap-2"
+                                    className="w-full py-3.5 bg-[#171b26] text-white dm-sans2 text-[14.5px] rounded-xl hover:bg-[#0f121a] transition-all flex items-center justify-center gap-2 shadow-sm"
                                 >
                                     Start Practicing <ArrowRight className="w-4 h-4" strokeWidth={2} />
                                 </button>

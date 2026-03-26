@@ -2,7 +2,8 @@ import React, { useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
-// import { Link } from 'react-router-dom'; // You can remove this if you aren't using it elsewhere
+import { useUser } from '@clerk/clerk-react';
+import CancelSubscriptionModal from '../components/CancelSubscriptionModal';
 
 // Import Navbar and Footer components
 import Navbar from '../components/Navbar';
@@ -41,24 +42,39 @@ export default function PricingComponent() {
   const containerRef = useRef(null);
   const [theme, setTheme] = useState('dark');
 
+  const { user } = useUser();
+  const currentTier = user?.publicMetadata?.subscriptionTier || 'free';
+
   // State to manage the Checkout Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
 
+  // State for cancellation modal
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
+
   // Function to handle clicking the upgrade/start button
   const handleUpgradeClick = (plan) => {
+    // If it's the current plan
+    if (plan.id === currentTier || (plan.id === 'practice-pack' && currentTier === 'free')) {
+      // Don't allow cancellation of the basic free tier
+      if (currentTier === 'free' || plan.id === 'practice-pack') return;
+      
+      setIsCancelModalOpen(true);
+      return;
+    }
     setSelectedPlan(plan);
     setIsModalOpen(true);
   };
 
   const plans = [
     {
+      id: "practice-pack",
       title: "Practice Pack",
       icon: <ReceiptIcon />,
       badge: { text: "Popular", color: "bg-green-600", textColor: "text-white" },
-      price: "200",
-      subtext: "per user / month",
-      buttonText: "Start your free trial",
+      price: "0",
+      subtext: "Free forever for new users",
+      buttonText: "Start for free",
       description: "For beginners building consistency with core practice tools.",
       features: [
         "Access to Easy problems",
@@ -72,6 +88,7 @@ export default function PricingComponent() {
       ]
     },
     {
+      id: "code-rooms",
       title: "Code Rooms",
       icon: <CreditCardIcon />,
       price: "400",
@@ -92,6 +109,7 @@ export default function PricingComponent() {
       ]
     },
     {
+      id: "interview-studio",
       title: "Interview Studio",
       icon: <DocumentIcon />,
       badge: { text: "Best for Teams", color: "bg-gray-700", textColor: "text-white" },
@@ -113,6 +131,7 @@ export default function PricingComponent() {
       ]
     },
     {
+      id: "career-plus",
       title: "Career Plus",
       icon: <GiftIcon />,
       badge: { text: "Best Value", color: "bg-green-600", textColor: "text-white" },
@@ -219,9 +238,15 @@ export default function PricingComponent() {
                 {/* Updated Action Button */}
                 <button
                   onClick={() => handleUpgradeClick(plan)}
-                  className="bg-white text-[#222222] font-medium text-[16.5px] px-[37px] py-[14px] rounded-full hover:bg-gray-200 transition-colors w-fit block text-center cursor-pointer"
+                  className={`font-medium text-[16.5px] px-[37px] py-[14px] rounded-full transition-colors w-fit block text-center cursor-pointer ${
+                    (plan.id === currentTier || (plan.id === 'practice-pack' && currentTier === 'free'))
+                      ? "bg-[#222] text-white border border-white/20 hover:bg-[#333]" 
+                      : "bg-white text-[#222222] hover:bg-gray-200"
+                  }`}
                 >
-                  {plan.buttonText}
+                  {(plan.id === currentTier || (plan.id === 'practice-pack' && currentTier === 'free')) 
+                    ? "Current Plan" 
+                    : plan.buttonText}
                 </button>
               </div>
 
@@ -297,6 +322,11 @@ export default function PricingComponent() {
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         plan={selectedPlan}
+      />
+
+      <CancelSubscriptionModal
+        isOpen={isCancelModalOpen}
+        onClose={() => setIsCancelModalOpen(false)}
       />
     </div>
   );

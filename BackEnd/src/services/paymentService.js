@@ -6,7 +6,7 @@ import { ENV } from "../lib/env.js";
  * Single source of truth for payment plans.
  */
 export const PLANS = {
-    "practice-pack": { label: "Practice Pack", amount: 200 },
+    "practice-pack": { label: "Practice Pack", amount: 0 },
     "code-rooms": { label: "Code Rooms", amount: 400 },
     "interview-studio": { label: "Interview Studio", amount: 600 },
     "career-plus": { label: "Career Plus", amount: 800 },

@@ -256,3 +256,55 @@ async function activateUserSubscription(transaction, gatewayRefId, rawMetadata) 
         throw error;
     }
 }
+
+/**
+ * POST /api/payments/cancel
+ * Cancels the active subscription and reverts to free tier.
+ */
+export const cancelSubscription = async (req, res) => {
+    const session = await User.startSession();
+    session.startTransaction();
+
+    try {
+        const user = req.user; // from protectRoute
+
+        // 1. Update User Record
+        const updatedUser = await User.findByIdAndUpdate(user._id, {
+            $set: {
+                subscriptionTier: "free",
+                subscriptionExpiry: null,
+                isPro: false
+            }
+        }, { session, new: true });
+
+        // 2. Mark active subscription as cancelled
+        await Subscription.updateMany(
+            { userId: user._id, status: "active" },
+            { $set: { status: "cancelled", endDate: new Date() } },
+            { session }
+        );
+
+        // 3. Sync with Clerk
+        try {
+            await clerkClient.users.updateUserMetadata(user.clerkId, {
+                publicMetadata: {
+                    subscriptionTier: "free",
+                    subscriptionExpiry: null,
+                    isPro: false
+                }
+            });
+        } catch (clerkErr) {
+            console.error("Clerk Metadata Sync Error (Cancellation):", clerkErr);
+        }
+
+        await session.commitTransaction();
+        session.endSession();
+
+        res.status(200).json({ success: true, message: "Subscription cancelled successfully" });
+    } catch (error) {
+        await session.abortTransaction();
+        session.endSession();
+        console.error("cancelSubscription error:", error);
+        res.status(500).json({ success: false, message: "Internal server error during cancellation" });
+    }
+};

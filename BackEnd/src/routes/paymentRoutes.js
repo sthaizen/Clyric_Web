@@ -4,6 +4,7 @@ import {
     initiatePayment,
     verifyEsewa,
     verifyKhalti,
+    cancelSubscription,
 } from "../controllers/paymentController.js";
 
 const router = express.Router();
@@ -28,5 +29,12 @@ router.get("/verify/esewa", verifyEsewa);
  * @access  Public/Private (Can be called with pidx)
  */
 router.post("/verify/khalti", verifyKhalti);
+
+/**
+ * @route   POST /api/payments/cancel
+ * @desc    Cancel active subscription
+ * @access  Private
+ */
+router.post("/cancel", protectRoute, cancelSubscription);
 
 export default router;

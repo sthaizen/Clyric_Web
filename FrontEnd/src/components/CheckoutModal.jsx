@@ -3,15 +3,21 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 import { Loader2, Wallet, Smartphone, ShieldCheck, CheckCircle2, X } from 'lucide-react';
 
+import { useUser } from '@clerk/clerk-react';
+
 /**
  * Premium Checkout Modal with eSewa and Khalti integration.
  * Refined with smaller text, tighter spacing, and custom DM Sans fonts.
  */
 export default function CheckoutModal({ isOpen, onClose, plan }) {
+    const { user } = useUser();
     const [mobileWallet, setMobileWallet] = useState('esewa');
     const [isLoading, setIsLoading] = useState(false);
 
     if (!isOpen || !plan) return null;
+
+    const currentTier = user?.publicMetadata?.subscriptionTier || 'free';
+    const isUpgrade = currentTier !== 'free' && plan.id !== currentTier;
 
     const planPrice = plan.price;
 
@@ -69,7 +75,7 @@ export default function CheckoutModal({ isOpen, onClose, plan }) {
     return (
         <div className="fixed inset-0 z-[250] flex items-center justify-center bg-black/70 p-4 animate-in fade-in duration-300">
             {/* Modal Container: 1000px width, 800px height */}
-            <div className="bg-white w-full max-w-[1000px] h-[800px] rounded-[10px] shadow-2xl relative flex flex-col md:flex-row overflow-hidden border border-gray-200">
+            <div className="bg-white w-full max-w-[1000px] h-[880px] rounded-[10px] shadow-2xl relative flex flex-col md:flex-row overflow-hidden border border-gray-200">
 
                 {/* Left Side: Gateway Selection */}
                 <div className="flex-[1.25] p-10 bg-white flex flex-col">
@@ -155,6 +161,15 @@ export default function CheckoutModal({ isOpen, onClose, plan }) {
                     <h3 className="text-[11px] text-gray-400 dm-sans2 uppercase tracking-wider mb-5 mt-2">ORDER SUMMARY</h3>
 
                     <div className="bg-white border border-gray-200 rounded-2xl p-6 mb-8">
+                        {isUpgrade && (
+                            <div className="mb-5 p-3 bg-blue-50 border border-blue-100 rounded-xl flex gap-3">
+                                <ShieldCheck className="w-4 h-4 text-blue-600 mt-0.5 shrink-0" />
+                                <p className="text-[12px] text-blue-800 dm-sans leading-tight">
+                                    <strong>Upgrade Notice:</strong> This will replace your current plan. A new 30-day period starts immediately.
+                                </p>
+                            </div>
+                        )}
+
                         <div className="flex justify-between items-start mb-5">
                             <div>
                                 <h4 className="text-[20px] text-gray-900 dm-sans2 tracking-tight">{plan.title}</h4>
@@ -194,8 +209,8 @@ export default function CheckoutModal({ isOpen, onClose, plan }) {
                             onClick={handleSubscribe}
                             disabled={isLoading}
                             className={`w-full py-3.5 rounded-xl text-white text-[15px] dm-sans2 transition-all duration-200 flex items-center justify-center gap-2 ${isLoading ? 'opacity-70 cursor-not-allowed' : ''} ${mobileWallet === 'esewa'
-                                ? 'bg-[#9fcf99] hover:bg-[#8ec288]'
-                                : 'bg-[#a288b6] hover:bg-[#9279a6]'
+                                ? 'bg-[#00a640] hover:bg-[#00a640]'
+                                : 'bg-[#7a3295] hover:bg-[#7a3295]'
                                 }`}
                         >
                             {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
