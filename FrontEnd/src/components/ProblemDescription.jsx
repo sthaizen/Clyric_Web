@@ -13,49 +13,17 @@ import {
   PenLine,
 } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
-import ReactQuill from "react-quill-new";
-import "quill/dist/quill.snow.css";
 import SolutionsDiagramTab from "./SolutionsDiagramTab";
 import SubmissionsTab from "./SubmissionsTab";
+import DiscussionSection from "./DiscussionSection";
+import NotesSection from "./NotesSection";
 import { trackProblemEvent } from "../lib/api/analytics";
 import { useAuth } from "@clerk/clerk-react";
 import debounce from "lodash.debounce";
 
 function ProblemDescription({ problem, currentProblemId }) {
   const [activeTab, setActiveTab] = useState("Description");
-  const [notes, setNotes] = useState("");
   const { userId } = useAuth();
-
-  useEffect(() => {
-    if (currentProblemId) {
-      const savedNotes = localStorage.getItem(`notes_${currentProblemId}`);
-      setNotes(savedNotes || "");
-    } else {
-      setNotes("");
-    }
-  }, [currentProblemId]);
-
-  // Debounced tracking for notes
-  const debouncedTrackNotes = useCallback(
-    debounce((pid) => {
-      if (userId && pid) {
-        trackProblemEvent({
-          userId,
-          problemSlug: pid,
-          actionType: "note_saved"
-        });
-      }
-    }, 2000),
-    [userId]
-  );
-
-  const handleNotesChange = (content) => {
-    setNotes(content);
-    if (currentProblemId) {
-      localStorage.setItem(`notes_${currentProblemId}`, content);
-      debouncedTrackNotes(currentProblemId);
-    }
-  };
 
   const handleHintClick = (hintIndex) => {
     if (userId && currentProblemId) {
@@ -113,14 +81,20 @@ function ProblemDescription({ problem, currentProblemId }) {
     <div className="h-full flex flex-col bg-[#1b1b1f] text-gray-300">
       <style>{`
         .quill-dark-theme .ql-toolbar {
-          background: transparent;
-          border: none;
-          border-bottom: 1px solid #3e3e42;
-          padding: 12px;
-          border-radius: 0;
+          background: #1e1e24;
+          border: 1px solid #28282c;
+          border-radius: 12px;
+          padding: 8px 12px;
+          margin: 12px 24px 0 24px;
           display: flex;
-          flex-wrap: wrap;
+          align-items: center;
           gap: 4px;
+          flex-wrap: nowrap;
+          overflow-x: auto;
+          scrollbar-width: none;
+        }
+        .quill-dark-theme .ql-toolbar::-webkit-scrollbar {
+          display: none;
         }
         .quill-dark-theme .ql-container {
           border: none;
@@ -135,117 +109,102 @@ function ProblemDescription({ problem, currentProblemId }) {
         .quill-dark-theme .ql-editor {
           flex-grow: 1;
           color: #e5e7eb;
-          padding: 24px;
+          padding: 24px 32px;
           font-size: 15px;
-          line-height: 1.6;
+          line-height: 1.7;
           min-height: 100%;
           overflow-y: auto;
         }
+        /* Custom formatting for headings */
+        .quill-dark-theme .ql-editor h1 { font-size: 1.8em; margin-bottom: 0.5em; color: #fff; font-weight: 700; }
+        .quill-dark-theme .ql-editor h2 { font-size: 1.5em; margin-bottom: 0.4em; color: #fff; font-weight: 600; }
+        .quill-dark-theme .ql-editor h3 { font-size: 1.3em; margin-bottom: 0.3em; color: #fff; font-weight: 600; }
+        
         .quill-dark-theme .ql-editor::-webkit-scrollbar {
-          width: 8px;
+          width: 6px;
         }
         .quill-dark-theme .ql-editor::-webkit-scrollbar-track {
           background: transparent;
         }
         .quill-dark-theme .ql-editor::-webkit-scrollbar-thumb {
-          background-color: #3e3e42;
+          background-color: #28282c;
           border-radius: 20px;
         }
         .quill-dark-theme .ql-toolbar button {
-          border-radius: 6px;
+          border-radius: 8px;
           transition: all 0.2s ease;
-          width: 28px;
-          height: 28px;
+          width: 32px;
+          height: 32px;
           display: flex;
           align-items: center;
           justify-content: center;
+          color: #9ca3af;
         }
         .quill-dark-theme .ql-toolbar button:hover {
-          background: rgba(255, 255, 255, 0.05);
+          background: rgba(44, 187, 93, 0.08);
+          color: #2cbb5d;
         }
         .quill-dark-theme .ql-toolbar button.ql-active {
           background: rgba(44, 187, 93, 0.1);
+          color: #2cbb5d;
         }
         .quill-dark-theme .ql-stroke {
-          stroke: #9ca3af;
+          stroke: currentColor;
           transition: stroke 0.2s ease;
+          stroke-width: 2;
         }
         .quill-dark-theme .ql-fill {
-          fill: #9ca3af;
+          fill: currentColor;
           transition: fill 0.2s ease;
-        }
-        .quill-dark-theme .ql-toolbar button:hover .ql-stroke,
-        .quill-dark-theme .ql-toolbar button.ql-active .ql-stroke {
-          stroke: #e5e7eb;
-        }
-        .quill-dark-theme .ql-toolbar button.ql-active .ql-stroke {
-          stroke: #2cbb5d;
-        }
-        .quill-dark-theme .ql-toolbar button:hover .ql-fill,
-        .quill-dark-theme .ql-toolbar button.ql-active .ql-fill {
-          fill: #e5e7eb;
-        }
-        .quill-dark-theme .ql-toolbar button.ql-active .ql-fill {
-          fill: #2cbb5d;
         }
         .quill-dark-theme .ql-picker {
           color: #9ca3af;
+          font-size: 13px;
+          font-weight: 500;
         }
         .quill-dark-theme .ql-picker-label {
-          border-radius: 6px;
+          border-radius: 8px;
           transition: all 0.2s ease;
-          padding-left: 8px;
+          padding: 0 10px;
+          display: flex;
+          align-items: center;
+          height: 32px;
+          border: 1px solid transparent;
         }
         .quill-dark-theme .ql-picker-label:hover {
-          color: #e5e7eb;
-          background: rgba(255, 255, 255, 0.05);
-        }
-        .quill-dark-theme .ql-picker-label:hover .ql-stroke {
-          stroke: #e5e7eb;
+          color: #2cbb5d;
+          background: rgba(44, 187, 93, 0.08);
         }
         .quill-dark-theme .ql-picker-options {
-          background-color: #1b1b1f;
-          border: 1px solid #3e3e42;
-          border-radius: 8px;
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
-          padding: 4px;
-          margin-top: 4px;
+          background-color: #1e1e24;
+          border: 1px solid #28282c;
+          border-radius: 10px;
+          box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.7);
+          padding: 6px;
+          margin-top: 8px;
         }
         .quill-dark-theme .ql-picker-item {
           color: #9ca3af;
-          border-radius: 4px;
-          padding: 6px 10px;
+          border-radius: 6px;
+          padding: 8px 12px;
           transition: all 0.2s ease;
         }
         .quill-dark-theme .ql-picker-item:hover {
           color: #fff;
-          background: rgba(44, 187, 93, 0.1);
-        }
-        .quill-dark-theme .ql-snow .ql-picker.ql-expanded .ql-picker-options {
-          border-color: #3e3e42;
+          background: rgba(44, 187, 93, 0.15);
         }
         .quill-dark-theme .ql-tooltip {
-          background-color: #1b1b1f;
-          border: 1px solid #3e3e42;
-          border-radius: 8px;
-          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+          background-color: #1e1e24;
+          border: 1px solid #28282c;
+          border-radius: 10px;
+          box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.7);
           color: #e5e7eb;
-          padding: 8px 12px;
-        }
-        .quill-dark-theme .ql-tooltip input[type=text] {
-          background: #111113;
-          border: 1px solid #3e3e42;
-          border-radius: 4px;
-          color: white;
-          padding: 4px 8px;
-        }
-        .quill-dark-theme .ql-tooltip input[type=text]:focus {
-          border-color: #2cbb5d;
-          outline: none;
+          padding: 10px;
         }
         .quill-dark-theme .ql-editor.ql-blank::before {
-          color: #6b7280;
+          color: #4b5563;
           font-style: normal;
+          left: 32px;
         }
       `}</style>
 
@@ -261,16 +220,6 @@ function ProblemDescription({ problem, currentProblemId }) {
         </div>
 
         <div
-          onClick={() => setActiveTab("Editorial")}
-          className={`flex items-center gap-1.5 px-4 py-2 cursor-pointer transition-colors ${activeTab === "Editorial"
-            ? "text-white bg-[#151519] border-b-2 border-b-[#2cbb5d]"
-            : "hover:text-gray-200 border-b-2 border-b-transparent"
-            }`}
-        >
-          <BookOpen className="w-4 h-4 text-yellow-500" /> Editorial
-        </div>
-
-        <div
           onClick={() => setActiveTab("Solutions")}
           className={`flex items-center gap-1.5 px-4 py-2 cursor-pointer transition-colors ${activeTab === "Solutions"
             ? "text-white bg-[#151519] border-b-2 border-b-[#2cbb5d]"
@@ -281,16 +230,6 @@ function ProblemDescription({ problem, currentProblemId }) {
         </div>
 
         <div
-          onClick={() => setActiveTab("Submissions")}
-          className={`flex items-center gap-1.5 px-4 py-2 cursor-pointer transition-colors ${activeTab === "Submissions"
-            ? "text-white bg-[#151519] border-b-2 border-b-[#2cbb5d]"
-            : "hover:text-gray-200 border-b-2 border-b-transparent"
-            }`}
-        >
-          <History className="w-4 h-4" /> Submissions
-        </div>
-
-        <div
           onClick={() => setActiveTab("Notes")}
           className={`flex items-center gap-1.5 px-4 py-2 cursor-pointer transition-colors ${activeTab === "Notes"
             ? "text-white bg-[#151519] border-b-2 border-b-[#2cbb5d]"
@@ -298,6 +237,26 @@ function ProblemDescription({ problem, currentProblemId }) {
             }`}
         >
           <PenLine className="w-4 h-4 text-purple-400" /> Notes
+        </div>
+
+        <div
+          onClick={() => setActiveTab("Discussion")}
+          className={`flex items-center gap-1.5 px-4 py-2 cursor-pointer transition-colors ${activeTab === "Discussion"
+            ? "text-white bg-[#151519] border-b-2 border-b-[#2cbb5d]"
+            : "hover:text-gray-200 border-b-2 border-b-transparent"
+            }`}
+        >
+          <MessageSquare className="w-4 h-4 text-green-400" /> Discussion
+        </div>
+
+        <div
+          onClick={() => setActiveTab("Submissions")}
+          className={`flex items-center gap-1.5 px-4 py-2 cursor-pointer transition-colors ${activeTab === "Submissions"
+            ? "text-white bg-[#151519] border-b-2 border-b-[#2cbb5d]"
+            : "hover:text-gray-200 border-b-2 border-b-transparent"
+            }`}
+        >
+          <History className="w-4 h-4" /> Submissions
         </div>
       </div>
 
@@ -423,36 +382,11 @@ function ProblemDescription({ problem, currentProblemId }) {
         )}
 
         {activeTab === "Notes" && (
-          <div className="p-0 h-full flex flex-col min-h-0 relative bg-[#16161a]">
-            <div className="px-6 py-4 border-b border-[#16161a] bg-[#1b1b1f] flex items-center justify-between shadow-sm z-10">
-              <div>
-                <h1 className="text-lg font-bold text-white flex items-center gap-2">
-                  <PenLine className="w-4 h-4 text-[#2cbb5d]" />
-                  Personal Notes
-                </h1>
-                <p className="text-xs text-gray-400 mt-0.5 font-medium">
-                  Auto-saved to your local workspace.
-                </p>
-              </div>
+          <NotesSection problemId={currentProblemId} problemTitle={problem.title} />
+        )}
 
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] bg-[#3e3e42]/40 text-gray-400 px-2 py-1 rounded border border-[#3e3e42]/50">
-                  {problem.title}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex-1 flex flex-col quill-dark-theme overflow-hidden">
-              <ReactQuill
-                key={`quill-${currentProblemId}`}
-                theme="snow"
-                value={notes}
-                onChange={handleNotesChange}
-                className="h-full flex flex-col"
-                placeholder="Start typing your thoughts, approach, or edge cases here..."
-              />
-            </div>
-          </div>
+        {activeTab === "Discussion" && (
+          <DiscussionSection problemId={currentProblemId} problemTitle={problem.title} />
         )}
 
         {activeTab === "Solutions" && (
@@ -463,7 +397,7 @@ function ProblemDescription({ problem, currentProblemId }) {
           <SubmissionsTab problem={problem} />
         )}
 
-        {activeTab !== "Description" && activeTab !== "Notes" && activeTab !== "Solutions" && activeTab !== "Submissions" && (
+        {activeTab !== "Description" && activeTab !== "Notes" && activeTab !== "Solutions" && activeTab !== "Submissions" && activeTab !== "Discussion" && (
           <div className="flex items-center justify-center p-5 text-gray-500 h-full">
             {activeTab} view not implemented.
           </div>

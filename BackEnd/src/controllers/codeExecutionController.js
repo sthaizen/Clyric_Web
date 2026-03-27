@@ -117,7 +117,7 @@ export const submitCode = async (req, res) => {
     );
 
     // Save submission to database if user is authenticated via Clerk
-    const userId = req.auth?.userId;
+    const userId = req.auth().userId;
     if (userId) {
       try {
         const problem = await AdvancedProblem.findOne({ slug: problemId.toLowerCase() });

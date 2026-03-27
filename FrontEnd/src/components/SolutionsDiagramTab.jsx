@@ -252,31 +252,33 @@ export default function SolutionsDiagramTab({ currentProblemId, problem }) {
   return (
     // Updated background wrapper to #1b1b1f
     <div className="p-0 flex flex-col h-full bg-[#1b1b1f]">
-      {/* Top Navigation Bar - Removed transparency to match the solid background */}
-      <div className="px-6 py-4 border-b border-white/5 bg-[#1b1b1f] flex items-center justify-between z-20 shrink-0">
-        <div className="flex items-center gap-3">
-          <FlaskConical className="w-6 h-6 text-[#2cbb5d]" />
+      {/* Top Navigation Bar */}
+      <div className="px-6 py-5 border-b border-[#111113] bg-[#1b1b1f] flex items-center justify-between z-20 shrink-0">
+        <div className="flex items-center gap-4">
+          <div className="p-2 bg-[#2cbb5d]/10 rounded-lg">
+            <FlaskConical className="w-5 h-5 text-[#2cbb5d]" />
+          </div>
           <div>
-            <h1 className="text-lg font-semibold text-[#e1e1e3] tracking-wide">FlowChart Workspace</h1>
-            <p className="text-xs text-gray-400 mt-0.5 font-medium">
+            <h1 className="text-xl font-bold text-white tracking-tight">FlowChart Workspace</h1>
+            <p className="text-[13px] text-gray-400 font-medium tracking-tight">
               Visualize your approach before coding
             </p>
           </div>
-
         </div>
-
 
         <div className="flex items-center gap-4">
           {problem && (
-            <span className="text-[11px] bg-white/5 text-gray-400 font-medium px-3 py-1.5 rounded-md border border-white/10 max-w-[160px] truncate">
-              {problem.title}
-            </span>
+            <div className="hidden sm:flex items-center gap-2">
+              <span className="text-[11px] font-semibold bg-[#28282c] text-gray-400 px-2.5 py-1 rounded border border-[#3e3e42]/50">
+                {problem.title}
+              </span>
+            </div>
           )}
           <button
             onClick={handleReset}
-            className="text-[11px] text-gray-400 hover:text-red-400 flex items-center gap-1.5 transition-colors font-medium bg-transparent px-2 py-1"
+            className="text-[11px] text-gray-400 hover:text-red-400 flex items-center gap-2 transition-colors font-semibold bg-transparent px-2"
           >
-            <RotateCcw className="w-3.5 h-3.5" /> Reset
+            <RotateCcw className="w-4 h-4" /> Reset
           </button>
         </div>
       </div>
