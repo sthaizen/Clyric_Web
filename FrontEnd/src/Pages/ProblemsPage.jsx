@@ -1,10 +1,10 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { getProblems, getTopicMetadata } from '../lib/api/problems';
+import { getProblems, getTopicMetadata, getSolvedStatus } from '../lib/api/problems';
 import assets from "../assets/assets";
-import { useUser, SignInButton, SignedOut, SignedIn, UserButton } from "@clerk/clerk-react";
+import { useUser, useAuth, SignInButton, SignedOut, SignedIn, UserButton } from "@clerk/clerk-react";
 import {
-  Search, ChevronLeft, ChevronRight, LayoutList, CheckCircle2,
+  Search, ChevronLeft, ChevronRight, LayoutList, CheckCircle2, Circle,
   Lock, Settings, Shuffle, ChevronDown, ChevronUp, ArrowUpDown, SlidersHorizontal,
   Target, GraduationCap, User
 } from 'lucide-react';
@@ -26,14 +26,27 @@ const COMPANIES = [
 
 const CAL_DAYS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 
+// Helper: format seconds → e.g. "4m 32s", "1h 5m", "45s"
+function formatSolveTime(seconds) {
+  if (!seconds || seconds <= 0) return null;
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+  if (h > 0) return `${h}h ${m}m`;
+  if (m > 0) return `${m}m ${s}s`;
+  return `${s}s`;
+}
+
 export default function LeetCodeClone() {
   const { user } = useUser();
+  const { getToken, isSignedIn } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeDifficulty, setActiveDifficulty] = useState('All');
   const [activeCategory, setActiveCategory] = useState(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const [sortOrder, setSortOrder] = useState('asc');
   const [activeMainView, setActiveMainView] = useState('library'); // 'library', 'quest', 'study_plan'
+  const [solvedMap, setSolvedMap] = useState({}); // { [problemSlug]: { solved, totalTimeSpentSeconds } }
 
   // --- RIGHT SIDEBAR STATES ---
   const [viewDate, setViewDate] = useState(new Date());
@@ -123,6 +136,21 @@ export default function LeetCodeClone() {
     }
     loadData();
   }, []);
+
+  // --- FETCH SOLVED STATUS (only when signed in) ---
+  useEffect(() => {
+    if (!isSignedIn) return;
+    async function loadSolvedStatus() {
+      try {
+        const token = await getToken();
+        const res = await getSolvedStatus(token);
+        if (res.success) setSolvedMap(res.solvedMap || {});
+      } catch (err) {
+        console.error("Failed to load solved status:", err);
+      }
+    }
+    loadSolvedStatus();
+  }, [isSignedIn]);
 
   const counts = useMemo(() => ({
     Easy: allProblems.filter(p => p.difficulty === 'Easy').length,
@@ -291,16 +319,16 @@ export default function LeetCodeClone() {
                   </div>
 
                   <div className="h-2 w-full bg-[#111113] rounded-full overflow-hidden shadow-inner">
-                    <div 
+                    <div
                       className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-1000"
-                      style={{ 
+                      style={{
                         width: `${Math.max(5, Math.min(100, (() => {
                           const expiry = new Date(user.publicMetadata.subscriptionExpiry);
                           const now = new Date();
                           const diff = expiry - now;
                           const totalDays = 30; // Assuming 30 days for progress calculation
                           return (diff / (totalDays * 1000 * 60 * 60 * 24)) * 100;
-                        })()))}%` 
+                        })()))}%`
                       }}
                     ></div>
                   </div>
@@ -314,7 +342,7 @@ export default function LeetCodeClone() {
                     </p>
                   </div>
 
-                  <button 
+                  <button
                     onClick={() => window.location.href = '/price'}
                     className="mt-2 w-full py-2 bg-[#2c2c35] hover:bg-[#3b3350]/30 text-white text-[12px] font-medium rounded-lg border border-[#3b3350]/20 transition-colors"
                   >
@@ -346,12 +374,16 @@ export default function LeetCodeClone() {
               {badge && <span style={{ background: '#2563eb', color: '#fff', fontSize: 10, padding: '1px 6px', borderRadius: 999, fontWeight: 700 }}>{badge}</span>}
             </button>
           ))}
-          <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid #2c2c35', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
-            <p style={{ color: '#6b7280', fontSize: 12, textAlign: 'center', lineHeight: 1.5 }}>Sign in to view lists and track study progress.</p>
-            <button style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#8a6bfe', color: '#fff', border: 'none', borderRadius: 999, padding: '7px 18px', fontWeight: 600, fontSize: 13, cursor: 'pointer', width: '100%', justifyContent: 'center' }}>
-              <User size={15} /> Sign in
-            </button>
-          </div>
+          <SignedOut>
+            <div style={{ marginTop: 24, paddingTop: 16, borderTop: '1px solid #2c2c35', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}>
+              <p style={{ color: '#6b7280', fontSize: 12, textAlign: 'center', lineHeight: 1.5 }}>Sign in to view lists and track study progress.</p>
+              <SignInButton mode="modal">
+                <button style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#8a6bfe', color: '#fff', border: 'none', borderRadius: 999, padding: '7px 18px', fontWeight: 600, fontSize: 13, cursor: 'pointer', width: '100%', justifyContent: 'center' }}>
+                  <User size={15} /> Sign in
+                </button>
+              </SignInButton>
+            </div>
+          </SignedOut>
         </aside>
 
         {/* CENTER */}
@@ -475,9 +507,10 @@ export default function LeetCodeClone() {
 
               {/* Problem List */}
               <div>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 70px 80px', padding: '8px 12px', fontSize: 12, color: '#6b7280', borderBottom: '1px solid #2c2c35', marginBottom: 4 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 80px 80px 70px 80px', padding: '8px 12px', fontSize: 12, color: '#6b7280', borderBottom: '1px solid #2c2c35', marginBottom: 4 }}>
                   <span>Title</span>
-                  <span style={{ textAlign: 'right' }}>Acceptance</span>
+                  <span style={{ textAlign: 'right' }}>Status</span>
+                  <span style={{ textAlign: 'right' }}>Time</span>
                   <span style={{ textAlign: 'right' }}>Difficulty</span>
                   <span style={{ textAlign: 'right' }}>Frequency</span>
                 </div>
@@ -486,29 +519,52 @@ export default function LeetCodeClone() {
                   <div style={{ padding: 40, textAlign: 'center', color: '#6b7280' }}>Loading problems...</div>
                 ) : filteredProblems.length === 0 ? (
                   <div style={{ padding: 40, textAlign: 'center', color: '#6b7280' }}>No problems found matching your filters.</div>
-                ) : filteredProblems.map((problem, idx) => (
-                  <Link key={problem.id} to={`/problem/${problem.id}`}
-                    style={{
-                      display: 'grid', gridTemplateColumns: '1fr 80px 70px 80px', padding: '10px 12px', borderRadius: 6, textDecoration: 'none',
-                      background: idx % 2 !== 0 ? '#16161a' : 'transparent', alignItems: 'center', transition: 'background 0.1s'
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.background = '#1f1f24'}
-                    onMouseLeave={e => e.currentTarget.style.background = idx % 2 !== 0 ? '#16161a' : 'transparent'}>
-                    <span style={{ color: '#eff1f6', fontSize: 13.5 }}>
-                      {idx + 1}. {problem.title}
-                    </span>
-                    <span style={{ textAlign: 'right', color: '#9ca3af', fontSize: 13 }}>
-                      {problem.acceptance || '57.0%'}
-                    </span>
-                    <span style={{ textAlign: 'right', fontSize: 13, fontWeight: 500, color: diffColor(problem.difficulty) }}>
-                      {problem.difficulty === 'Medium' ? 'Med.' : problem.difficulty}
-                    </span>
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10 }}>
-                      <Bars />
-                      <Lock size={13} color="#6b7280" />
-                    </div>
-                  </Link>
-                ))}
+                ) : filteredProblems.map((problem, idx) => {
+                  // Backend maps slug → id in getProblems response
+                  const slug = problem.id;
+                  const solveData = solvedMap[slug];
+                  const isSolved = !!solveData;
+                  const solveTime = isSolved ? formatSolveTime(solveData.totalTimeSpentSeconds) : null;
+                  return (
+                    <Link key={problem.id} to={`/problem/${problem.id}`}
+                      style={{
+                        display: 'grid', gridTemplateColumns: '1fr 80px 80px 70px 80px', padding: '10px 12px', borderRadius: 6, textDecoration: 'none',
+                        background: idx % 2 !== 0 ? '#16161a' : 'transparent', alignItems: 'center', transition: 'background 0.1s'
+                      }}
+                      onMouseEnter={e => e.currentTarget.style.background = '#1f1f24'}
+                      onMouseLeave={e => e.currentTarget.style.background = idx % 2 !== 0 ? '#16161a' : 'transparent'}>
+                      {/* Title */}
+                      <span style={{ color: '#eff1f6', fontSize: 13.5 }}>
+                        {idx + 1}. {problem.title}
+                      </span>
+                      {/* Status column */}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                        {isSolved ? (
+                          <span style={{ color: '#02bc68', fontSize: 12, fontWeight: 600 }}>Solved</span>
+                        ) : (
+                          <span style={{ color: '#3f3f46', fontSize: 12 }}>Unsolved</span>
+                        )}
+                      </div>
+                      {/* Time column */}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                        {isSolved && solveTime ? (
+                          <span style={{ color: '#646770', fontSize: 12 }}>{solveTime}</span>
+                        ) : (
+                          <span style={{ color: '#3f3f46', fontSize: 13 }}>—</span>
+                        )}
+                      </div>
+                      {/* Difficulty */}
+                      <span style={{ textAlign: 'right', fontSize: 13, fontWeight: 500, color: diffColor(problem.difficulty) }}>
+                        {problem.difficulty === 'Medium' ? 'Med.' : problem.difficulty}
+                      </span>
+                      {/* Frequency */}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10 }}>
+                        <Bars />
+                        <Lock size={13} color="#6b7280" />
+                      </div>
+                    </Link>
+                  );
+                })}
               </div>
             </>
           )}

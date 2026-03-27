@@ -43,3 +43,15 @@ export async function getUserSubmissions(slug, token) {
   }
   return response.json();
 }
+
+export async function getSolvedStatus(token) {
+  const response = await fetch(`${API_URL}/submissions/solved-status`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  if (!response.ok) {
+    throw new Error("Failed to fetch solved status");
+  }
+  return response.json();
+}
