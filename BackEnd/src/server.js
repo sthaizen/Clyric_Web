@@ -22,6 +22,7 @@ import submissionRoutes from "./routes/submissionRoutes.js";
 import questRoutes from "./routes/questRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
+import { checkExpiredSubscriptions } from "./services/subscriptionService.js";
 
 const app = express();
 
@@ -101,6 +102,12 @@ const startServer = async () => {
     
     server.listen(ENV.PORT, () => {
       console.log("Server is running on port:", ENV.PORT);
+      
+      // Run subscription expiry check on start
+      checkExpiredSubscriptions();
+      
+      // Periodically check for expired subscriptions (every 12 hours)
+      setInterval(checkExpiredSubscriptions, 12 * 60 * 60 * 1000);
     });
   } catch (error) {
     console.error("Error starting the server", error);

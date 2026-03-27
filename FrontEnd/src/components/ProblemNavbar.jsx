@@ -339,15 +339,95 @@ export default function ProblemNavbar({
         <SignedIn>
           <UserButton afterSignOutUrl="/" />
         </SignedIn>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 relative group">
           <button
-            onClick={() => window.location.href = '/premium'}
-            className="bg-[#1a1a1a] text-white px-6 py-2 rounded-[6px ] font-semibold text-[13px] hover:bg-black transition-all border border-white/10 shadow-lg capitalize tracking-tight"
+            onClick={() => window.location.href = '/price'}
+            style={{
+              background: '#1a1a1a',
+              color: '#fff',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '8px',
+              padding: '6px 20px',
+              fontWeight: 600,
+              fontSize: 13,
+              cursor: 'pointer',
+              textTransform: 'capitalize',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+              transition: 'all 0.2s ease',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+            onMouseOver={(e) => {
+              e.currentTarget.style.background = '#000';
+            }}
+            onMouseOut={(e) => {
+              e.currentTarget.style.background = '#1a1a1a';
+            }}
           >
-            {user?.publicMetadata?.subscriptionTier ?
+            {user?.publicMetadata?.subscriptionTier && user.publicMetadata.subscriptionTier !== 'free' ?
               (user.publicMetadata.subscriptionTier.replace(/-/g, ' ')) :
-              'Premium'}
+              'Free'}
           </button>
+
+          {/* Subscription Status Dropdown */}
+          {user?.publicMetadata?.isPro && user?.publicMetadata?.subscriptionExpiry && (
+            <div className="absolute top-full right-0 mt-2 w-72 bg-[#1b1b1f] border border-[#111113] rounded-xl shadow-2xl p-5 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[100] transform scale-95 group-hover:scale-100 origin-top-right">
+              <div className="flex justify-between items-center mb-4 pb-2 border-b border-[#3e3e42]/30">
+                <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider">Subscription Status</span>
+                <span className="text-[10px] uppercase font-bold px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20">
+                  Active
+                </span>
+              </div>
+
+              <div className="flex flex-col gap-4 text-left">
+                <div className="flex justify-between items-end">
+                  <span className="text-[13px] text-gray-400 font-normal">Time remaining</span>
+                  <span className="text-[15px] font-semibold text-white">
+                    {(() => {
+                      const expiry = new Date(user.publicMetadata.subscriptionExpiry);
+                      const now = new Date();
+                      const diff = expiry - now;
+                      const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                      return days > 0 ? `${days} days left` : 'Expiring today';
+                    })()}
+                  </span>
+                </div>
+
+                <div className="h-2 w-full bg-[#111113] rounded-full overflow-hidden shadow-inner">
+                  <div 
+                    className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-1000"
+                    style={{ 
+                      width: `${Math.max(5, Math.min(100, (() => {
+                        const expiry = new Date(user.publicMetadata.subscriptionExpiry);
+                        const now = new Date();
+                        const diff = expiry - now;
+                        const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+                        const maxDays = days > 30 ? 60 : 30;
+                        return (days / maxDays) * 100;
+                      })()))}%` 
+                    }}
+                  />
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <p className="text-[11px] text-gray-400 font-normal">
+                    Tier: <span className="text-gray-200 font-medium">{user.publicMetadata.subscriptionTier?.replace(/-/g, ' ')}</span>
+                  </p>
+                  <p className="text-[10px] text-gray-500 italic">
+                    Renews manually after expiration
+                  </p>
+                </div>
+
+                <button 
+                  onClick={() => window.location.href = '/price'}
+                  className="mt-2 w-full py-2 bg-[#3e3e42]/50 hover:bg-[#3e3e42] text-white text-[12px] font-medium rounded-lg border border-[#3e3e42]/50 transition-colors"
+                >
+                  Manage Subscription
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </nav>

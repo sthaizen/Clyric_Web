@@ -10,8 +10,8 @@ export default function QuestWidget({ onClick }) {
   const quests = data?.quests || [];
   const unclaimedCount = quests.filter(q => q.isCompleted && !q.isClaimed).length;
 
-  const currentLevel = data?.stats?.currentLevel || 3;
-  const currentExp = data?.stats?.totalExp || 800;
+  const currentLevel = data?.stats?.currentLevel ?? 1;
+  const currentExp = data?.stats?.totalExp ?? 0;
 
   // Level Logic
   const expForCurrentLevel = currentLevel > 1 ? Math.pow(currentLevel - 1, 2) * 100 : 0;

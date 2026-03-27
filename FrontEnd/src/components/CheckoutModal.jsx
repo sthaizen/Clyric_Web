@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
-import { Loader2, Wallet, Smartphone, ShieldCheck, CheckCircle2, X } from 'lucide-react';
+import { Loader2, ShieldCheck, CheckCircle2, X } from 'lucide-react';
 
 import { useUser } from '@clerk/clerk-react';
 
@@ -12,7 +12,32 @@ import { useUser } from '@clerk/clerk-react';
 export default function CheckoutModal({ isOpen, onClose, plan }) {
     const { user } = useUser();
     const [mobileWallet, setMobileWallet] = useState('esewa');
+
+    const [promoInput, setPromoInput] = useState('');
+    const [appliedPromo, setAppliedPromo] = useState('');
+    const [discountAmount, setDiscountAmount] = useState(0);
+    const [promoError, setPromoError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [isFirstTime, setIsFirstTime] = useState(false);
+
+    useEffect(() => {
+        if (isOpen && user) {
+            const fetchStatus = async () => {
+                try {
+                    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+                    const endpoint = baseUrl.endsWith('/api')
+                        ? `${baseUrl}/payments/check-first-time`
+                        : `${baseUrl}/api/payments/check-first-time`;
+                    const { data } = await axios.get(endpoint, { withCredentials: true });
+                    setIsFirstTime(data.isFirstTime);
+                } catch (err) {
+                    console.error("Error fetching first-time status:", err);
+                }
+            };
+            fetchStatus();
+        }
+    }, [isOpen, user]);
 
     if (!isOpen || !plan) return null;
 
@@ -28,6 +53,23 @@ export default function CheckoutModal({ isOpen, onClose, plan }) {
         "Career Plus": "career-plus",
     };
 
+    const handleApplyPromo = () => {
+        if (!promoInput.trim()) return;
+
+        // Custom promo code logic: SAVE10 gives 10% discount
+        if (promoInput.toUpperCase() === 'SAVE10' || promoInput.toUpperCase() === 'STHAIZEN10') {
+            const discount = Math.floor(plan.price * 0.1); // 10% discount
+            setDiscountAmount(discount);
+            setAppliedPromo(promoInput.toUpperCase());
+            setPromoError('');
+            toast.success("Promo code applied successfully!");
+        } else {
+            setPromoError("Invalid promo code");
+            setDiscountAmount(0);
+            setAppliedPromo('');
+        }
+    };
+
     const handleSubscribe = async () => {
         const planId = planIdMap[plan.title];
         if (!planId) return toast.error("Invalid Plan");
@@ -41,7 +83,11 @@ export default function CheckoutModal({ isOpen, onClose, plan }) {
 
             const { data } = await axios.post(
                 endpoint,
-                { planId, gateway: mobileWallet },
+                {
+                    planId,
+                    gateway: mobileWallet,
+                    promoCode: appliedPromo || null
+                },
                 { withCredentials: true }
             );
 
@@ -84,6 +130,12 @@ export default function CheckoutModal({ isOpen, onClose, plan }) {
                         <h2 className="text-[28px] text-gray-900 dm-sans2 mb-2.5 tracking-tight">Complete your subscription</h2>
                         <p className="text-[14px] text-gray-500 dm-sans leading-relaxed pr-4">
                             Pay with eSewa or Khalti. You will be redirected to the selected wallet to complete the purchase securely.
+                            {isFirstTime && (
+                                <>
+                                    <br />
+                                    <span className="text-emerald-600 font-medium dm-sans">First-time buyer? Get 1 extra month free! (60 days total)</span>
+                                </>
+                            )}
                         </p>
                     </div>
 
@@ -97,8 +149,8 @@ export default function CheckoutModal({ isOpen, onClose, plan }) {
                                 }`}
                         >
                             <div className="flex items-center gap-4">
-                                <div className="w-11 h-11 rounded-full flex items-center justify-center border border-gray-100 bg-white shadow-sm">
-                                    <Wallet className="w-5 h-5 text-gray-700" strokeWidth={1.5} />
+                                <div className="w-11 h-11 rounded-full flex items-center justify-center border border-gray-100 bg-white shadow-sm overflow-hidden">
+                                    <img src="/Esewa.png" alt="eSewa" className="w-7 h-7 object-contain" />
                                 </div>
                                 <div className="text-left">
                                     <h4 className="text-[16px] text-gray-900 dm-sans2">eSewa</h4>
@@ -120,8 +172,8 @@ export default function CheckoutModal({ isOpen, onClose, plan }) {
                                 }`}
                         >
                             <div className="flex items-center gap-4">
-                                <div className="w-11 h-11 rounded-full flex items-center justify-center border border-gray-100 bg-white shadow-sm">
-                                    <Smartphone className="w-5 h-5 text-gray-700" strokeWidth={1.5} />
+                                <div className="w-11 h-11 rounded-full flex items-center justify-center border border-gray-100 bg-white shadow-sm overflow-hidden">
+                                    <img src="/Khalti.png" alt="Khalti" className="w-9 h-9 object-contain" />
                                 </div>
                                 <div className="text-left">
                                     <h4 className="text-[16px] text-gray-900 dm-sans2">Khalti</h4>
@@ -133,6 +185,72 @@ export default function CheckoutModal({ isOpen, onClose, plan }) {
                                 {mobileWallet === 'khalti' && <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3.5}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>}
                             </div>
                         </button>
+                    </div>
+
+                    {/* Promo Code Input Section */}
+                    <div className="mt-6">
+                        {!isExpanded && !appliedPromo ? (
+                            <button
+                                onClick={() => setIsExpanded(true)}
+                                className="text-[13px] text-[#151b2b] hover:text-[#00a640] dm-sans2 flex items-center gap-1.5 transition-colors"
+                            >
+                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                Have a promo code?
+                            </button>
+                        ) : (
+                            <div className="p-4 border border-gray-100 rounded-xl bg-gray-50/30">
+                                <div className="flex justify-between items-center mb-2">
+                                    <label className="text-[12px] text-gray-500 dm-sans uppercase tracking-wider">Promo Code</label>
+                                    {!appliedPromo && (
+                                        <button
+                                            onClick={() => setIsExpanded(false)}
+                                            className="text-[11px] text-gray-400 hover:text-gray-600 dm-sans"
+                                        >
+                                            Hide
+                                        </button>
+                                    )}
+                                </div>
+                                <div className="flex gap-2">
+                                    <input
+                                        type="text"
+                                        value={promoInput}
+                                        onChange={(e) => setPromoInput(e.target.value)}
+                                        placeholder="Enter code (e.g. SAVE10)"
+                                        disabled={!!appliedPromo}
+                                        className={`flex-1 px-3 py-2 border border-gray-200 rounded-lg text-[14px] dm-sans focus:outline-none focus:ring-1 focus:ring-gray-300 transition-all uppercase ${appliedPromo ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : ''}`}
+                                    />
+                                    {!appliedPromo ? (
+                                        <button
+                                            onClick={handleApplyPromo}
+                                            className="px-4 py-2 bg-[#151b2b] text-white text-[13px] dm-sans2 rounded-lg hover:bg-black transition-colors"
+                                        >
+                                            Apply
+                                        </button>
+                                    ) : (
+                                        <button
+                                            onClick={() => {
+                                                setAppliedPromo('');
+                                                setDiscountAmount(0);
+                                                setPromoInput('');
+                                                setIsExpanded(false);
+                                            }}
+                                            className="px-4 py-2 border border-red-200 text-red-500 text-[13px] dm-sans2 rounded-lg hover:bg-red-50 transition-colors"
+                                        >
+                                            Remove
+                                        </button>
+                                    )}
+                                </div>
+                                {appliedPromo && (
+                                    <p className="text-[12px] text-green-600 dm-sans mt-2 flex items-center gap-1">
+                                        <CheckCircle2 className="w-3.5 h-3.5" />
+                                        Applied: {appliedPromo} (-NPR {discountAmount})
+                                    </p>
+                                )}
+                                {promoError && (
+                                    <p className="text-[12px] text-red-500 dm-sans mt-2">{promoError}</p>
+                                )}
+                            </div>
+                        )}
                     </div>
 
                     {/* Verification Banner */}
@@ -194,13 +312,23 @@ export default function CheckoutModal({ isOpen, onClose, plan }) {
                     </div>
 
                     <div className="space-y-3 mb-8 px-1">
-                        <div className="flex justify-between items-center">
-                            <span className="text-[14px] text-gray-500 dm-sans">Plan total</span>
-                            <span className="text-[14px] text-gray-900 dm-sans2">NPR {planPrice}</span>
+                        <div className="flex justify-between items-center text-[14px]">
+                            <span className="text-gray-500 dm-sans">Plan subtotal</span>
+                            <span className="text-gray-900 dm-sans2">NPR {planPrice}</span>
                         </div>
+                        {appliedPromo && (
+                            <div className="flex justify-between items-center text-[14px]">
+                                <span className="text-green-600 dm-sans">Promo Discount (10%)</span>
+                                <span className="text-green-600 dm-sans2">- NPR {discountAmount}</span>
+                            </div>
+                        )}
                         <div className="flex justify-between items-center">
-                            <span className="text-[14px] text-gray-500 dm-sans">Activation period</span>
-                            <span className="text-[14px] text-gray-900 dm-sans2">30 days</span>
+                            <span className="text-[15px] font-semibold text-gray-900 dm-sans">Total to pay</span>
+                            <span className="text-[18px] text-gray-900 dm-sans2">NPR {planPrice - discountAmount}</span>
+                        </div>
+                        <div className="flex justify-between items-center pt-1">
+                            <span className="text-[13px] text-gray-400 dm-sans">Activation period</span>
+                            <span className="text-[13px] text-gray-600 dm-sans2">{isFirstTime ? '60 days' : '30 days'}</span>
                         </div>
                     </div>
 

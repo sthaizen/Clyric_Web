@@ -5,6 +5,7 @@ import {
     verifyEsewa,
     verifyKhalti,
     cancelSubscription,
+    checkFirstTimeBuyer,
 } from "../controllers/paymentController.js";
 
 const router = express.Router();
@@ -36,5 +37,12 @@ router.post("/verify/khalti", verifyKhalti);
  * @access  Private
  */
 router.post("/cancel", protectRoute, cancelSubscription);
+
+/**
+ * @route   GET /api/payments/check-first-time
+ * @desc    Check if the user is a first-time buyer
+ * @access  Private
+ */
+router.get("/check-first-time", protectRoute, checkFirstTimeBuyer);
 
 export default router;

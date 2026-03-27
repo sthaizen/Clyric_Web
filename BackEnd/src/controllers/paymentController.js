@@ -208,11 +208,20 @@ async function activateUserSubscription(transaction, gatewayRefId, rawMetadata) 
         transaction.metadata = rawMetadata;
         await transaction.save({ session });
 
-        // 2. Create Subscription
+        // 2. Determine Expiry (60 days for first-time buyers, 30 otherwise)
+        const previousSub = await Subscription.findOne({ 
+            userId: transaction.userId, 
+            status: { $in: ["active", "expired", "cancelled"] } 
+        }).session(session);
+        
+        const isFirstTime = !previousSub;
+        const durationDays = isFirstTime ? 60 : 30;
+
         const now = new Date();
         const expiry = new Date(now);
-        expiry.setDate(expiry.getDate() + 30); // Hardcoded 30 days for now
+        expiry.setDate(expiry.getDate() + durationDays);
 
+        // 3. Create Subscription
         await Subscription.create([{
             userId: transaction.userId,
             tier: transaction.planId,
@@ -222,8 +231,7 @@ async function activateUserSubscription(transaction, gatewayRefId, rawMetadata) 
             transactionId: transaction._id,
         }], { session });
 
-        // 3. Update User
-        // We populate the user to get the clerkId for the metadata sync
+        // 4. Update User
         const user = await User.findById(transaction.userId).session(session);
         if (!user) throw new Error("User not found during subscription activation");
 
@@ -233,9 +241,8 @@ async function activateUserSubscription(transaction, gatewayRefId, rawMetadata) 
         user.paymentHistory.push(transaction._id);
         await user.save({ session });
 
-        // 4. Sync with Clerk Metadata
+        // 5. Sync with Clerk Metadata
         try {
-            // CRITICAL: We MUST use the clerkId string, not the Mongoose ObjectId
             await clerkClient.users.updateUserMetadata(user.clerkId, {
                 publicMetadata: {
                     subscriptionTier: transaction.planId,
@@ -243,7 +250,7 @@ async function activateUserSubscription(transaction, gatewayRefId, rawMetadata) 
                     isPro: true
                 }
             });
-            console.log(`Clerk Metadata Synced for user: ${user.clerkId}`);
+            console.log(`Clerk Metadata Synced for user: ${user.clerkId} (Duration: ${durationDays} days)`);
         } catch (clerkErr) {
             console.error("Clerk Metadata Sync Error (Non-Fatal):", clerkErr);
         }
@@ -299,12 +306,33 @@ export const cancelSubscription = async (req, res) => {
 
         await session.commitTransaction();
         session.endSession();
-
-        res.status(200).json({ success: true, message: "Subscription cancelled successfully" });
+        res.status(200).json({ success: true, message: "Subscription cancelled" });
     } catch (error) {
         await session.abortTransaction();
         session.endSession();
-        console.error("cancelSubscription error:", error);
+        console.error("Cancellation error:", error);
         res.status(500).json({ success: false, message: "Internal server error during cancellation" });
+    }
+};
+
+/**
+ * GET /api/payments/check-first-time
+ * Provides frontend with a Boolean to show the 60-day bonus info.
+ */
+export const checkFirstTimeBuyer = async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const previousSub = await Subscription.findOne({ 
+            userId, 
+            status: { $in: ["active", "expired", "cancelled"] } 
+        });
+        
+        return res.status(200).json({ 
+            success: true, 
+            isFirstTime: !previousSub 
+        });
+    } catch (error) {
+        console.error("Error in checkFirstTimeBuyer:", error);
+        res.status(500).json({ success: false, message: "Internal Server Error" });
     }
 };

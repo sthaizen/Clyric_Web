@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { X, AlertTriangle, Loader2, CheckCircle2 } from 'lucide-react';
+import { useUser } from '@clerk/clerk-react';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
 export default function CancelSubscriptionModal({ isOpen, onClose }) {
     const [isLoading, setIsLoading] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
+    const { user } = useUser();
 
     if (!isOpen) return null;
 
@@ -37,7 +39,7 @@ export default function CancelSubscriptionModal({ isOpen, onClose }) {
     };
 
     return (
-        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60  transition-all">
+        <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 transition-all">
             {/* Modal Container */}
             <div className="bg-white w-full max-w-[460px] rounded-[15px] shadow-2xl relative overflow-hidden">
 
@@ -63,7 +65,31 @@ export default function CancelSubscriptionModal({ isOpen, onClose }) {
                                 Are you sure? You will immediately lose access to premium features and revert to the free tier.
                             </p>
 
-                            {/* Warning Box - Concise Text */}
+                            {/* Current Plan Details - Minimalist & Unboxed */}
+                            {user?.publicMetadata?.isPro && user?.publicMetadata?.subscriptionExpiry && (
+                                <div className="mb-8 space-y-3 px-1">
+                                    {/* Expiry Row */}
+                                    <div className="flex justify-between items-baseline">
+                                        <span className="text-[15px] text-gray-500">Access valid until</span>
+                                        <div className="text-[15px] font-semibold tracking-tight">
+                                            {(() => {
+                                                const expiry = new Date(user.publicMetadata.subscriptionExpiry);
+                                                const now = new Date();
+                                                const diff = expiry.getTime() - now.getTime();
+                                                const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+
+                                                return days > 0 ? (
+                                                    <span className="text-gray-900">{days} days left</span>
+                                                ) : (
+                                                    <span className="text-red-600">Expiring today</span>
+                                                );
+                                            })()}
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Warning Box */}
                             <div className="mb-8 border border-red-100 bg-red-50/50 rounded-[14px] p-4 flex gap-3 items-start">
                                 <AlertTriangle className="w-[18px] h-[18px] text-red-500 shrink-0 mt-[2px]" strokeWidth={2} />
                                 <div>
@@ -74,7 +100,7 @@ export default function CancelSubscriptionModal({ isOpen, onClose }) {
                                 </div>
                             </div>
 
-                            {/* Action Buttons - Short text, new sleek colors */}
+                            {/* Action Buttons */}
                             <div className="flex flex-col gap-3">
                                 <button
                                     onClick={onClose}
