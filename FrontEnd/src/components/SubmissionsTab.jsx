@@ -79,16 +79,27 @@ export default function SubmissionsTab({ problem }) {
   };
 
   return (
-    <div className="p-0 h-full flex flex-col min-h-0 bg-[#16161a] relative">
-      <div className="px-6 py-4 border-b border-[#16161a] bg-[#1b1b1f] flex items-center justify-between shadow-sm z-10 shrink-0">
-        <div>
-          <h1 className="text-lg font-bold text-white flex items-center gap-2">
-            <History className="w-4 h-4 text-[#2cbb5d]" />
-            Your Correct Submissions
-          </h1>
-          <p className="text-xs text-gray-400 mt-0.5 font-medium">
-            Review your successful past solutions for this problem.
-          </p>
+    <div className="p-0 h-full flex flex-col min-h-0 bg-[#1b1b1f] relative">
+      <div className="px-6 py-5 border-b border-[#111113] bg-[#1b1b1f] shrink-0">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="p-2 bg-[#3b82f6]/10 rounded-lg">
+              <History className="w-5 h-5 text-[#3b82f6]" />
+            </div>
+            <div>
+              <h1 className="text-xl font-bold text-white tracking-tight">Your Submissions</h1>
+              <p className="text-[13px] text-gray-400 font-medium tracking-tight">
+                Review your successful past solutions and execution metrics
+              </p>
+            </div>
+          </div>
+          {problem?.title && (
+            <div className="hidden sm:flex items-center gap-2">
+              <span className="text-[11px] font-semibold bg-[#28282c] text-gray-400 px-2.5 py-1 rounded border border-[#3e3e42]/50">
+                {problem.title}
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
