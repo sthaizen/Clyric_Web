@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { getProblemBySlug, getProblems } from "../lib/api/problems";
 import { trackProblemEvent } from "../lib/api/analytics";
 import { useAuth } from "@clerk/clerk-react";
+import { useSubscription } from "../hooks/useSubscription";
 
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
 import ProblemDescription from "../components/ProblemDescription";
@@ -11,6 +12,7 @@ import CodeEditorPanel from "../components/CodeEditorPanel";
 import SettingsModal from "../components/SettingModal.jsx";
 import ProblemNavbar from "../components/ProblemNavbar";
 import AiChatPanel from "../components/AiChatPanel"; // <-- NEW IMPORT
+import { Lock } from "lucide-react";
 
 // Use our new backend service instead of piston
 import { runCode, submitCode } from "../lib/codeExecution";
@@ -23,11 +25,13 @@ import { ChevronRight, X, EyeOff } from "lucide-react";
 function ProblemPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { userId } = useAuth(); // for tracking
+  const { userId, getToken } = useAuth(); // for tracking & auth
+  const { getAllowedLanguages, permissions, tierLabel, showUpgradeToast } = useSubscription();
 
   const [problemList, setProblemList] = useState([]);
   const [currentProblem, setCurrentProblem] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [lockedDifficulty, setLockedDifficulty] = useState(null);
 
   const [selectedLanguage, setSelectedLanguage] = useState("javascript");
 
@@ -91,8 +95,10 @@ function ProblemPage() {
       if (!id) return;
       setIsLoading(true);
       try {
-        const problemData = await getProblemBySlug(id);
+        const token = await getToken();
+        const problemData = await getProblemBySlug(id, token);
         setCurrentProblem(problemData);
+        setLockedDifficulty(null);
 
         const defaultCodes = {};
         if (problemData && problemData.starterCode) {
@@ -104,9 +110,16 @@ function ProblemPage() {
         setOutput(null);
       } catch (err) {
         console.error("Failed to fetch problem details:", err);
-        setCurrentProblem(null);
+        // fetch based handle error (code in .data)
+        if (err.data?.code === "DIFFICULTY_LOCKED") {
+          setLockedDifficulty(err.data.message);
+        } else {
+          setCurrentProblem(null);
+          setLockedDifficulty(null);
+        }
       } finally {
-        setIsLoading(false);
+        setIsLoading(true);
+        setTimeout(() => setIsLoading(false), 300); // smooth transition
       }
     }
     fetchProblem();
@@ -322,6 +335,18 @@ function ProblemPage() {
   const handleSubmitCode = async () => {
     if (!currentProblem || !currentCode) return;
 
+    // Client-side daily submission limit guard
+    if (permissions.maxSubmissionsPerDay !== Infinity) {
+      const today = new Date().toISOString().split("T")[0];
+      const key = `submissions_${userId}_${today}`;
+      const usedToday = parseInt(sessionStorage.getItem(key) || "0", 10);
+      if (usedToday >= permissions.maxSubmissionsPerDay) {
+        showUpgradeToast("Daily limit reached. Upgrade for more submissions.");
+        return;
+      }
+      sessionStorage.setItem(key, usedToday + 1);
+    }
+
     setIsSubmitting(true);
     setOutput({ type: "submitting" });
 
@@ -377,6 +402,42 @@ function ProblemPage() {
         <div className="flex flex-col items-center gap-3">
           <div className="w-8 h-8 border-4 border-t-indigo-500 border-indigo-500/20 rounded-full animate-spin"></div>
           <span className="text-sm font-medium text-gray-400">Loading problem data...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (lockedDifficulty) {
+    return (
+      <div className="h-screen bg-[#111113] flex flex-col overflow-hidden">
+        <ProblemNavbar 
+           isPrevDisabled={true} isNextDisabled={true} // disable nav in locked state
+           setIsLayoutMenuOpen={() => {}} setIsSettingsModalOpen={() => {}}
+        />
+        <div className="flex-1 flex flex-col items-center justify-center gap-6 bg-[#1b1b1f] text-center px-4">
+          <div className="w-20 h-20 rounded-full bg-[#ff375f]/10 flex items-center justify-center ring-1 ring-[#ff375f]/20">
+             <Lock className="w-8 h-8 text-[#ff375f]" strokeWidth={1.5} />
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-2xl font-bold text-white tracking-tight">Difficulty Locked</h2>
+            <p className="text-gray-400 max-w-[340px] leading-relaxed mx-auto">
+              {lockedDifficulty} Upgrade your plan to access Medium and Hard level challenges.
+            </p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-4 w-full max-w-[400px]">
+            <button 
+               onClick={() => navigate("/problems")}
+               className="flex-1 px-8 py-3 bg-white/5 hover:bg-white/10 text-white font-semibold rounded-xl border border-white/10 transition-all active:scale-95"
+            >
+              Back to Overview
+            </button>
+            <button 
+               onClick={() => navigate("/pricing")}
+               className="flex-1 px-8 py-3 bg-[#ff375f] hover:bg-[#ff1b47] text-white font-semibold rounded-xl transition-all shadow-lg hover:shadow-[#ff375f]/20 active:scale-95"
+            >
+              Upgrade Now
+            </button>
+          </div>
         </div>
       </div>
     );
@@ -528,6 +589,7 @@ function ProblemPage() {
                     settings={editorSettings}
                     onToggleMaximize={handleToggleMaximize}
                     isMaximized={layoutMode === "editor-only"}
+                    allowedLanguages={getAllowedLanguages()}
                   />
                 </Panel>
                 <PanelResizeHandle className="h-2 cursor-row-resize hover:bg-[#3e3e42]/50 transition-colors" />
@@ -569,6 +631,7 @@ function ProblemPage() {
                 settings={editorSettings}
                 onToggleMaximize={handleToggleMaximize}
                 isMaximized={layoutMode === "editor-only"}
+                allowedLanguages={getAllowedLanguages()}
               />
             </Panel>
             <PanelResizeHandle className="w-2 cursor-col-resize hover:bg-[#3e3e42]/50 transition-colors" />
@@ -606,6 +669,7 @@ function ProblemPage() {
                     settings={editorSettings}
                     onToggleMaximize={handleToggleMaximize}
                     isMaximized={layoutMode === "editor-only"}
+                    allowedLanguages={getAllowedLanguages()}
                   />
                 </Panel>
                 <PanelResizeHandle className="h-2 cursor-row-resize hover:bg-[#3e3e42]/50 transition-colors" />
@@ -642,6 +706,7 @@ function ProblemPage() {
               settings={editorSettings}
               onToggleMaximize={handleToggleMaximize}
               isMaximized={true}
+              allowedLanguages={getAllowedLanguages()}
             />
           </div>
         )}

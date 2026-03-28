@@ -1,4 +1,4 @@
-import { useUser } from "@clerk/clerk-react";
+import { useUser, useAuth } from "@clerk/clerk-react";
 import { useNavigate, useParams, Link } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import { useEndSession, useJoinSession, useSessionById } from "../hooks/useSessions";
@@ -36,6 +36,7 @@ function SessionPage() {
   const navigate = useNavigate();
   const { id } = useParams();
   const { user } = useUser();
+  const { getToken } = useAuth();
 
   // --- SESSION MAIN LOGIC ---
   const [output, setOutput] = useState(null);
@@ -73,35 +74,44 @@ function SessionPage() {
     async function loadProblemData() {
       if (!session?.problem) return;
       
+      // If we don't have the problem list yet, we might try to fetch a raw title as a slug.
+      // To improve UX, we wait for the list if there are spaces in the problem string (likely a title).
+      if (problemList.length === 0 && session.problem.includes(" ")) {
+        return; 
+      }
+
       setLoadingProblem(true);
       try {
         let slugToFetch = session.problem;
         
         if (problemList.length > 0) {
            const match = problemList.find(p => p.title === session.problem || p.id === session.problem);
-           if (match) slugToFetch = match.id;
+           if (match) {
+             slugToFetch = match.id;
+           } else if (session.problem.includes(" ")) {
+             // If it's definitely a title but no match in the current list, 
+             // it might be a problem that doesn't exist anymore or is wrong.
+             throw new Error("Problem not found in library");
+           }
         }
 
-        const data = await getProblemBySlug(slugToFetch);
+        const token = await getToken();
+        const data = await getProblemBySlug(slugToFetch, token);
         setCurrentProblem(data);
       } catch (err) {
         console.error("Failed to load session problem", err);
-        // If it really fails to fetch a specific problem, we should ideally handle it
-        // but not necessarily trigger the global "Not Found" UI if the session itself exists.
         setCurrentProblem(null);
       } finally {
         setLoadingProblem(false);
       }
     }
     
-    // Only attempt to load problem if we have a session problem string
     if (session?.problem) {
       loadProblemData();
     } else if (!loadingSession && !session) {
-      // If session fetch is done and there's no session, we won't have a problem to load
       setLoadingProblem(false);
     }
-  }, [session?.problem, problemList, loadingSession]);
+  }, [session?.problem, problemList, loadingSession, getToken]);
 
   const currentProblemId = currentProblem?.id;
 

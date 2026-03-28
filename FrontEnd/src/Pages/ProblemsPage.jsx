@@ -1,15 +1,18 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { getProblems, getTopicMetadata, getSolvedStatus } from '../lib/api/problems';
 import assets from "../assets/assets";
 import { useUser, useAuth, SignInButton, SignedOut, SignedIn, UserButton } from "@clerk/clerk-react";
 import {
   Search, ChevronLeft, ChevronRight, LayoutList, CheckCircle2, Circle,
-  Lock, Settings, Shuffle, ChevronDown, ChevronUp, ArrowUpDown, SlidersHorizontal,
+  Lock, LockOpen, Settings, Shuffle, ChevronDown, ChevronUp, ArrowUpDown, SlidersHorizontal,
   Target, GraduationCap, User
 } from 'lucide-react';
 import QuestWidget from '../components/quests/QuestWidget';
 import QuestDashboardView from '../components/quests/QuestDashboardView';
+import QuestLockedView from '../components/quests/QuestLockedView';
+import { useSubscription } from '../hooks/useSubscription';
 
 const COMPANIES = [
   { name: "Amazon", count: 1943 }, { name: "Uber", count: 372 },
@@ -38,7 +41,9 @@ function formatSolveTime(seconds) {
 }
 
 export default function LeetCodeClone() {
+  const navigate = useNavigate();
   const { user } = useUser();
+  const { permissions, tierLabel, getRequiredTierLabel, showUpgradeToast, canAccess } = useSubscription();
   const { getToken, isSignedIn } = useAuth();
   const [searchQuery, setSearchQuery] = useState('');
   const [activeDifficulty, setActiveDifficulty] = useState('All');
@@ -137,6 +142,22 @@ export default function LeetCodeClone() {
     loadData();
   }, []);
 
+  const handleProblemClick = (e, problem) => {
+    e.preventDefault();
+    const diff = problem.difficulty.toLowerCase();
+    
+    // Check if the current tier has permission for this difficulty
+    if (permissions && !permissions.allowedDifficulties.includes(diff)) {
+      const requiredTier = diff === "medium" ? "code-rooms" : "interview-studio";
+      showUpgradeToast(
+        `The ${problem.difficulty} level is locked. Upgrade to ${getRequiredTierLabel(requiredTier)} to unlock.`
+      );
+      return;
+    }
+    
+    navigate(`/problem/${problem.id}`);
+  };
+
   // --- FETCH SOLVED STATUS (only when signed in) ---
   useEffect(() => {
     if (!isSignedIn) return;
@@ -177,13 +198,7 @@ export default function LeetCodeClone() {
   const diffColor = (d) => d === 'Easy' ? '#00b8a3' : d === 'Medium' ? '#ffc01e' : d === 'Hard' ? '#ef4743' : '#9ca3af';
   const diffBg = (d) => d === 'Easy' ? 'rgba(0,184,163,0.15)' : d === 'Medium' ? 'rgba(255,192,30,0.15)' : 'rgba(239,71,67,0.15)';
 
-  const Bars = () => (
-    <div style={{ display: 'flex', alignItems: 'flex-end', gap: 2, height: 14, opacity: 0.55 }}>
-      {[5, 8, 11, 14].map((h, i) => (
-        <div key={i} style={{ width: 2, height: h, background: '#9ca3af', borderRadius: 1 }} />
-      ))}
-    </div>
-  );
+
 
   const DIFF_TABS = [
     { id: 'All', label: 'All Topics', count: allProblems.length },
@@ -222,8 +237,7 @@ export default function LeetCodeClone() {
             { label: 'Problems', link: '/problems', active: true },
             { label: 'Contest', link: '/contest' },
             { label: 'Discuss', link: '/discuss' },
-            { label: 'Interview', link: '/interview', caret: true },
-            { label: 'Store', link: '/store', caret: true, gold: true },
+            { label: 'Pricing', link: '/priceoverview', gold: true },
           ].map(({ label, link, active, caret, gold }) => (
             <a
               key={label}
@@ -234,7 +248,7 @@ export default function LeetCodeClone() {
                 alignItems: 'center',
                 padding: '0 12px',
                 cursor: 'pointer',
-                color: active ? '#fff' : gold ? '#ffa116' : '#9ca3af',
+                color: active ? '#fff' : gold ? '#fba120' : '#9ca3af',
                 borderBottom: active ? '2px solid #8a6bfe' : '2px solid transparent',
                 fontSize: 13.5,
                 fontWeight: active ? 500 : 400,
@@ -264,7 +278,7 @@ export default function LeetCodeClone() {
           </SignedIn>
           <div className="relative group flex items-center">
             <button
-              onClick={() => window.location.href = '/price'}
+              onClick={() => window.location.href = '/priceoverview'}
               style={{
                 background: '#1a1a1a',
                 color: '#fff',
@@ -343,7 +357,7 @@ export default function LeetCodeClone() {
                   </div>
 
                   <button
-                    onClick={() => window.location.href = '/price'}
+                    onClick={() => window.location.href = '/priceoverview'}
                     className="mt-2 w-full py-2 bg-[#2c2c35] hover:bg-[#3b3350]/30 text-white text-[12px] font-medium rounded-lg border border-[#3b3350]/20 transition-colors"
                   >
                     Manage Subscription
@@ -361,16 +375,28 @@ export default function LeetCodeClone() {
         <aside style={{ width: 200, borderRight: '1px solid #2c2c35', padding: '16px 8px', display: 'flex', flexDirection: 'column', gap: 2, flexShrink: 0, overflowY: 'auto' }}>
           {[
             { icon: <LayoutList size={16} />, label: 'Library', active: activeMainView === 'library', action: () => setActiveMainView('library') },
-            { icon: <Target size={16} />, label: 'Quest', badge: 'New', active: activeMainView === 'quest', action: () => setActiveMainView('quest') },
+            { 
+              icon: <Target size={16} />, 
+              label: 'Quest', 
+              badge: 'New', 
+              active: activeMainView === 'quest', 
+              action: () => setActiveMainView('quest'),
+              locked: !canAccess("canUseQuests")
+            },
             { icon: <GraduationCap size={16} />, label: 'Study Plan', active: activeMainView === 'study_plan', action: () => setActiveMainView('study_plan') },
-          ].map(({ icon, label, active, badge, action }) => (
+          ].map(({ icon, label, active, badge, action, locked }) => (
             <button key={label} onClick={action} style={{
               display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', borderRadius: 6,
               background: active ? '#2c2c35' : 'transparent', border: 'none', cursor: 'pointer',
               color: active ? '#fff' : '#9ca3af', fontSize: 13.5, fontWeight: active ? 500 : 400,
-              justifyContent: 'space-between', width: '100%'
+              justifyContent: 'space-between', width: '100%',
+              opacity: locked && !active ? 0.7 : 1
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>{icon}{label}</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                {icon}
+                {label}
+                {locked && <Lock size={12} className="text-gray-500 ml-1" />}
+              </div>
               {badge && <span style={{ background: '#2563eb', color: '#fff', fontSize: 10, padding: '1px 6px', borderRadius: 999, fontWeight: 700 }}>{badge}</span>}
             </button>
           ))}
@@ -389,7 +415,13 @@ export default function LeetCodeClone() {
         {/* CENTER */}
         <main style={{ flex: 1, padding: '20px 24px', overflowY: 'auto', minWidth: 0, display: 'flex', flexDirection: 'column' }}>
 
-          {activeMainView === 'quest' && <QuestDashboardView onNavigateToLibrary={() => setActiveMainView('library')} />}
+          {activeMainView === 'quest' && (
+            canAccess("canUseQuests") ? (
+              <QuestDashboardView onNavigateToLibrary={() => setActiveMainView('library')} />
+            ) : (
+              <QuestLockedView onBack={() => setActiveMainView('library')} />
+            )
+          )}
 
           {activeMainView === 'study_plan' && (
             <div className="flex flex-col items-center justify-center py-20 text-gray-500 h-full">
@@ -512,7 +544,7 @@ export default function LeetCodeClone() {
                   <span style={{ textAlign: 'right' }}>Status</span>
                   <span style={{ textAlign: 'right' }}>Time</span>
                   <span style={{ textAlign: 'right' }}>Difficulty</span>
-                  <span style={{ textAlign: 'right' }}>Frequency</span>
+                  <span style={{ textAlign: 'right' }}>Access</span>
                 </div>
 
                 {isLoading ? (
@@ -526,17 +558,21 @@ export default function LeetCodeClone() {
                   const isSolved = !!solveData;
                   const solveTime = isSolved ? formatSolveTime(solveData.totalTimeSpentSeconds) : null;
                   return (
-                    <Link key={problem.id} to={`/problem/${problem.id}`}
+                    <div key={problem.id} 
+                      onClick={(e) => handleProblemClick(e, problem)}
+                      className="cursor-pointer"
                       style={{
-                        display: 'grid', gridTemplateColumns: '1fr 80px 80px 70px 80px', padding: '10px 12px', borderRadius: 6, textDecoration: 'none',
+                        display: 'grid', gridTemplateColumns: '1fr 80px 80px 70px 80px', padding: '10px 12px', borderRadius: 6,
                         background: idx % 2 !== 0 ? '#16161a' : 'transparent', alignItems: 'center', transition: 'background 0.1s'
                       }}
                       onMouseEnter={e => e.currentTarget.style.background = '#1f1f24'}
                       onMouseLeave={e => e.currentTarget.style.background = idx % 2 !== 0 ? '#16161a' : 'transparent'}>
                       {/* Title */}
-                      <span style={{ color: '#eff1f6', fontSize: 13.5 }}>
-                        {idx + 1}. {problem.title}
-                      </span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <span style={{ color: '#eff1f6', fontSize: 13.5 }}>
+                          {idx + 1}. {problem.title}
+                        </span>
+                      </div>
                       {/* Status column */}
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
                         {isSolved ? (
@@ -557,12 +593,15 @@ export default function LeetCodeClone() {
                       <span style={{ textAlign: 'right', fontSize: 13, fontWeight: 500, color: diffColor(problem.difficulty) }}>
                         {problem.difficulty === 'Medium' ? 'Med.' : problem.difficulty}
                       </span>
-                      {/* Frequency */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 10 }}>
-                        <Bars />
-                        <Lock size={13} color="#6b7280" />
+                      {/* Access / Lock State */}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+                        {permissions && permissions.allowedDifficulties.includes(problem.difficulty.toLowerCase()) ? (
+                          <LockOpen size={14} color="#00b8a3" style={{ opacity: 0.8 }} title="Accessible" />
+                        ) : (
+                          <Lock size={14} color="#ef4743" style={{ opacity: 0.8 }} title="Locked (Upgrade required)" />
+                        )}
                       </div>
-                    </Link>
+                    </div>
                   );
                 })}
               </div>
@@ -575,7 +614,13 @@ export default function LeetCodeClone() {
         <aside style={{ width: 300, borderLeft: '1px solid #2c2c35', padding: '16px', display: 'flex', flexDirection: 'column', gap: 16, flexShrink: 0, overflowY: 'auto' }}>
 
           {/* New Quest Widget */}
-          <QuestWidget onClick={() => setActiveMainView('quest')} />
+          <QuestWidget onClick={() => {
+            if (!canAccess("canUseQuests")) {
+              showUpgradeToast("code-rooms", "to access Quests");
+              return;
+            }
+            setActiveMainView('quest');
+          }} />
 
           {/* Calendar Section */}
           <div style={{ background: '#16161a', borderRadius: 10, padding: 16, border: '1px solid #2c2c35' }}>

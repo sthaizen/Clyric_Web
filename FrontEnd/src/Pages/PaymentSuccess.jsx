@@ -67,7 +67,7 @@ const PaymentSuccess = () => {
             <h1 className="text-[32px] md:text-[36px] dm-sans2 tracking-tight text-red-500">Verification Error</h1>
             <p className="text-gray-400 text-[16px] dm-sans max-w-md mx-auto leading-relaxed">{error}</p>
             <button
-              onClick={() => navigate("/price")}
+              onClick={() => navigate("/priceoverview")}
               className="mt-6 px-10 py-4 bg-white text-black dm-sans2 text-[15px] rounded-2xl hover:bg-gray-200 transition-all flex items-center justify-center gap-2 mx-auto shadow-[0_8px_30px_rgb(0,0,0,0.2)]"
             >
               Try Again <ArrowRight className="w-4 h-4" strokeWidth={2} />

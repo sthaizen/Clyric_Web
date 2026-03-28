@@ -130,7 +130,7 @@ function ActiveSessions({ sessions, isLoading, isUserInSession }) {
       </div>
 
       {/* LIST BODY */}
-      <div className="px-5 pb-5 flex-1 flex flex-col max-h-[450px] overflow-y-auto custom-scrollbar">
+      <div className="px-5 pb-5 flex flex-col max-h-[310px] overflow-y-auto custom-scrollbar">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center flex-grow text-gray-500">
             <Loader2Icon className="w-8 h-8 animate-spin text-indigo-500 mb-3" />

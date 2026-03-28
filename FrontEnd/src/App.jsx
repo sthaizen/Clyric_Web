@@ -72,7 +72,7 @@ const App = () => {
           <Route path="/service" element={<Servicess />} />
           <Route path="/coding" element={<CodingEnvironemt />} />
           <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/price" element={<PriceOverview />} />
+          <Route path="/priceoverview" element={<PriceOverview />} />
           <Route path="/checkout" element={<CosmicCheckout />} />
         </Routes>
       </div>

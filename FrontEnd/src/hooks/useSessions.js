@@ -1,13 +1,23 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import { sessionApi } from "../api/sessions.js";
+import { showUpgradeToast } from "../lib/premiumToast";
 
 export const useCreateSession = () => {
   const result = useMutation({
     mutationKey: ["createSession"],
     mutationFn: sessionApi.createSession,
     onSuccess: () => toast.success("Session created successfully!"),
-    onError: (error) => toast.error(error.response?.data?.message || "Failed to create room"),
+    onError: (error) => {
+      const msg = error.response?.data?.message || "Failed to create room";
+      const code = error.response?.data?.code;
+      
+      if (code === "UPGRADE_REQUIRED" || code === "FEATURE_LOCKED") {
+        showUpgradeToast(msg);
+      } else {
+        toast.error(msg);
+      }
+    },
   });
 
   return result;

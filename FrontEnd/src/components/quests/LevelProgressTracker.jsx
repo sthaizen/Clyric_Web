@@ -15,9 +15,17 @@ export default function LevelProgressTracker({ stats }) {
   const expNeededThisLevel = expForNextLevel - expForCurrentLevel;
 
   const progressPercent = Math.min((expEarnedThisLevel / expNeededThisLevel) * 100, 100);
+  const [animatedWidth, setAnimatedWidth] = React.useState(0);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setAnimatedWidth(progressPercent);
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [progressPercent]);
 
   return (
-    <div className="bg-[#16161a] border border-[#2c2c35] rounded-xl p-5 w-full transition-all">
+    <div className="bg-[#16161a] border border-[#2c2c35] rounded-xl p-5 w-full transition-all group hover:border-indigo-500/30 shadow-lg hover:shadow-indigo-500/5">
       {/* Top Row: Level & XP */}
       <div className="flex items-end justify-between mb-5">
         <div className="flex flex-col items-start">
@@ -25,7 +33,7 @@ export default function LevelProgressTracker({ stats }) {
             <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-500">Level</span>
           </div>
           <div className="flex items-baseline gap-2">
-            <span className="text-3xl font-bold tracking-tight text-white">{currentLevel}</span>
+            <span className="text-3xl font-bold tracking-tight text-white group-hover:text-indigo-400 transition-colors">{currentLevel}</span>
             <span className="text-sm font-medium text-gray-500">Rank Member</span>
           </div>
         </div>
@@ -41,21 +49,27 @@ export default function LevelProgressTracker({ stats }) {
       </div>
 
       {/* Integrated Progress */}
-      <div className="space-y-2">
-        <div className="h-2 w-full bg-[#111113] rounded-full overflow-hidden border border-[#2c2c35]/50 shadow-inner">
+      <div className="space-y-2.5">
+        <div className="h-2.5 w-full bg-[#111113] rounded-full overflow-hidden border border-[#2c2c35]/50 shadow-inner group-hover:border-indigo-500/20 transition-colors">
           <div
-            className="h-full rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 transition-all duration-1000 ease-out relative"
-            style={{ width: `${progressPercent}%` }}
+            className="h-full rounded-full bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 transition-all duration-1000 ease-out relative overflow-hidden"
+            style={{ width: `${animatedWidth}%` }}
           >
-            {/* Shimmer effect inside the progress bar */}
-            <div className="absolute top-0 left-0 right-0 bottom-0 bg-white/20 w-full h-full transform -skew-x-12 animate-shimmer" />
+            {/* Improved Shimmer effect with gradient */}
+            <div 
+              className="absolute inset-0 w-full h-full bg-linear-to-r from-transparent via-white/20 to-transparent transform -skew-x-12 animate-shimmer" 
+              style={{ animationDuration: '2.5s' }}
+            />
+            
+            {/* Glowing tip */}
+            <div className="absolute top-0 right-0 h-full w-[2px] bg-white opacity-60 blur-[1px]" />
           </div>
         </div>
 
         <div className="flex justify-between text-[11px] font-medium tracking-tight">
           <span className="text-gray-400">
-            <span className="text-gray-200">{expEarnedThisLevel.toLocaleString()}</span>
-            <span className="mx-1 text-gray-600">/</span>
+            <span className="text-gray-200 font-bold">{expEarnedThisLevel.toLocaleString()}</span>
+            <span className="mx-1.5 text-gray-600">/</span>
             {expNeededThisLevel.toLocaleString()} XP
           </span>
           <span className="text-gray-500 group-hover:text-indigo-400 transition-colors">
