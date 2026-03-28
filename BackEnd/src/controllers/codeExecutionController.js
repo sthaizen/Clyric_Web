@@ -1,16 +1,33 @@
-
-
 import { runUserCode } from "../services/codeExecutionService.js";
 import { judgeSubmission } from "../services/judgeService.js";
 import Submission from "../models/Submission.js";
 import AdvancedProblem from "../models/AdvancedProblem.js";
+import User from "../models/User.js";
+import { getTierPermissions } from "../middleware/subscriptionMiddleware.js";
 
 // Maximum sizes to prevent DoS attacks
 const MAX_CODE_SIZE = 64 * 1024;   // 64KB
 const MAX_STDIN_SIZE = 16 * 1024;  // 16KB
 
-// The languages our judge supports
-const SUPPORTED_LANGUAGES = ["javascript", "python", "cpp", "java", "c"];
+// All languages the judge supports
+const SUPPORTED_LANGUAGES = ["javascript", "python", "cpp", "java"];
+
+/** Helper: get the start of today UTC for daily limit queries */
+function startOfTodayUTC() {
+  const now = new Date();
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+}
+
+/** Helper: resolve user tier from a Clerk userId string */
+async function getUserTier(clerkUserId) {
+  if (!clerkUserId) return "free";
+  try {
+    const user = await User.findOne({ clerkId: clerkUserId }).select("subscriptionTier").lean();
+    return user?.subscriptionTier || "free";
+  } catch {
+    return "free";
+  }
+}
 
 /**
  * POST /api/code/run
@@ -40,6 +57,18 @@ export const runCode = async (req, res) => {
       return res.status(400).json({
         success: false,
         error: `Unsupported language: ${language}. Supported: ${SUPPORTED_LANGUAGES.join(", ")}`,
+      });
+    }
+
+    // --- Tier-based language gate ---
+    const clerkUserId = req.auth?.()?.userId ?? req.auth?.userId ?? null;
+    const userTier = await getUserTier(clerkUserId);
+    const perms = getTierPermissions(userTier);
+    if (!perms.languages.includes(language.toLowerCase())) {
+      return res.status(403).json({
+        success: false,
+        code: "LANGUAGE_LOCKED",
+        message: `${language} is not available on your current plan. Upgrade to unlock more languages.`,
       });
     }
 
@@ -100,6 +129,38 @@ export const submitCode = async (req, res) => {
         success: false,
         error: `Unsupported language: ${language}. Supported: ${SUPPORTED_LANGUAGES.join(", ")}`,
       });
+    }
+
+    // --- Tier-based checks (language + daily submission limit) ---
+    const clerkUserId = req.auth?.()?.userId ?? req.auth?.userId ?? null;
+    const userTier = await getUserTier(clerkUserId);
+    const perms = getTierPermissions(userTier);
+
+    // Language gate
+    if (!perms.languages.includes(language.toLowerCase())) {
+      return res.status(403).json({
+        success: false,
+        code: "LANGUAGE_LOCKED",
+        message: `${language} is not available on your current plan. Upgrade to unlock more languages.`,
+      });
+    }
+
+    // Daily submission limit
+    if (clerkUserId && perms.maxSubmissionsPerDay !== Infinity) {
+      const todayStart = startOfTodayUTC();
+      const submissionsToday = await Submission.countDocuments({
+        userId: clerkUserId,
+        createdAt: { $gte: todayStart },
+      });
+      if (submissionsToday >= perms.maxSubmissionsPerDay) {
+        return res.status(429).json({
+          success: false,
+          code: "DAILY_LIMIT_REACHED",
+          message: `You have reached your daily submission limit of ${perms.maxSubmissionsPerDay}. Upgrade your plan for more submissions.`,
+          limit: perms.maxSubmissionsPerDay,
+          used: submissionsToday,
+        });
+      }
     }
 
     if (Buffer.byteLength(code, "utf8") > MAX_CODE_SIZE) {

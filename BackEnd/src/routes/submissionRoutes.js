@@ -1,8 +1,42 @@
 import { Router } from "express";
 import { requireAuth } from "@clerk/express";
 import Submission from "../models/Submission.js";
+import ProblemAnalytics from "../models/ProblemAnalytics.js";
 
 const router = Router();
+
+// GET /api/submissions/solved-status
+// Returns all solved problems with time data for the current user
+router.get("/solved-status", requireAuth(), async (req, res) => {
+  try {
+    const userId = req.auth.userId;
+
+    if (!userId) {
+      return res.status(401).json({ success: false, error: "Unauthorized" });
+    }
+
+    const solvedProblems = await ProblemAnalytics.find({
+      userId,
+      isSolved: true,
+    })
+      .select("problemSlug totalTimeSpentSeconds firstSolvedAt")
+      .lean();
+
+    const solvedMap = {};
+    solvedProblems.forEach((p) => {
+      solvedMap[p.problemSlug] = {
+        solved: true,
+        totalTimeSpentSeconds: p.totalTimeSpentSeconds || 0,
+        firstSolvedAt: p.firstSolvedAt || null,
+      };
+    });
+
+    return res.status(200).json({ success: true, solvedMap });
+  } catch (error) {
+    console.error("[getSolvedStatus] Error:", error);
+    return res.status(500).json({ success: false, error: "Internal Server Error" });
+  }
+});
 
 // GET /api/submissions/:problemSlug
 // Retrieves all accepted submissions for a given problem for the logged-in user

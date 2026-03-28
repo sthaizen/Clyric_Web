@@ -49,7 +49,7 @@ const PaymentError = () => {
                     {/* Action Buttons */}
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
                         <button
-                            onClick={() => navigate("/price")}
+                            onClick={() => navigate("/priceoverview")}
                             className="w-full sm:w-auto px-10 py-4 bg-white text-black dm-sans2 text-[15px] rounded-2xl hover:bg-gray-200 hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2 shadow-[0_8px_30px_rgb(0,0,0,0.4)]"
                         >
                             Try Another Way <RefreshCcw className="w-4 h-4" strokeWidth={2.5} />

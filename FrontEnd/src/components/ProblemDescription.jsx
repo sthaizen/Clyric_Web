@@ -20,10 +20,15 @@ import NotesSection from "./NotesSection";
 import { trackProblemEvent } from "../lib/api/analytics";
 import { useAuth } from "@clerk/clerk-react";
 import debounce from "lodash.debounce";
+import { useSubscription } from "../hooks/useSubscription";
+import { Lock } from "lucide-react";
 
 function ProblemDescription({ problem, currentProblemId }) {
   const [activeTab, setActiveTab] = useState("Description");
   const { userId } = useAuth();
+  const { canAccess } = useSubscription();
+
+  const handleBackToOverview = () => setActiveTab("Description");
 
   const handleHintClick = (hintIndex) => {
     if (userId && currentProblemId) {
@@ -226,7 +231,9 @@ function ProblemDescription({ problem, currentProblemId }) {
             : "hover:text-gray-200 border-b-2 border-b-transparent"
             }`}
         >
-          <FlaskConical className="w-4 h-4 text-blue-500" /> Visualizer
+          <FlaskConical className="w-4 h-4 text-blue-500" /> 
+          Visualizer
+          {!canAccess("canUseVisualizer") && <Lock className="w-3 h-3 text-gray-500 ml-0.5" />}
         </div>
 
         <div
@@ -236,7 +243,9 @@ function ProblemDescription({ problem, currentProblemId }) {
             : "hover:text-gray-200 border-b-2 border-b-transparent"
             }`}
         >
-          <PenLine className="w-4 h-4 text-purple-400" /> Notes
+          <PenLine className="w-4 h-4 text-purple-400" /> 
+          Notes
+          {!canAccess("canUseNotes") && <Lock className="w-3 h-3 text-gray-500 ml-0.5" />}
         </div>
 
         <div
@@ -382,7 +391,11 @@ function ProblemDescription({ problem, currentProblemId }) {
         )}
 
         {activeTab === "Notes" && (
-          <NotesSection problemId={currentProblemId} problemTitle={problem.title} />
+          <NotesSection 
+            problemId={currentProblemId} 
+            problemTitle={problem.title} 
+            onBackToOverview={handleBackToOverview} 
+          />
         )}
 
         {activeTab === "Discussion" && (
@@ -390,7 +403,11 @@ function ProblemDescription({ problem, currentProblemId }) {
         )}
 
         {activeTab === "Solutions" && (
-          <SolutionsDiagramTab currentProblemId={currentProblemId} problem={problem} />
+          <SolutionsDiagramTab 
+            currentProblemId={currentProblemId} 
+            problem={problem} 
+            onBackToOverview={handleBackToOverview} 
+          />
         )}
 
         {activeTab === "Submissions" && (

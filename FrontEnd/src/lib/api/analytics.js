@@ -22,13 +22,17 @@ export async function trackProblemEvent(payload) {
   }
 }
 
-export async function getDashboardStats(userId, year) {
+export async function getDashboardStats(userId, year, token) {
   if (!userId) return null;
   try {
     const url = year 
       ? `${API_URL}/problem-analytics/dashboard/${userId}?year=${year}`
       : `${API_URL}/problem-analytics/dashboard/${userId}`;
-    const response = await fetch(url);
+    
+    const headers = {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    const response = await fetch(url, { headers });
     if (!response.ok) {
       console.warn("Dashboard stats API returned:", response.status);
       return null;
@@ -40,10 +44,13 @@ export async function getDashboardStats(userId, year) {
   }
 }
 
-export async function getProblemStats(userId, problemSlug) {
+export async function getProblemStats(userId, problemSlug, token) {
   if (!userId || !problemSlug) return null;
   try {
-    const response = await fetch(`${API_URL}/problem-analytics/problem/${userId}/${problemSlug}`);
+    const headers = {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
+    const response = await fetch(`${API_URL}/problem-analytics/problem/${userId}/${problemSlug}`, { headers });
     if (!response.ok) {
       return null;
     }

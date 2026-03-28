@@ -213,7 +213,7 @@ const Navbar = () => {
                         <Link to="/admin" className="text-[13px] font-medium hover:opacity-60 transition-opacity">
                             Customers
                         </Link>
-                        <Link to="/price" className="text-[13px] font-medium hover:opacity-60 transition-opacity">
+                        <Link to="/priceoverview" className="text-[13px] font-medium hover:opacity-60 transition-opacity">
                             Pricing
                         </Link>
                         <Link to="/resources" className="text-[13px] font-medium hover:opacity-60 transition-opacity">
@@ -283,7 +283,7 @@ const Navbar = () => {
                     <Link onClick={() => setSidebarOpen(false)} to="/products" className="hover:text-white transition-colors">Products</Link>
                     <Link onClick={() => setSidebarOpen(false)} to="/integrations" className="hover:text-white transition-colors">Integrations</Link>
                     <Link onClick={() => setSidebarOpen(false)} to="/customers" className="hover:text-white transition-colors">Customers</Link>
-                    <Link onClick={() => setSidebarOpen(false)} to="/price" className="hover:text-white transition-colors">Pricing</Link>
+                    <Link onClick={() => setSidebarOpen(false)} to="/priceoverview" className="hover:text-white transition-colors">Pricing</Link>
                     <Link onClick={() => setSidebarOpen(false)} to="/resources" className="hover:text-white transition-colors">Resources</Link>
 
                     <hr className="border-white/10 my-2" />

@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 import { useAnalytics } from "../hooks/useAnalytics.js";
 import { useDashboard } from "../hooks/useDashboard.js";
 import { CodeIcon, ActivityIcon, ChevronDown, Search, X, Camera, BarChart3 } from "lucide-react";
+import { useSubscription } from "../hooks/useSubscription.js";
 
 // Existing Components
 import WelcomeSection from "../components/WelcomeSection";
@@ -48,11 +49,12 @@ function DashboardPage() {
   const [draftData, setDraftData] = useState(profileData);
   const [isExpanded, setIsExpanded] = useState(false);
 
+  const { data: dashboardData, isLoading: loadingDashboard } = useDashboard(user?.id, selectedYear, dashboardRefreshKey);
+  const { tier, showUpgradeToast, canAccess } = useSubscription();
   const createSessionMutation = useCreateSession();
   const { data: activeSessionsData, isLoading: loadingActiveSessions } = useActiveSessions();
   const { data: recentSessionsData, isLoading: loadingRecentSessions } = useMyRecentSessions();
   const { data: analyticsData, isLoading: loadingAnalytics } = useAnalytics(user?.id, selectedYear);
-  const { data: dashboardData, isLoading: loadingDashboard } = useDashboard(user?.id, selectedYear, dashboardRefreshKey);
 
   useEffect(() => {
     if (isEditModalOpen) {
@@ -61,6 +63,11 @@ function DashboardPage() {
   }, [isEditModalOpen, profileData]);
 
   const handleCreateRoom = () => {
+    if (tier === 'free') {
+      showUpgradeToast("Mock Interviews require Code Rooms. Upgrade to unlock.");
+      setShowCreateModal(false);
+      return;
+    }
     if (!roomConfig.problem || !roomConfig.difficulty) return;
     createSessionMutation.mutate(
       {
@@ -142,8 +149,7 @@ function DashboardPage() {
               { label: 'Problems', link: '/problems' },
               { label: 'Contest', link: '/contest' },
               { label: 'Discuss', link: '/discuss' },
-              { label: 'Interview', link: '/interview', caret: true },
-              { label: 'Store', link: '/store', caret: true, gold: true },
+              { label: 'Pricing', link: '/priceoverview', gold: true },
             ].map(({ label, link, active, caret, gold }) => (
               <a
                 key={label}
@@ -154,7 +160,7 @@ function DashboardPage() {
                   alignItems: 'center',
                   padding: '0 12px',
                   cursor: 'pointer',
-                  color: active ? '#fff' : gold ? '#ffa116' : '#9ca3af',
+                  color: active ? '#fff' : gold ? '#fba120' : '#9ca3af',
                   borderBottom: active ? '2px solid #8a6bfe' : '2px solid transparent',
                   fontSize: 13.5,
                   fontWeight: active ? 500 : 400,
@@ -173,6 +179,10 @@ function DashboardPage() {
             </div>
             <button
               onClick={() => {
+                if (!canAccess("hasAnalytics")) {
+                  showUpgradeToast("Analytics require Interview Studio. Upgrade to unlock.");
+                  return;
+                }
                 const next = !showAnalytics;
                 setShowAnalytics(next);
                 if (next) setDashboardRefreshKey(k => k + 1);
@@ -386,7 +396,13 @@ function DashboardPage() {
                     </div>
                   </div>
                   
-                  <WelcomeSection onCreateSession={() => setShowCreateModal(true)} />
+                  <WelcomeSection onCreateSession={() => {
+                    if (tier === 'free') {
+                      showUpgradeToast("Mock Interviews require Code Rooms. Upgrade to unlock.");
+                    } else {
+                      setShowCreateModal(true);
+                    }
+                  }} />
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full items-stretch">
                   
                   <div className="lg:col-span-4 h-full">

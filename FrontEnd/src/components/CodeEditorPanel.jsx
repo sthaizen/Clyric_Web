@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { socket } from "../lib/socket";
 import Editor from "@monaco-editor/react";
-import { Code2, Maximize2, Minimize2, RotateCcw, Bookmark, Code } from "lucide-react";
+import { Code2, Maximize2, Minimize2, RotateCcw, Bookmark, Code, ChevronDown, Lock } from "lucide-react";
 import { LANGUAGE_CONFIG } from "../data/problem";
 
 function CodeEditorPanel({
@@ -16,10 +16,25 @@ function CodeEditorPanel({
   onRemoteLanguageChange, // Added callback if parent needs notification
   onToggleMaximize,
   isMaximized,
-  settings // Added settings prop
+  settings, // Added settings prop
+  allowedLanguages, // Array of language keys the current user can use
+  upgradeTierLabel, // e.g. "Career Plus" — shown in the locked tooltip
 }) {
   const isRemoteUpdate = useRef(false);
   const [editorInstance, setEditorInstance] = useState(null);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   // --- COLLABORATION LOGIC ---
   useEffect(() => {
@@ -159,21 +174,50 @@ function CodeEditorPanel({
             <Code2 className="w-4 h-4" /> Code
           </div>
 
-          <div className="flex items-center text-[13px] text-gray-300 group relative bg-[#111113] rounded">
-            <select
-              className="appearance-none bg-transparent hover:bg-[#8a6bfe]/20 text-gray-300 py-1 pl-2 pr-6 rounded cursor-pointer outline-none transition-colors"
-              value={selectedLanguage}
-              onChange={wrapLanguageChange}
+          <div className="flex items-center text-[13px] text-gray-300 relative" ref={dropdownRef}>
+            <button
+               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+               className="flex items-center gap-2 bg-[#111113] hover:bg-[#8a6bfe]/10 text-gray-300 py-1.5 px-3 rounded-md border border-[#ffffff0a] transition-all duration-200 outline-none min-w-[120px]"
             >
-              {Object.entries(LANGUAGE_CONFIG).map(([key, lang]) => (
-                <option key={key} value={key} className="bg-[#1b1b1f]">
-                  {lang.name}
-                </option>
-              ))}
-            </select>
-            <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-[10px] text-gray-500">
-              ▼
-            </span>
+              <img 
+                 src={LANGUAGE_CONFIG[selectedLanguage]?.logo} 
+                 alt="" 
+                 className="w-4 h-4 object-contain opacity-90"
+              />
+              <span className="flex-1 text-left font-medium">
+                {LANGUAGE_CONFIG[selectedLanguage]?.name}
+              </span>
+              <ChevronDown className={`w-3.5 h-3.5 text-gray-500 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+
+            {isDropdownOpen && (
+               <div className="absolute top-full left-0 mt-1.5 w-[160px] bg-[#1b1b1f] border border-[#ffffff10] rounded-xl shadow-2xl overflow-hidden z-[50] animate-in fade-in zoom-in-95 duration-100">
+                 {Object.entries(LANGUAGE_CONFIG).map(([key, lang]) => {
+                   const isLocked = allowedLanguages && !allowedLanguages.includes(key);
+                   const isSelected = selectedLanguage === key;
+                   return (
+                     <button
+                        key={key}
+                        disabled={isLocked}
+                        onClick={() => {
+                          wrapLanguageChange({ target: { value: key } });
+                          setIsDropdownOpen(false);
+                        }}
+                        className={`w-full flex items-center justify-between px-3 py-2.5 text-left transition-colors duration-150
+                           ${isSelected ? 'bg-[#8a6bfe]/20 text-[#8a6bfe]' : 'text-gray-400 hover:bg-[#ffffff0a]'}
+                           ${isLocked ? 'opacity-40 cursor-not-allowed filter grayscale' : 'cursor-pointer'}
+                        `}
+                     >
+                       <div className="flex items-center gap-2.5">
+                         <img src={lang.logo} alt="" className="w-4 h-4 object-contain" />
+                         <span className="text-[13px] font-medium">{lang.name}</span>
+                       </div>
+                       {isLocked && <Lock className="w-3.5 h-3.5 text-gray-500" />}
+                     </button>
+                   );
+                 })}
+               </div>
+            )}
           </div>
 
           <span className="text-[13px] text-gray-400 hover:text-gray-200 cursor-pointer px-1 rounded transition-colors">

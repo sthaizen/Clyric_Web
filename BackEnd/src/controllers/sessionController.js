@@ -3,6 +3,13 @@ import Session from "../models/Session.js";
 import ProblemAnalytics from "../models/ProblemAnalytics.js";
 import AdvancedProblem from "../models/AdvancedProblem.js";
 import { generateRoomId, hashPassword, verifyPassword } from "../lib/cryptoUtils.js";
+import { getTierPermissions } from "../middleware/subscriptionMiddleware.js";
+
+/** Helper: get start of today in UTC for daily limit checks */
+function startOfTodayUTC() {
+  const now = new Date();
+  return new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+}
 
 async function trackSessionJoin(userIdStr, problemSlug, isHost) {
   try {
@@ -53,9 +60,34 @@ export async function createSession(req, res) {
     const { problem, difficulty, visibility, password } = req.body;
     const userId = req.user._id;
     const clerkId = req.user.clerkId;
+    const userTier = req.user.subscriptionTier || "free";
+    const perms = getTierPermissions(userTier);
 
-    if (!problem || !difficulty) {
-      return res.status(400).json({ message: "Problem and difficulty are required" });
+    // --- Tier check: free users cannot create sessions ---
+    if (perms.maxInterviewsPerDay === 0) {
+      return res.status(403).json({
+        success: false,
+        code: "UPGRADE_REQUIRED",
+        message: "Mock interview sessions are not available on the Free plan. Upgrade to Code Rooms or higher.",
+      });
+    }
+
+    // --- Daily session limit for code-rooms tier ---
+    if (perms.maxInterviewsPerDay !== Infinity) {
+      const todayStart = startOfTodayUTC();
+      const sessionsToday = await Session.countDocuments({
+        host: userId,
+        createdAt: { $gte: todayStart },
+      });
+      if (sessionsToday >= perms.maxInterviewsPerDay) {
+        return res.status(429).json({
+          success: false,
+          code: "DAILY_SESSION_LIMIT",
+          message: "Daily session limit reached. Upgrade for unlimited sessions.",
+          limit: perms.maxInterviewsPerDay,
+          used: sessionsToday,
+        });
+      }
     }
 
     const callId = `session_${Date.now()}_${Math.random().toString(36).substring(7)}`;

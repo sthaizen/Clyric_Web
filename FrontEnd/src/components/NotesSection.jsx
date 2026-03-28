@@ -1,10 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "@clerk/clerk-react";
-import { PenLine, Plus, Trash2, FileText, Search, PanelLeftClose, PanelLeftOpen } from "lucide-react";
+import { PenLine, Plus, Trash2, FileText, Search, PanelLeftClose, PanelLeftOpen, Lock } from "lucide-react";
 import ReactQuill from "react-quill-new";
 import "quill/dist/quill.snow.css";
 import { getNotes, createNote, updateNote, deleteNote } from "../lib/api/notes";
 import toast from "react-hot-toast";
+import { useSubscription } from "../hooks/useSubscription";
+import { useNavigate } from "react-router-dom";
 
 function timeAgo(dateStr) {
   if (!dateStr) return "";
@@ -31,8 +33,10 @@ const QUILL_MODULES = {
   ],
 };
 
-export default function NotesSection({ problemId, problemTitle }) {
+export default function NotesSection({ problemId, problemTitle, onBackToOverview }) {
   const { userId } = useAuth();
+  const navigate = useNavigate();
+  const { canAccess, tierLabel } = useSubscription();
   const [notes, setNotes] = useState([]);
   const [selectedId, setSelectedId] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -42,6 +46,38 @@ export default function NotesSection({ problemId, problemTitle }) {
   const saveTimer = useRef(null);
 
   const selectedNote = notes.find((n) => n._id === selectedId) || null;
+
+  // ── Access Gate ─────────────────────────────────────────────────────────────
+  if (!canAccess("canUseNotes")) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center gap-5 bg-[#1b1b1f] px-8 text-center">
+        <div className="w-16 h-16 rounded-full bg-[#8a6bfe]/10 flex items-center justify-center ring-1 ring-[#8a6bfe]/20">
+          <Lock className="w-7 h-7 text-[#8a6bfe]" strokeWidth={1.5} />
+        </div>
+        <div className="space-y-1.5">
+          <h3 className="text-lg font-semibold text-white">Notes Locked</h3>
+          <p className="text-sm text-gray-400 max-w-[240px] leading-relaxed mx-auto">
+            Personal notes are available on <span className="text-[#8a6bfe] font-medium">Interview Studio</span> and above.
+          </p>
+          <p className="text-xs text-gray-600 mt-1 uppercase tracking-wider font-bold">Current: <span className="text-gray-400">{tierLabel}</span></p>
+        </div>
+        <div className="flex flex-col gap-2.5 w-full max-w-[180px]">
+          <button
+            onClick={onBackToOverview}
+            className="w-full px-5 py-2.5 bg-white/5 hover:bg-white/10 text-white text-sm font-medium rounded-xl border border-white/10 transition-all active:scale-95"
+          >
+            Back to Description
+          </button>
+          <button
+            onClick={() => navigate("/priceoverview")}
+            className="w-full px-5 py-2.5 bg-[#8a6bfe] hover:bg-[#795ceb] text-white text-sm font-medium rounded-xl transition-all shadow-lg hover:shadow-[#8a6bfe]/20 active:scale-95"
+          >
+            View Plans
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // ── Load notes ──────────────────────────────────────────────────────────────
   useEffect(() => {

@@ -1,4 +1,13 @@
 import AdvancedProblem from "../models/AdvancedProblem.js";
+import { getTierPermissions } from "../middleware/subscriptionMiddleware.js";
+import User from "../models/User.js";
+
+/** Helper: resolve user tier from raw clerks userId if user is not yet on req.user */
+async function resolveUserTier(clerkId) {
+  if (!clerkId) return "free";
+  const user = await User.findOne({ clerkId }).select("subscriptionTier").lean();
+  return user?.subscriptionTier || "free";
+}
 
 // GET /api/problems
 export const getProblems = async (req, res) => {
@@ -63,6 +72,20 @@ export const getProblemBySlug = async (req, res) => {
 
     if (!problem) {
       return res.status(404).json({ message: "Problem not found" });
+    }
+
+    // --- Detail Gate: Check if user can view this problem ---
+    const clerkId = req.auth?.userId || req.user?.clerkId;
+    const userTier = req.user?.subscriptionTier || await resolveUserTier(clerkId);
+    const perms = getTierPermissions(userTier);
+
+    if (!perms.allowedDifficulties.includes(problem.difficulty.toLowerCase())) {
+      return res.status(403).json({
+        success: false,
+        code: "DIFFICULTY_LOCKED",
+        message: `This ${problem.difficulty} problem is locked. Upgrade to access higher difficulties.`,
+        requiredTier: problem.difficulty === "Medium" ? "code-rooms" : "interview-studio"
+      });
     }
 
     // Return exact matching shape for frontend

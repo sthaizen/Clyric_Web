@@ -16,10 +16,17 @@ export async function getProblems(params = {}) {
   return response.json();
 }
 
-export async function getProblemBySlug(slug) {
-  const response = await fetch(`${API_URL}/problems/${slug}`);
+export async function getProblemBySlug(slug, token) {
+  const headers = {};
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const response = await fetch(`${API_URL}/problems/${slug}`, { headers });
   if (!response.ok) {
-    throw new Error("Failed to fetch problem details");
+    const errorData = await response.json().catch(() => ({}));
+    const error = new Error(errorData.message || "Failed to fetch problem details");
+    error.status = response.status;
+    error.data = errorData;
+    throw error;
   }
   return response.json();
 }
@@ -40,6 +47,18 @@ export async function getUserSubmissions(slug, token) {
   });
   if (!response.ok) {
     throw new Error("Failed to fetch submissions");
+  }
+  return response.json();
+}
+
+export async function getSolvedStatus(token) {
+  const response = await fetch(`${API_URL}/submissions/solved-status`, {
+    headers: {
+      Authorization: `Bearer ${token}`
+    }
+  });
+  if (!response.ok) {
+    throw new Error("Failed to fetch solved status");
   }
   return response.json();
 }

@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { getProblems } from "../lib/api/problems.js";
+import { useSubscription } from "../hooks/useSubscription.js";
 
 function CreateSessionModal({
   isOpen,
@@ -25,6 +26,7 @@ function CreateSessionModal({
   onCreateRoom,
   isCreating,
 }) {
+  const { tier, showUpgradeToast } = useSubscription();
   const [problems, setProblems] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
@@ -230,12 +232,16 @@ function CreateSessionModal({
                     </button>
                     <button
                       type="button"
-                      onClick={() => setRoomConfig({ ...roomConfig, visibility: "private" })}
+                      onClick={() => {
+                        if (tier === "career-plus") {
+                          setRoomConfig({ ...roomConfig, visibility: "private" });
+                        }
+                      }}
                       className={`flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border text-[13px] font-medium transition-all ${
                         roomConfig.visibility === "private"
                           ? "bg-amber-500/10 text-amber-300 border-amber-500/30"
                           : "bg-white/[0.02] text-gray-400 border-white/[0.05] hover:bg-white/[0.04]"
-                      }`}
+                      } ${tier !== "career-plus" ? "opacity-50 cursor-not-allowed" : ""}`}
                     >
                       <LockIcon className="w-4 h-4" />
                       Private

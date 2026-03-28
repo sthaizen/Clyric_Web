@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { getDashboardStats } from "../lib/api/analytics";
+import { useAuth } from "@clerk/clerk-react";
 
 const EMPTY_DATA = {
   overview: {
@@ -22,6 +23,7 @@ export function useAnalytics(userId, year) {
   const [data, setData] = useState(EMPTY_DATA);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const { getToken } = useAuth();
 
   useEffect(() => {
     let cancelled = false;
@@ -34,7 +36,8 @@ export function useAnalytics(userId, year) {
       try {
         setIsLoading(true);
         setError(null);
-        const result = await getDashboardStats(userId, year);
+        const token = await getToken();
+        const result = await getDashboardStats(userId, year, token);
         if (!cancelled) {
           setData(result || EMPTY_DATA);
         }

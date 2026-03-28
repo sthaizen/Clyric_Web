@@ -12,7 +12,9 @@ import ReactFlow, {
   useReactFlow,
 } from "reactflow";
 import "reactflow/dist/style.css";
-import { FlaskConical, RotateCcw, Trash2 } from "lucide-react";
+import { FlaskConical, RotateCcw, Trash2, Lock } from "lucide-react";
+import { useSubscription } from "../hooks/useSubscription";
+import { useNavigate } from "react-router-dom";
 
 // Minimalist, monochromatic node designs with glassmorphism
 const CustomNode = ({ id, data, isConnectable }) => {
@@ -109,7 +111,42 @@ const nodeTypes = { custom: CustomNode };
 let idCounter = 0;
 const getId = () => `node_${idCounter++}`;
 
-export default function SolutionsDiagramTab({ currentProblemId, problem }) {
+export default function SolutionsDiagramTab({ currentProblemId, problem, onBackToOverview }) {
+  const navigate = useNavigate();
+  const { canAccess, tierLabel } = useSubscription();
+
+  // --- Access Gate ---
+  if (!canAccess("canUseVisualizer")) {
+    return (
+      <div className="h-full flex flex-col items-center justify-center gap-6 bg-[#1b1b1f] px-8 text-center">
+        <div className="w-20 h-20 rounded-full bg-[#3b82f6]/10 flex items-center justify-center ring-1 ring-[#3b82f6]/20">
+          <Lock className="w-8 h-8 text-[#3b82f6]" strokeWidth={1.5} />
+        </div>
+        <div className="space-y-2">
+          <h3 className="text-xl font-bold text-white tracking-tight">Visualizer Locked</h3>
+          <p className="text-sm text-gray-400 max-w-[280px] leading-relaxed mx-auto">
+            Interactive flowcharts are available on <span className="text-[#3b82f6] font-semibold">Code Rooms</span> and above.
+          </p>
+          <p className="text-xs text-gray-600 mt-1 uppercase tracking-wider font-bold">Current: <span className="text-gray-500">{tierLabel}</span></p>
+        </div>
+        <div className="flex flex-col gap-3 w-full max-w-[200px]">
+          <button
+            onClick={onBackToOverview}
+            className="w-full px-5 py-2.5 bg-white/5 hover:bg-white/10 text-white text-sm font-semibold rounded-xl border border-white/10 transition-all active:scale-95"
+          >
+            Back to Description
+          </button>
+          <button
+            onClick={() => navigate("/priceoverview")}
+            className="w-full px-5 py-2.5 bg-[#3b82f6] hover:bg-[#2563eb] text-white text-sm font-semibold rounded-xl transition-all shadow-lg hover:shadow-[#3b82f6]/20 active:scale-95"
+          >
+            Upgrade Plan
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const reactFlowWrapper = useRef(null);
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
