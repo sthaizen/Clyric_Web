@@ -26,6 +26,7 @@ export const ENV={
 
     // --- Khalti ---
     KHALTI_SECRET_KEY: process.env.KHALTI_SECRET_KEY,
+    KHALTI_PUBLIC_KEY: process.env.KHALTI_PUBLIC_KEY,
     KHALTI_INITIATE_URL: process.env.KHALTI_INITIATE_URL,
     KHALTI_LOOKUP_URL: process.env.KHALTI_LOOKUP_URL,
 }
