@@ -58,19 +58,19 @@ export default function SystemHealthMonitor({ statsError, isFetching }) {
 
   const getStatusConfig = (status) => {
     switch (status) {
-      case "operational": return { icon: CheckCircle, text: "Operational", color: "text-emerald-700", bg: "bg-emerald-50 border-emerald-200" };
-      case "degraded": return { icon: AlertTriangle, text: "Degraded", color: "text-amber-700", bg: "bg-amber-50 border-amber-200" };
-      case "outage": return { icon: XCircle, text: "Major Outage", color: "text-rose-700", bg: "bg-rose-50 border-rose-200" };
-      default: return { icon: Clock, text: "Unknown", color: "text-slate-500", bg: "bg-slate-100 border-slate-200" };
+      case "operational": return { icon: CheckCircle, text: "IN STOCK", color: "text-indigo-500", bg: "bg-indigo-50 border-indigo-100" };
+      case "degraded": return { icon: AlertTriangle, text: "RESTOCK", color: "text-orange-400", bg: "bg-orange-50 border-orange-100" };
+      case "outage": return { icon: XCircle, text: "OUT STOCK", color: "text-rose-400", bg: "bg-rose-50 border-rose-100" };
+      default: return { icon: Clock, text: "Unknown", color: "text-slate-400", bg: "bg-slate-50 border-slate-200" };
     }
   };
 
   const getThemeColor = (color) => {
      const map = {
-        blue: "text-indigo-600 bg-indigo-50 border-indigo-100",
-        emerald: "text-emerald-600 bg-emerald-50 border-emerald-100",
-        violet: "text-violet-600 bg-violet-50 border-violet-100",
-        orange: "text-amber-600 bg-amber-50 border-amber-100",
+        blue: "text-slate-900 bg-slate-50 border-slate-200",
+        emerald: "text-indigo-500 bg-indigo-50 border-indigo-100",
+        violet: "text-slate-400 bg-slate-50 border-slate-200",
+        orange: "text-orange-400 bg-orange-50 border-orange-100",
      };
      return map[color] || map.blue;
   };
@@ -78,64 +78,62 @@ export default function SystemHealthMonitor({ statsError, isFetching }) {
   return (
     <div className="space-y-5">
       {/* Global Status Header */}
-      <div className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-2xl border bg-white ${!statsError ? 'border-slate-200' : 'border-rose-200'} shadow-sm transition-all`}>
-         <div className="flex items-center gap-4">
-            <div className={`relative w-12 h-12 flex items-center justify-center rounded-xl border ${!statsError ? 'bg-emerald-50 border-emerald-100' : 'bg-rose-50 border-rose-100'}`}>
-               {!statsError ? <ShieldCheck className="w-6 h-6 text-emerald-600" /> : <ShieldAlert className="w-6 h-6 text-rose-600" />}
-            </div>
-            <div>
-               <h3 className="text-[17px] font-semibold text-slate-900">{!statsError ? "All Systems Operational" : "System Degraded or Offline"}</h3>
-               <p className={`text-[13px] mt-0.5 ${!statsError ? "text-slate-500" : "text-rose-600"}`}>
-                  {!statsError ? "Platform telemetry is nominal." : "Unable to reach core APIs."}
-               </p>
-            </div>
-         </div>
+      <div className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-[18px] border bg-white ${!statsError ? 'border-gray-100 shadow-[0_2px_10px_rgba(0,0,0,0.02)]' : 'border-rose-200 bg-rose-50 shadow-sm'} transition-all`}>
+          <div className="flex items-center gap-4">
+             <div className={`relative w-12 h-12 flex items-center justify-center rounded-2xl border ${!statsError ? 'bg-indigo-50 border-indigo-100 shadow-sm' : 'bg-rose-50 border-rose-100 shadow-sm'}`}>
+                {!statsError ? <ShieldCheck strokeWidth={2.5} className="w-6 h-6 text-indigo-500" /> : <ShieldAlert strokeWidth={2.5} className="w-6 h-6 text-rose-500" />}
+             </div>
+             <div>
+                <h3 className={`text-[17px] font-black ${!statsError ? "text-slate-900" : "text-rose-900"}`}>{!statsError ? "All Systems Operational" : "System Degraded"}</h3>
+                <p className={`text-[12px] mt-0.5 font-bold uppercase tracking-widest ${!statsError ? "text-slate-400" : "text-rose-400"}`}>
+                   {!statsError ? "Telemetry report: Nominal" : "Unable to reach core APIs"}
+                </p>
+             </div>
+          </div>
          <div className="flex flex-col items-end">
-             {isFetching && <span className="text-[11px] font-bold text-indigo-600 uppercase tracking-widest flex items-center gap-1.5"><Activity className="w-3.5 h-3.5 animate-pulse"/> Syncing</span>}
-             <span className="text-[11px] text-slate-400 font-medium mt-1">Last ping: {new Date().toLocaleTimeString()}</span>
+             {isFetching && <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest flex items-center gap-1.5"><Activity strokeWidth={2.5} className="w-3.5 h-3.5 animate-pulse text-[#18181B]"/> Syncing</span>}
+             <span className="text-[11px] text-gray-500 font-bold tracking-widest uppercase mt-1">Last ping: {new Date().toLocaleTimeString()}</span>
          </div>
-      </div>
+       </div>
 
       {/* Services Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
          {services.map((svc) => {
             const statusCfg = getStatusConfig(svc.status);
             const theme = getThemeColor(svc.color);
             const StatusIcon = statusCfg.icon;
 
             return (
-               <div key={svc.id} className="relative overflow-hidden bg-white border border-slate-200 rounded-2xl p-5 hover:shadow-md transition-shadow group flex flex-col justify-between h-full">
-                  
+               <div key={svc.id} className="relative overflow-hidden bg-white border border-slate-200/60 rounded-2xl p-6 shadow-sm hover:border-slate-300 transition-all flex flex-col justify-between h-full group">
                   <div className="flex items-start justify-between mb-5">
-                      <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-3.5">
                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 border ${theme}`}>
-                            <svc.icon className={`w-5 h-5`} />
+                            <svc.icon strokeWidth={2.5} className={`w-5 h-5`} />
                          </div>
                          <div>
-                            <p className="text-[14px] font-semibold text-slate-900 leading-snug">{svc.name}</p>
-                            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mt-0.5">{svc.type}</p>
+                            <p className="text-[14px] font-black text-slate-900 leading-snug">{svc.name}</p>
+                            <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 mt-0.5">{svc.type}</p>
                          </div>
                       </div>
                   </div>
 
                   <div>
-                     <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 mb-4 rounded border ${statusCfg.bg}`}>
-                         <StatusIcon className={`w-3.5 h-3.5 ${statusCfg.color}`} />
-                         <span className={`text-[10px] font-bold uppercase tracking-wider ${statusCfg.color}`}>{statusCfg.text}</span>
+                     <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 mb-6 rounded-lg border ${statusCfg.bg}`}>
+                         <StatusIcon strokeWidth={2.5} className={`w-3.5 h-3.5 ${statusCfg.color}`} />
+                         <span className={`text-[11px] font-black uppercase tracking-wider ${statusCfg.color}`}>{statusCfg.text}</span>
                       </div>
-
-                     <div className="grid grid-cols-3 gap-3 pt-4 border-t border-slate-100">
-                        <div className="flex flex-col gap-1">
-                           <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">Uptime</span>
-                           <span className="text-[13px] font-semibold text-slate-700">{svc.uptime}</span>
+                      <div className="grid grid-cols-3 gap-3 pt-6 border-t border-slate-50">
+                        <div className="flex flex-col gap-0.5">
+                           <span className="text-[11px] uppercase font-bold tracking-widest text-slate-300">Uptime</span>
+                           <span className="text-[14px] font-black text-slate-900">{svc.uptime}</span>
                         </div>
-                        <div className="flex flex-col gap-1">
-                           <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">Latency</span>
-                           <span className="text-[13px] font-semibold text-slate-700">{svc.latency}</span>
+                        <div className="flex flex-col gap-0.5">
+                           <span className="text-[11px] uppercase font-bold tracking-widest text-slate-300">Latency</span>
+                           <span className="text-[14px] font-black text-slate-900">{svc.latency}</span>
                         </div>
-                        <div className="flex flex-col gap-1 text-right">
-                           <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">Pinged</span>
-                           <span className="text-[12px] font-medium text-slate-500 mt-0.5">{formatDistanceToNow(svc.lastCheck, { addSuffix: true })}</span>
+                        <div className="flex flex-col gap-0.5 text-right">
+                           <span className="text-[11px] uppercase font-bold tracking-widest text-slate-300">Check</span>
+                           <span className="text-[10px] font-black text-slate-400 mt-0.5 uppercase tracking-widest truncate">{formatDistanceToNow(svc.lastCheck, { addSuffix: true })}</span>
                         </div>
                      </div>
                   </div>

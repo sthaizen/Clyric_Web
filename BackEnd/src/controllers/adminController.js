@@ -6,6 +6,8 @@ import AdvancedProblem from "../models/AdvancedProblem.js";
 import QuestTemplate from "../models/QuestTemplate.js";
 import UserQuestProgress from "../models/UserQuestProgress.js";
 import UserLevelStats from "../models/UserLevelStats.js";
+import Transaction from "../models/Transaction.js";
+import Subscription from "../models/Subscription.js";
 
 // ─── Helper ──────────────────────────────────────────────────────────────────
 
@@ -41,7 +43,14 @@ export const getAdminStats = async (req, res) => {
       totalQuestTemplates,
       completedQuestsToday,
       activeUsersToday, // DAU
-      activeUsersThisWeek // WAU
+      activeUsersThisWeek, // WAU
+      totalRevenueAggr,
+      revenueTodayAggr,
+      failedPayments,
+      activeSubscriptions,
+      newSubscriptionsToday,
+      pendingReviewsCount,
+      highPriorityIssuesAggr
     ] = await Promise.all([
       User.countDocuments(),
       User.countDocuments({ createdAt: { $gte: todayStart } }),
@@ -60,8 +69,44 @@ export const getAdminStats = async (req, res) => {
         updatedAt: { $gte: todayStart },
       }),
       Submission.distinct("userId", { createdAt: { $gte: todayStart } }),
-      Submission.distinct("userId", { createdAt: { $gte: weekStart } })
+      Submission.distinct("userId", { createdAt: { $gte: weekStart } }),
+      // Total Revenue
+      Transaction.aggregate([
+        { $match: { status: "completed" } },
+        { $group: { _id: null, total: { $sum: "$amount" } } }
+      ]),
+      // Revenue Today
+      Transaction.aggregate([
+        { $match: { status: "completed", createdAt: { $gte: todayStart } } },
+        { $group: { _id: null, total: { $sum: "$amount" } } }
+      ]),
+      // Failed Payments
+      Transaction.countDocuments({ status: "failed" }),
+      // Active Subscriptions
+      Subscription.countDocuments({ status: "active" }),
+      // New Subscriptions Today
+      Subscription.countDocuments({ status: "active", createdAt: { $gte: todayStart } }),
+      // Pending Reviews
+      AdvancedProblem.countDocuments({ status: "draft" }),
+      // High Priority Issues (Attempts > 10, Acceptance < 25%)
+      Submission.aggregate([
+        { $group: {
+            _id: "$problemSlug",
+            totalAttempts: { $sum: 1 },
+            accepted: { $sum: { $cond: [{ $eq: ["$verdict", "Accepted"] }, 1, 0] } }
+        }},
+        { $project: {
+            acceptanceRate: { $cond: [ { $gt: ["$totalAttempts", 0] }, { $multiply: [ { $divide: ["$accepted", "$totalAttempts"] }, 100 ] }, 0 ] },
+            totalAttempts: 1
+        }},
+        { $match: { totalAttempts: { $gt: 10 }, acceptanceRate: { $lt: 25 } } },
+        { $count: "count" }
+      ])
     ]);
+
+    const totalRevenue = totalRevenueAggr[0]?.total || 0;
+    const revenueToday = revenueTodayAggr[0]?.total || 0;
+    const highPriorityIssues = highPriorityIssuesAggr[0]?.count || 0;
 
     // Daily signup trend (last 7 days)
     const signupTrend = await User.aggregate([
@@ -89,6 +134,20 @@ export const getAdminStats = async (req, res) => {
           accepted: {
             $sum: { $cond: [{ $eq: ["$verdict", "Accepted"] }, 1, 0] },
           },
+        },
+      },
+      { $sort: { _id: 1 } },
+    ]);
+
+    // Revenue trend (last 7 days)
+    const revenueTrend = await Transaction.aggregate([
+      { $match: { status: "completed", createdAt: { $gte: weekStart } } },
+      {
+        $group: {
+          _id: {
+            $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
+          },
+          total: { $sum: "$amount" },
         },
       },
       { $sort: { _id: 1 } },
@@ -133,6 +192,15 @@ export const getAdminStats = async (req, res) => {
       },
       problems: {
         total: totalProblems,
+        pendingReviews: pendingReviewsCount,
+        highPriorityIssues: highPriorityIssues,
+      },
+      financials: {
+        totalRevenue,
+        revenueToday,
+        failedPayments,
+        activeSubscriptions,
+        newSubscriptionsToday
       },
       submissions: {
         today: submissionsToday,
@@ -150,6 +218,7 @@ export const getAdminStats = async (req, res) => {
       trends: {
         signups: signupTrend,
         submissions: submissionTrend,
+        revenue: revenueTrend,
         languages: languageTrend,
         difficulties: difficultyTrend,
         questTypes: questCompletionTrend,
@@ -382,7 +451,11 @@ export const getAdminProblems = async (req, res) => {
 // ─── POST /api/admin/problems ──────────────────────────────────────────────────
 export const createAdminProblem = async (req, res) => {
   try {
-    const { slug, title, difficulty, description, categoryDisplay, categories } = req.body;
+    const { 
+      slug, title, difficulty, description, categoryDisplay, categories,
+      examples, constraints, starterCode, expectedOutput
+    } = req.body;
+
     if (!slug || !title || !difficulty || !description) {
       return res.status(400).json({ message: "Missing required problem fields" });
     }
@@ -391,14 +464,22 @@ export const createAdminProblem = async (req, res) => {
       return res.status(409).json({ message: "Problem with this slug already exists" });
     }
 
+    // Initialize with empty stats for proper dashboard rendering
     const newProblem = await AdvancedProblem.create({
       slug,
       title,
       difficulty,
       description,
       categoryDisplay,
-      categories,
-      ...req.body // spread the rest
+      categories: categories || [],
+      examples: examples || [],
+      constraints: constraints || [],
+      starterCode: starterCode || {},
+      expectedOutput: expectedOutput || {},
+      totalAcceptedSubmissions: 0,
+      totalSubmissions: 0,
+      visible: true,
+      status: "published"
     });
 
     res.status(201).json({ message: "Problem created", problem: newProblem });
@@ -452,6 +533,15 @@ export const deleteAdminProblem = async (req, res) => {
 
 export const getActiveSessions = async (req, res) => {
   try {
+    const cutOff = new Date();
+    cutOff.setHours(cutOff.getHours() - 24);
+
+    // Auto-cleanup: Mark sessions older than 24 hours as completed
+    await Session.updateMany(
+      { status: "active", createdAt: { $lt: cutOff } },
+      { $set: { status: "completed" } }
+    );
+
     const sessions = await Session.find({ status: "active" })
       .sort({ createdAt: -1 })
       .populate("host", "name email profileImage clerkId")
@@ -552,13 +642,131 @@ export const createAdminQuest = async (req, res) => {
   }
 };
 
+// ─── PATCH /api/admin/quests/:questId ─────────────────────────────────────────
+
+export const updateAdminQuest = async (req, res) => {
+  try {
+    const { questId } = req.params;
+    const { title, description, type, targetCriteria, rewardExp, isActive } = req.body;
+
+    const quest = await QuestTemplate.findOneAndUpdate(
+      { questId },
+      { $set: { title, description, type, targetCriteria, rewardExp, isActive } },
+      { new: true, runValidators: true }
+    );
+
+    if (!quest) {
+      return res.status(404).json({ message: "Quest not found" });
+    }
+
+    res.json({ message: "Quest updated", quest });
+  } catch (error) {
+    console.error("Error in updateAdminQuest:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// ─── GET /api/admin/transactions ─────────────────────────────────────────────
+
+export const getAdminTransactions = async (req, res) => {
+  try {
+    const { page = 1, limit = 20, status = "", gateway = "" } = req.query;
+    const pageNum = Math.max(1, parseInt(page));
+    const limitNum = Math.min(100, Math.max(1, parseInt(limit)));
+
+    const filter = {};
+    if (status) filter.status = status;
+    if (gateway) filter.gateway = gateway;
+
+    const [transactions, total] = await Promise.all([
+      Transaction.find(filter)
+        .sort({ createdAt: -1 })
+        .skip((pageNum - 1) * limitNum)
+        .limit(limitNum)
+        .populate("userId", "name email"),
+      Transaction.countDocuments(filter),
+    ]);
+
+    const enriched = transactions.map((t) => ({
+      _id: t._id,
+      transactionUuid: t.transactionUuid,
+      amount: t.amount,
+      currency: t.currency,
+      gateway: t.gateway,
+      status: t.status,
+      planId: t.planId,
+      customerName: t.customerDetails?.name || t.userId?.name || "Unknown",
+      customerEmail: t.customerDetails?.email || t.userId?.email || "",
+      createdAt: t.createdAt,
+    }));
+
+    res.json({
+      transactions: enriched,
+      pagination: {
+        total,
+        page: pageNum,
+        limit: limitNum,
+        totalPages: Math.ceil(total / limitNum),
+      },
+    });
+  } catch (error) {
+    console.error("Error in getAdminTransactions:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// ─── GET /api/admin/subscriptions/breakdown ───────────────────────────────────
+
+export const getSubscriptionBreakdown = async (req, res) => {
+  try {
+    const breakdown = await Subscription.aggregate([
+      { $match: { status: "active" } },
+      { $group: { _id: "$tier", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+    ]);
+
+    // Map all known tiers to ensure all appear even if count is 0
+    const allTiers = ["practice-pack", "code-rooms", "interview-studio", "career-plus"];
+    const breakdownMap = {};
+    breakdown.forEach((b) => { breakdownMap[b._id] = b.count; });
+
+    const result = allTiers.map((tier) => ({
+      tier,
+      count: breakdownMap[tier] || 0,
+    }));
+
+    res.json({ breakdown: result });
+  } catch (error) {
+    console.error("Error in getSubscriptionBreakdown:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// ─── DELETE /api/admin/quests/:questId ───────────────────────────────────────
+
+export const deleteAdminQuest = async (req, res) => {
+  try {
+    const { questId } = req.params;
+    const deleted = await QuestTemplate.findOneAndDelete({ questId });
+    if (!deleted) {
+      return res.status(404).json({ message: "Quest not found" });
+    }
+    // Also clean up progress records for this quest
+    await UserQuestProgress.deleteMany({ questId });
+    res.json({ message: "Quest deleted successfully" });
+  } catch (error) {
+    console.error("Error in deleteAdminQuest:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 // ─── GET /api/admin/recent-activity ──────────────────────────────────────────
 
 export const getRecentActivity = async (req, res) => {
   try {
     const limit = 20;
 
-    const [recentUsers, recentSubmissions, recentSessions] = await Promise.all([
+    const [recentUsers, recentSubmissions, recentSessions, recentTransactions] = await Promise.all([
       User.find().sort({ createdAt: -1 }).limit(5).select("name email createdAt"),
       Submission.find()
         .sort({ createdAt: -1 })
@@ -569,26 +777,49 @@ export const getRecentActivity = async (req, res) => {
         .limit(5)
         .populate("host", "name")
         .select("problem difficulty status createdAt host"),
+      Transaction.find()
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .populate("userId", "name")
+        .select("amount status gateway planId createdAt userId transactionUuid"),
     ]);
 
     const activity = [
       ...recentUsers.map((u) => ({
+        id: u._id.toString(),
         type: "signup",
         label: `New user: ${u.name}`,
         sub: u.email,
+        price: "-",
+        status: "Completed",
         time: u.createdAt,
       })),
       ...recentSubmissions.map((s) => ({
+        id: s._id.toString(),
         type: "submission",
         label: `${s.verdict} — ${s.problemSlug}`,
         sub: `${s.language} • User ${s.userId.slice(0, 8)}...`,
+        price: "-",
+        status: s.verdict === "Accepted" ? "Completed" : "Failed",
         time: s.createdAt,
       })),
       ...recentSessions.map((s) => ({
+        id: s._id.toString(),
         type: "session",
         label: `Session: ${s.problem}`,
-        sub: `${s.difficulty} • ${s.status} • Host: ${s.host?.name || "Unknown"}`,
+        sub: `${s.difficulty} • Host: ${s.host?.name || "Unknown"}`,
+        price: "-",
+        status: s.status === "active" ? "In Progress" : "Completed",
         time: s.createdAt,
+      })),
+      ...recentTransactions.map((t) => ({
+        id: t.transactionUuid,
+        type: "payment",
+        label: `Plan: ${t.planId}`,
+        sub: `Gateway: ${t.gateway} • User: ${t.userId?.name || "Unknown"}`,
+        price: `NPR ${t.amount || 0}`,
+        status: t.status === "completed" ? "Completed" : t.status === "pending" || t.status === "initiated" ? "Pending" : "Failed",
+        time: t.createdAt,
       })),
     ]
       .sort((a, b) => new Date(b.time) - new Date(a.time))

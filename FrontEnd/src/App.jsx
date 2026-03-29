@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Route, Routes, Navigate } from "react-router-dom";
+import { Route, Routes, Navigate, useNavigate } from "react-router-dom";
 import ReactLenis from "lenis/react";
 import { Toaster } from "react-hot-toast";
 import { useUser } from "@clerk/clerk-react";
@@ -27,6 +27,8 @@ const App = () => {
   const { isSignedIn, isLoaded, user } = useUser();
   const [theme, setTheme] = useState("light");
 
+  const navigate = useNavigate();
+
   useEffect(() => {
     if (isLoaded && isSignedIn && user) {
       const onConnect = () => {
@@ -41,11 +43,19 @@ const App = () => {
         socket.connect();
       }
 
+      // Auto-navigation for Admin
+      if (user.publicMetadata?.role === "admin") {
+        const currentPath = window.location.pathname;
+        if (currentPath === "/" || currentPath === "/dashboard") {
+          navigate("/admin");
+        }
+      }
+
       return () => {
         socket.off("connect", onConnect);
       };
     }
-  }, [isLoaded, isSignedIn, user?.id]);
+  }, [isLoaded, isSignedIn, user?.id, user?.publicMetadata?.role, navigate]);
 
   if (!isLoaded) return null;
 

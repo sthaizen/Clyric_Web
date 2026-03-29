@@ -5,6 +5,7 @@ import { ArrowLeft, ChevronDown, CreditCard, Wallet, Smartphone, ShieldCheck, Lo
 
 const Checkout = () => {
   const [paymentMethod, setPaymentMethod] = useState('esewa');
+  const [esewaNumber, setEsewaNumber] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   const handlePayment = async (e) => {
