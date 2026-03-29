@@ -11,7 +11,11 @@ import {
   getActiveSessions,
   getAdminQuests,
   createAdminQuest,
+  updateAdminQuest,
+  deleteAdminQuest,
   getRecentActivity,
+  getAdminTransactions,
+  getSubscriptionBreakdown,
 } from "../controllers/adminController.js";
 
 const router = express.Router();
@@ -34,10 +38,18 @@ router.get("/problems", getAdminProblems);
 router.post("/problems", createAdminProblem);
 router.put("/problems/:slug", updateAdminProblem);
 router.delete("/problems/:slug", deleteAdminProblem);
+
+// Session management
 router.get("/sessions/active", getActiveSessions);
 
 // Quest management
 router.get("/quests", getAdminQuests);
 router.post("/quests", createAdminQuest);
+router.patch("/quests/:questId", updateAdminQuest);
+router.delete("/quests/:questId", deleteAdminQuest);
+
+// Financial management
+router.get("/transactions", getAdminTransactions);
+router.get("/subscriptions/breakdown", getSubscriptionBreakdown);
 
 export default router;

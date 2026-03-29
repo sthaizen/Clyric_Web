@@ -17,6 +17,7 @@ export const ENV={
     CLERK_SECRET_KEY: process.env.CLERK_SECRET_KEY,
 
     CLIENT_URL: process.env.CLIENT_URL || "http://localhost:5173",
+    BACKEND_URL: process.env.BACKEND_URL || "",
 
     // --- eSewa ---
     ESEWA_MERCHANT_CODE: process.env.ESEWA_MERCHANT_CODE,

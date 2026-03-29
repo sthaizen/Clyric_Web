@@ -61,4 +61,26 @@ export const adminApi = {
     const res = await axiosInstance.post("/admin/quests", data);
     return res.data;
   },
+
+  updateQuest: async (questId, data) => {
+    const res = await axiosInstance.patch(`/admin/quests/${questId}`, data);
+    return res.data;
+  },
+
+  deleteQuest: async (questId) => {
+    const res = await axiosInstance.delete(`/admin/quests/${questId}`);
+    return res.data;
+  },
+
+  // Transactions (financial data)
+  getTransactions: async (params = {}) => {
+    const res = await axiosInstance.get("/admin/transactions", { params });
+    return res.data;
+  },
+
+  // Subscription tier breakdown
+  getSubscriptionBreakdown: async () => {
+    const res = await axiosInstance.get("/admin/subscriptions/breakdown");
+    return res.data;
+  },
 };

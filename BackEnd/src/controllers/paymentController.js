@@ -50,7 +50,9 @@ export const initiatePayment = async (req, res) => {
         if (gateway === "esewa") {
             // eSewa v2 requires success_url and failure_url
             // We point these to our BACKEND verification routes
-            const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
+            const forwardedProto = req.headers["x-forwarded-proto"]?.split(",")?.[0];
+            const requestBaseUrl = `${forwardedProto || req.protocol}://${req.get("host")}`;
+            const backendUrl = ENV.BACKEND_URL || requestBaseUrl;
             const successUrl = `${backendUrl}/api/payments/verify/esewa`;
             const failureUrl = `${backendUrl}/api/payments/verify/esewa?reason=cancelled`;
 
@@ -100,16 +102,17 @@ export const initiatePayment = async (req, res) => {
  */
 export const verifyEsewa = async (req, res) => {
     try {
-        const { data } = req.query;
+        const { data, reason } = req.query;
         if (!data) {
-            return res.redirect(`${ENV.CLIENT_URL}/dashboard?payment_status=error&gateway=esewa&reason=no_data_received`);
+            const failureReason = reason || "no_data_received";
+            return res.redirect(`${ENV.CLIENT_URL}/dashboard?payment_status=error&gateway=esewa&reason=${failureReason}`);
         }
 
         // Decode Base64 data from eSewa v2
         const decodedString = Buffer.from(data, "base64").toString("utf-8");
         const decodedData = JSON.parse(decodedString);
         
-        const { transaction_uuid, total_amount, status, ref_id } = decodedData;
+        const { transaction_uuid, total_amount, status, ref_id, transaction_code } = decodedData;
 
         // 1. Find transaction in DB
         const transaction = await Transaction.findOne({ transactionUuid: transaction_uuid });
@@ -131,7 +134,17 @@ export const verifyEsewa = async (req, res) => {
                 console.log("eSewa Status Lookup Result:", esewaRes);
                 
                 if (esewaRes.status === "COMPLETE") {
-                    await activateUserSubscription(transaction, ref_id, esewaRes);
+                    const gatewayReferenceId =
+                        esewaRes.ref_id ||
+                        esewaRes.transaction_code ||
+                        ref_id ||
+                        transaction_code ||
+                        null;
+
+                    await activateUserSubscription(transaction, gatewayReferenceId, {
+                        redirect: decodedData,
+                        lookup: esewaRes,
+                    });
                     console.log(`SUCCESS: Subscription activated for transaction ${transaction_uuid}`);
                     return res.redirect(`${ENV.CLIENT_URL}/dashboard?payment_status=success&gateway=esewa`);
                 } else {

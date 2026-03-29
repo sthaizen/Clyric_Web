@@ -1,592 +1,269 @@
-import React, { useState, useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import React, { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
-  BarChart3,
-  Users,
-  FileText,
-  Video,
-  Award,
-  Activity,
-  RefreshCw,
-  LogOut,
-  Shield,
-  Bell,
-  Search,
-  Settings,
-  ChevronDown,
-  ChevronRight,
-  Menu,
-  Square,
-  X,
-  Calendar,
-  Check
+  Sun, Moon, LayoutGrid, Calendar, Mail, FileText, ChevronDown,
+  Users, Layers, HelpCircle, LogOut, Search, Bell, Info, Shield, Activity, Sparkles,
+  Settings, MessageSquare, Package, ShoppingCart, BarChart3, Mail as MailIcon, 
+  Workflow, Zap as ZapIcon, Globe, Palette, UserPlus, SlidersHorizontal, Share2, MoreHorizontal
 } from "lucide-react";
 import { useClerk, useUser } from "@clerk/clerk-react";
-
 import { adminApi } from "../api/admin";
-import AdminStatsOverview from "../components/admin/AdminStatsOverview";
-import RecentActivityFeed from "../components/admin/RecentActivityFeed";
+
+import AdminOverviewTab from "../components/admin/AdminOverviewTab";
 import UserManagementTable from "../components/admin/UserManagementTable";
 import ActiveSessionList from "../components/admin/ActiveSessionList";
 import ProblemManager from "../components/admin/ProblemManager";
 import SystemHealthMonitor from "../components/admin/SystemHealthMonitor";
 import QuestManager from "../components/admin/QuestManager";
-import AdminCharts from "../components/admin/AdminCharts";
-import KravioOverview from "../components/admin/KravioOverview";
 
-// ─── Sidebar nav items ────────────────────────────────────────────────────────
-const navGroups = [
+// ─── Refined Sidebar Sections ────────────────────────────────────────────────
+const SIDEBAR_SECTIONS = [
   {
-    title: "MAIN NAVIGATION",
+    title: "MAIN MENU",
     items: [
-      { id: "overview", icon: BarChart3, label: "Overview" },
-      { id: "users", icon: Users, label: "Users" },
-      { id: "problems", icon: FileText, label: "Problems" },
+      { id: "overview", label: "Dashboard",   icon: LayoutGrid },
+      { id: "users",    label: "Account",     icon: Users },
+      { id: "messages", label: "Message",     icon: MessageSquare, count: 12 } // mock
     ]
   },
   {
-    title: "ANALYTICS & INSIGHTS",
+    title: "TOOLS",
     items: [
-      { id: "sessions", icon: Video, label: "Live Sessions" },
-      { id: "quests", icon: Award, label: "Quests" },
-      { id: "health", icon: Activity, label: "System Health" },
+      { id: "sessions", label: "Activity",    icon: Activity },
+      { id: "health",   label: "System",      icon: Sparkles }
+    ]
+  },
+  {
+    title: "WORKSPACE",
+    items: [
+      { id: "problems", label: "Library",     icon: FileText },
+      { id: "quests",   label: "Program",     icon: Layers }
     ]
   }
 ];
 
-// All tabs flattened for search
-const allNavItems = navGroups.flatMap(g => g.items);
-
-// ─── Query key factories ──────────────────────────────────────────────────────
-const userQueryKey = (params) => ["admin-users", params];
-const problemQueryKey = (params) => ["admin-problems", params];
-
-// ─── Component ────────────────────────────────────────────────────────────────
 export default function AdminDashboard() {
   const { signOut } = useClerk();
   const { user } = useUser();
+  const queryClient = useQueryClient();
+
   const [activeTab, setActiveTab] = useState("overview");
 
-  // Sidebar search
-  const [sidebarSearch, setSidebarSearch] = useState("");
-
-  // Header dropdowns
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-  const [selectedDateRange, setSelectedDateRange] = useState("Last week");
-
-  // Mobile sidebar
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  // Users state
   const [userParams, setUserParams] = useState({ page: 1, limit: 20, search: "", role: "", status: "" });
-
-  // Problems state
   const [problemParams, setProblemParams] = useState({ page: 1, limit: 30, search: "", difficulty: "" });
 
-  // ── Queries ────────────────────────────────────────────────────────────────
-  const statsQuery = useQuery({
-    queryKey: ["admin-stats"],
-    queryFn: adminApi.getStats,
-    refetchInterval: 30_000,
-    retry: 1,
-  });
+  const statsQuery = useQuery({ queryKey: ["admin-stats"], queryFn: adminApi.getStats, refetchInterval: 30_000 });
+  const activityQuery = useQuery({ queryKey: ["admin-activity"], queryFn: adminApi.getRecentActivity, refetchInterval: 20_000, enabled: activeTab === "overview" });
+  const breakdownQuery = useQuery({ queryKey: ["admin-sub-breakdown"], queryFn: adminApi.getSubscriptionBreakdown, refetchInterval: 60_000, enabled: activeTab === "overview" });
+  const usersQuery = useQuery({ queryKey: ["admin-users", userParams], queryFn: () => adminApi.getUsers(userParams), enabled: activeTab === "users", keepPreviousData: true });
+  const problemsQuery = useQuery({ queryKey: ["admin-problems", problemParams], queryFn: () => adminApi.getProblems(problemParams), enabled: activeTab === "problems", keepPreviousData: true });
+  const sessionsQuery = useQuery({ queryKey: ["admin-sessions"], queryFn: adminApi.getActiveSessions, enabled: activeTab === "sessions", refetchInterval: 15_000 });
+  const questsQuery = useQuery({ queryKey: ["admin-quests"], queryFn: adminApi.getQuests, enabled: activeTab === "quests" });
 
-  const activityQuery = useQuery({
-    queryKey: ["admin-activity"],
-    queryFn: adminApi.getRecentActivity,
-    refetchInterval: 20_000,
-    enabled: activeTab === "overview",
-    retry: 1,
-  });
+  const updateUserParams = (p) => setUserParams((prev) => ({ ...prev, ...p, page: p.page ?? 1 }));
+  const updateProblemParams = (p) => setProblemParams((prev) => ({ ...prev, ...p, page: p.page ?? 1 }));
 
-  const usersQuery = useQuery({
-    queryKey: userQueryKey(userParams),
-    queryFn: () => adminApi.getUsers(userParams),
-    enabled: activeTab === "users",
-    keepPreviousData: true,
-    retry: 1,
-  });
+  const containerClass = "bg-white rounded-[24px] p-8 shadow-[0_2px_20px_rgba(0,0,0,0.03)] border border-gray-100 min-h-[500px] flex-1";
 
-  const problemsQuery = useQuery({
-    queryKey: problemQueryKey(problemParams),
-    queryFn: () => adminApi.getProblems(problemParams),
-    enabled: activeTab === "problems",
-    keepPreviousData: true,
-    retry: 1,
-  });
-
-  const sessionsQuery = useQuery({
-    queryKey: ["admin-sessions"],
-    queryFn: adminApi.getActiveSessions,
-    enabled: activeTab === "sessions",
-    refetchInterval: 15_000,
-    retry: 1,
-  });
-
-  const questsQuery = useQuery({
-    queryKey: ["admin-quests"],
-    queryFn: adminApi.getQuests,
-    enabled: activeTab === "quests",
-    retry: 1,
-  });
-
-  // ── Sidebar search filtering ──────────────────────────────────────────────
-  const filteredNavGroups = useMemo(() => {
-    if (!sidebarSearch.trim()) return navGroups;
-    const q = sidebarSearch.toLowerCase();
-    return navGroups
-      .map(group => ({
-        ...group,
-        items: group.items.filter(item => item.label.toLowerCase().includes(q))
-      }))
-      .filter(group => group.items.length > 0);
-  }, [sidebarSearch]);
-
-  // ── Notifications from real activity data ─────────────────────────────────
-  const notifications = useMemo(() => {
-    const items = [];
-    const stats = statsQuery.data;
-    if (stats?.users?.newToday > 0) {
-      items.push({ id: "new-users", label: `${stats.users.newToday} new user${stats.users.newToday > 1 ? "s" : ""} registered today`, type: "info", time: "Today" });
-    }
-    if (stats?.submissions?.failedToday > 3) {
-      items.push({ id: "failed-subs", label: `${stats.submissions.failedToday} failed submissions today`, type: "warning", time: "Today" });
-    }
-    if (stats?.sessions?.active > 0) {
-      items.push({ id: "live-sessions", label: `${stats.sessions.active} live coding session${stats.sessions.active > 1 ? "s" : ""} active`, type: "info", time: "Now" });
-    }
-    if (stats?.quests?.completedToday > 0) {
-      items.push({ id: "quests-done", label: `${stats.quests.completedToday} quest${stats.quests.completedToday > 1 ? "s" : ""} completed today`, type: "success", time: "Today" });
-    }
-    if (items.length === 0) {
-      items.push({ id: "no-notif", label: "No new notifications", type: "muted", time: "" });
-    }
-    return items;
-  }, [statsQuery.data]);
-
-  // ── Helpers ────────────────────────────────────────────────────────────────
-  const updateUserParams = (patch) => setUserParams((prev) => ({ ...prev, ...patch, page: patch.page ?? 1 }));
-  const updateProblemParams = (patch) => setProblemParams((prev) => ({ ...prev, ...patch, page: patch.page ?? 1 }));
-  const getActiveTabLabel = () => {
-    const item = allNavItems.find(i => i.id === activeTab);
-    return item?.label || "Dashboard";
-  };
-
-  const handleNavClick = (id) => {
-    setActiveTab(id);
-    setSidebarSearch("");
-    setSidebarOpen(false);
-  };
-
-  // Close dropdowns when clicking elsewhere
-  const handleMainClick = () => {
-    setShowNotifications(false);
-    setShowDatePicker(false);
-    setShowSettings(false);
-  };
-
-  // ── Render active section ─────────────────────────────────────────────────
   const renderContent = () => {
     switch (activeTab) {
       case "overview":
         return (
-          <div className="flex flex-col gap-10">
-            <KravioOverview
-               stats={statsQuery.data}
-               activities={activityQuery.data?.activity}
-               isLoading={statsQuery.isLoading || activityQuery.isLoading}
-               onRefreshActivity={() => activityQuery.refetch()}
-               isFetchingActivity={activityQuery.isFetching}
-               userName={user?.firstName || user?.fullName || "Admin"}
-            />
-
-            <div>
-               <div className="flex items-center gap-2 mb-6">
-                 <h2 className="text-[18px] font-semibold text-slate-900">Platform Analytics & Telemetry</h2>
-                 <div className="h-px flex-1 bg-slate-200 ml-4"></div>
-               </div>
-               <div className="flex flex-col gap-6">
-                 <AdminStatsOverview stats={statsQuery.data} isLoading={statsQuery.isLoading} />
-                 <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                   <div className="xl:col-span-2 space-y-6">
-                      <AdminCharts trends={statsQuery.data?.trends} />
-                   </div>
-                   <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-                     <div className="flex items-center justify-between mb-5">
-                       <h3 className="text-[15px] font-semibold text-slate-900">Recent Activity</h3>
-                       <button
-                         onClick={() => activityQuery.refetch()}
-                         className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition"
-                       >
-                         <RefreshCw className={`w-3.5 h-3.5 ${activityQuery.isFetching ? "animate-spin" : ""}`} />
-                       </button>
-                     </div>
-                     <RecentActivityFeed
-                       activity={activityQuery.data?.activity}
-                       isLoading={activityQuery.isLoading}
-                       onViewAll={() => {/* Already on overview, scroll is implicit */}}
-                     />
-                   </div>
-                 </div>
-               </div>
+          <AdminOverviewTab
+            stats={statsQuery.data}
+            activities={activityQuery.data?.activity}
+            breakdown={breakdownQuery.data}
+            isLoading={statsQuery.isLoading || activityQuery.isLoading}
+            userName={user?.firstName || user?.fullName || "Admin"}
+            subTab="Overview"
+          />
+        );
+      case "users":
+        return (
+          <div className={containerClass}>
+            <h3 className="text-[22px] font-semibold text-[#18181B] mb-6">User Management</h3>
+            <div className="relative">
+              <UserManagementTable globalStats={statsQuery.data} users={usersQuery.data?.users} pagination={usersQuery.data?.pagination} isLoading={usersQuery.isFetching} onPageChange={(page) => updateUserParams({ page })} onSearch={(search) => updateUserParams({ search })} onFilterChange={(patch) => updateUserParams(patch)} />
             </div>
           </div>
         );
-
-      case "users":
-        return (
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-             <div className="flex items-center justify-between mb-5">
-               <h3 className="text-[15px] font-semibold text-slate-900">User Management</h3>
-               {usersQuery.data?.pagination && (
-                 <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">
-                   {usersQuery.data.pagination.total.toLocaleString()} total
-                 </span>
-               )}
-             </div>
-             <UserManagementTable
-               users={usersQuery.data?.users}
-               pagination={usersQuery.data?.pagination}
-               isLoading={usersQuery.isLoading || usersQuery.isFetching}
-               onPageChange={(page) => updateUserParams({ page })}
-               onSearch={(search) => updateUserParams({ search })}
-               onFilterChange={(patch) => updateUserParams(patch)}
-             />
-          </div>
-        );
-
       case "problems":
         return (
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-            <div className="flex items-center justify-between mb-5">
-               <h3 className="text-[15px] font-semibold text-slate-900">Problem Library</h3>
-               {problemsQuery.data?.pagination && (
-                 <span className="text-xs font-medium text-slate-500 bg-slate-100 px-2.5 py-1 rounded-md">
-                   {problemsQuery.data.pagination.total} problems
-                 </span>
-               )}
-             </div>
-             <ProblemManager
-               problems={problemsQuery.data?.problems}
-               pagination={problemsQuery.data?.pagination}
-               isLoading={problemsQuery.isLoading || problemsQuery.isFetching}
-               onPageChange={(page) => updateProblemParams({ page })}
-               onSearch={(search) => updateProblemParams({ search })}
-               onFilterChange={(patch) => updateProblemParams(patch)}
-             />
+          <div className={containerClass}>
+            <h3 className="text-[22px] font-semibold text-[#18181B] mb-6">Problem Library</h3>
+            <div className="relative">
+              <ProblemManager globalStats={statsQuery.data} problems={problemsQuery.data?.problems} pagination={problemsQuery.data?.pagination} isLoading={problemsQuery.isFetching} onPageChange={(page) => updateProblemParams({ page })} onSearch={(search) => updateProblemParams({ search })} onFilterChange={(patch) => updateProblemParams(patch)} />
+            </div>
           </div>
         );
-
       case "sessions":
         return (
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-             <h3 className="text-[15px] font-semibold text-slate-900 mb-5">Live Collaborative Sessions</h3>
-             <ActiveSessionList
-               sessions={sessionsQuery.data?.sessions}
-               isLoading={sessionsQuery.isLoading}
-               onRefresh={() => sessionsQuery.refetch()}
-             />
+          <div className={containerClass}>
+            <h3 className="text-[22px] font-semibold text-[#18181B] mb-6">Live Sessions</h3>
+            <div className="relative">
+              <ActiveSessionList globalStats={statsQuery.data} sessions={sessionsQuery.data?.sessions} isLoading={sessionsQuery.isLoading} onRefresh={() => sessionsQuery.refetch()} />
+            </div>
           </div>
         );
-
       case "quests":
         return (
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-             <h3 className="text-[15px] font-semibold text-slate-900 mb-5">Quest Templates</h3>
-             <QuestManager quests={questsQuery.data?.quests} isLoading={questsQuery.isLoading} />
+          <div className={containerClass}>
+            <h3 className="text-[22px] font-semibold text-[#18181B] mb-6">Quest Templates</h3>
+            <div className="relative">
+              <QuestManager globalStats={statsQuery.data} quests={questsQuery.data?.quests} isLoading={questsQuery.isLoading} />
+            </div>
           </div>
         );
-
       case "health":
+      default:
         return (
-          <div className="bg-white border border-slate-200 rounded-2xl p-5 shadow-sm">
-             <h3 className="text-[15px] font-semibold text-slate-900 mb-5">System Health</h3>
-             <SystemHealthMonitor statsError={statsQuery.isError} isFetching={statsQuery.isFetching} />
+          <div className={containerClass}>
+            <h3 className="text-[22px] font-semibold text-[#18181B] mb-6">System Health</h3>
+            <div className="relative">
+              <SystemHealthMonitor statsError={statsQuery.isError} isFetching={statsQuery.isFetching} />
+            </div>
           </div>
         );
-
-      default:
-        return null;
     }
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-900 flex font-sans selection:bg-indigo-100 selection:text-indigo-900">
+    <div className="h-screen w-full overflow-hidden bg-white flex font-sans text-slate-900 relative selection:bg-orange-100">
 
-      {/* ── Mobile Overlay ──────────────────────────────────────────────────── */}
-      {sidebarOpen && (
-        <div className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden" onClick={() => setSidebarOpen(false)} />
-      )}
-
-      {/* ── Sidebar ─────────────────────────────────────────────────────────── */}
-      <aside className={`fixed left-0 top-0 h-full w-[260px] bg-white border-r border-slate-200 flex flex-col z-50 shadow-sm transition-transform duration-200 lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}`}>
-
+      {/* ── LEFT SIDEBAR (Refined Blending) ────────────────────────────────────────────── */}
+      <aside data-lenis-prevent className="w-[280px] h-full bg-slate-50/50 flex flex-col px-6 py-8 shrink-0 border-r border-slate-200/40 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] z-10">
+        
         {/* Brand */}
-        <div className="px-5 h-16 flex items-center gap-2.5 border-b border-slate-100">
-           <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center text-white shadow-sm shadow-indigo-600/20">
-              <Shield className="w-4 h-4" />
-           </div>
-           <span className="font-semibold text-[17px] tracking-tight text-slate-900">Tanvi</span>
-           <span className="bg-slate-100 text-slate-500 text-[10px] uppercase font-bold px-1.5 py-0.5 rounded border border-slate-200 ml-auto">OS</span>
+        <div className="flex items-center gap-3 mb-10 px-2 cursor-pointer group">
+          <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-slate-200 group-hover:scale-105 transition-transform">W.</div>
+          <div className="flex flex-col">
+            <span className="font-black text-[15px] text-slate-900 leading-none">Uxerflow Inc.</span>
+            <span className="text-[11px] text-slate-400 font-bold mt-1">Free Plan</span>
+          </div>
+          <div className="ml-auto w-6 h-6 border border-slate-200 rounded-lg flex items-center justify-center text-slate-400 cursor-pointer hover:bg-white hover:text-slate-900 shadow-sm transition-all">«</div>
         </div>
 
-        {/* Search — FUNCTIONAL: filters sidebar nav items */}
-        <div className="p-4">
-           <div className="relative group">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
-              <input
-                 placeholder="Search pages..."
-                 value={sidebarSearch}
-                 onChange={(e) => setSidebarSearch(e.target.value)}
-                 className="w-full pl-9 pr-8 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm placeholder-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all shadow-sm"
-              />
-              {sidebarSearch ? (
-                <button
-                  onClick={() => setSidebarSearch("")}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 p-0.5 text-slate-400 hover:text-slate-600"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              ) : (
-                <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-0.5">
-                   <kbd className="px-1.5 py-0.5 bg-white border border-slate-200 rounded text-[10px] font-mono text-slate-400 shadow-sm">⌘</kbd>
-                   <kbd className="px-1.5 py-0.5 bg-white border border-slate-200 rounded text-[10px] font-mono text-slate-400 shadow-sm">K</kbd>
-                </div>
-              )}
-           </div>
+        {/* Improved Search Bar */}
+        <div className="relative mb-10 group px-1">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-slate-900 transition-colors" />
+          <input
+            type="text"
+            placeholder="Search widget"
+            className="w-full pl-10 pr-6 py-2.5 bg-white border border-slate-200/50 rounded-xl text-[13px] font-bold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-slate-300 shadow-sm transition-all"
+          />
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-0.5 pointer-events-none opacity-40">
+            <span className="text-[11px] font-black">⌘</span>
+            <span className="text-[11px] font-black">K</span>
+          </div>
         </div>
 
-        {/* Navigation — FUNCTIONAL: filters by search */}
-        <nav className="flex-1 overflow-y-auto custom-scrollbar px-3 space-y-6 pb-6">
-           {filteredNavGroups.length === 0 ? (
-             <div className="px-3 py-8 text-center">
-               <Search className="w-5 h-5 text-slate-300 mx-auto mb-2" />
-               <p className="text-slate-400 text-[13px]">No pages match "{sidebarSearch}"</p>
-             </div>
-           ) : (
-             filteredNavGroups.map((group, gIdx) => (
-               <div key={gIdx}>
-                  <h4 className="px-3 text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-2">
-                     {group.title}
-                  </h4>
-                  <div className="space-y-0.5">
-                     {group.items.map(({ id, icon: Icon, label }) => {
-                        const isActive = activeTab === id;
-                        return (
-                           <button
-                             key={id}
-                             onClick={() => handleNavClick(id)}
-                             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-[14px] font-medium transition-all
-                               ${isActive
-                                  ? "bg-indigo-50 text-indigo-700"
-                                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                               }`}
-                           >
-                              <Icon className={`w-[18px] h-[18px] ${isActive ? "text-indigo-600" : "text-slate-400"}`} />
-                              {label}
-                           </button>
-                        );
-                     })}
-                  </div>
-               </div>
-             ))
-           )}
-        </nav>
-
-        {/* Footer: User Profile + Sign Out */}
-        <div className="p-4 border-t border-slate-100">
-           <div className="flex items-center gap-3 p-2 rounded-xl hover:bg-slate-50 border border-transparent hover:border-slate-200 transition-all cursor-pointer">
-              {user?.imageUrl ? (
-                 <img src={user.imageUrl} alt="admin" className="w-9 h-9 rounded-full object-cover border border-slate-200 shadow-sm" />
-              ) : (
-                 <div className="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-sm font-semibold text-slate-700 shadow-sm">
-                   {user?.firstName?.[0] ?? "A"}
-                 </div>
-              )}
-              <div className="flex-1 min-w-0">
-                 <p className="text-sm font-semibold text-slate-900 truncate">{user?.fullName ?? "Administrator"}</p>
-                 <p className="text-[11px] text-slate-500 truncate">{user?.primaryEmailAddress?.emailAddress ?? "admin@tanvihost.com"}</p>
+        {/* Grouped Sidebar Navigation */}
+        <div className="space-y-10 mb-10">
+          {SIDEBAR_SECTIONS.map((section) => (
+            <div key={section.title} className="space-y-2">
+              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-widest px-3 mb-4">
+                {section.title}
               </div>
-              <button
-                 onClick={() => signOut()}
-                 className="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg transition-colors"
-                 title="Sign Out"
-              >
-                 <LogOut className="w-4 h-4" />
-              </button>
-           </div>
+              <div className="space-y-1">
+                {section.items.map((item) => {
+                  const isActive = activeTab === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => setActiveTab(item.id)}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all relative group ${
+                        isActive ? "text-slate-900 bg-slate-50" : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                      }`}
+                    >
+                      {isActive && (
+                        <div className="absolute left-0 top-2 bottom-2 w-1 bg-orange-500 rounded-r-full" />
+                      )}
+                      <item.icon strokeWidth={2} className={`w-4 h-4 transition-colors ${isActive ? "text-slate-900" : "text-slate-400 group-hover:text-slate-600"}`} />
+                      <span className="text-[14px] font-bold tracking-tight">{item.label}</span>
+                      {item.count && (
+                        <span className="ml-auto bg-slate-100 text-slate-400 text-[10px] font-bold py-0.5 px-1.5 rounded-lg border border-slate-200/50">
+                          {item.count}
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </div>
 
+        {/* Bottom Utils Group */}
+        <div className="space-y-1 mb-10 pt-4 border-t border-slate-200/40">
+           <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-50 group">
+              <HelpCircle strokeWidth={2} className="w-4 h-4 text-slate-400" />
+              <span className="text-[13px] font-bold tracking-tight">Help center</span>
+           </button>
+           <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-50 group">
+              <MessageSquare strokeWidth={2} className="w-4 h-4 text-slate-400" />
+              <span className="text-[13px] font-bold tracking-tight">Feedback</span>
+           </button>
+           <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-50 group">
+              <Settings strokeWidth={2} className="w-4 h-4 text-slate-400" />
+              <span className="text-[13px] font-bold tracking-tight">Settings</span>
+           </button>
+        </div>
+
+        {/* Upgrade CTA Card */}
+        <div className="mt-auto px-1">
+           <div className="bg-orange-600 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden group">
+              <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl group-hover:scale-125 transition-transform" />
+              <div className="relative z-10 flex flex-col items-center">
+                 <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mb-4">
+                   <ZapIcon strokeWidth={2} className="w-5 h-5 text-white fill-white" />
+                 </div>
+                 <p className="text-[13px] font-bold text-center leading-snug mb-4">Upgrade & unlock <br /> all features</p>
+                 <button className="w-full py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg text-[12px] font-bold transition-all border border-white/20">Upgrade Now</button>
+              </div>
+           </div>
+        </div>
       </aside>
 
-      {/* ── Main Content Area ───────────────────────────────────────────────── */}
-      <main className="lg:ml-[260px] flex-1 flex flex-col min-h-screen" onClick={handleMainClick}>
+      {/* ── MAIN CONTENT AREA ────────────────────────────────────────────── */}
+      <main className="flex-1 overflow-hidden flex flex-col pt-6 pr-8 pb-6 pl-8 min-w-0 min-h-0 z-10 relative">
+        
+        {/* Exact Match Top Navigation Row */}
+        <div className="flex justify-between items-center mb-8 px-2">
+           <h2 className="text-[28px] font-bold text-slate-900 tracking-tight">
+             {SIDEBAR_SECTIONS.flatMap(s => s.items).find(i => i.id === activeTab)?.label || "Dashboard"}
+           </h2>
+           <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
+                 <button className="w-9 h-9 bg-white border border-slate-200/60 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all">
+                    <SlidersHorizontal strokeWidth={2} className="w-4 h-4" />
+                 </button>
+                 <button className="w-9 h-9 bg-white border border-slate-200/60 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all">
+                    <Bell strokeWidth={2} className="w-4 h-4" />
+                 </button>
+              </div>
 
-        {/* Top Header */}
-        <header className="h-16 bg-white border-b border-slate-200 px-8 flex items-center justify-between sticky top-0 z-40">
-
-           {/* Left: Mobile menu + Breadcrumbs */}
-           <div className="flex items-center gap-3">
-              <button
-                onClick={() => setSidebarOpen(true)}
-                className="p-2 text-slate-400 hover:text-slate-600 rounded-lg hover:bg-slate-100 transition lg:hidden"
-              >
-                <Menu className="w-5 h-5" />
-              </button>
-              <div className="flex items-center gap-2 text-[14px]">
-                 <div className="flex items-center gap-2 text-slate-400 font-medium tracking-tight">
-                    <Square className="w-4 h-4" />
-                    Admin
+              <div className="flex items-center gap-2 px-1.5 py-1 bg-white border border-slate-200/60 rounded-full shadow-sm">
+                 <div className="flex -space-x-2">
+                    <img src={user?.imageUrl} className="w-7 h-7 rounded-full border-2 border-white object-cover" />
+                    <div className="w-7 h-7 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[9px] font-bold text-slate-500">+3</div>
                  </div>
-                 <span className="text-slate-300">/</span>
-                 <span className="font-semibold text-slate-900 truncate">{getActiveTabLabel()}</span>
-              </div>
-           </div>
-
-           {/* Right: Actions */}
-           <div className="flex items-center gap-2">
-
-              {/* Date Range Picker — FUNCTIONAL dropdown */}
-              <div className="relative hidden sm:block">
-                <button
-                  onClick={(e) => { e.stopPropagation(); setShowDatePicker(!showDatePicker); setShowNotifications(false); setShowSettings(false); }}
-                  className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-sm font-medium text-slate-700 hover:bg-slate-50 hover:border-slate-300 shadow-sm transition-all focus:ring-2 focus:ring-indigo-100 outline-none"
-                >
-                   <Calendar className="w-3.5 h-3.5 text-indigo-500" />
-                   {selectedDateRange}
-                   <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-                </button>
-                {showDatePicker && (
-                  <div className="absolute right-0 top-[calc(100%+4px)] bg-white border border-slate-200 rounded-xl shadow-xl p-1.5 w-[170px] z-50 animate-in fade-in zoom-in-95 duration-150" onClick={(e) => e.stopPropagation()}>
-                    {["Today", "Yesterday", "Last week", "Last month", "Last 90 days"].map((range) => (
-                      <button
-                        key={range}
-                        onClick={() => { setSelectedDateRange(range); setShowDatePicker(false); }}
-                        className={`w-full text-left px-3 py-2 text-[13px] rounded-lg transition-colors flex items-center justify-between ${
-                          selectedDateRange === range ? "bg-indigo-50 text-indigo-700 font-semibold" : "text-slate-600 hover:bg-slate-50"
-                        }`}
-                      >
-                        {range}
-                        {selectedDateRange === range && <Check className="w-3.5 h-3.5" />}
-                      </button>
-                    ))}
-                  </div>
-                )}
+                 <div className="w-7 h-7 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-400 cursor-pointer hover:bg-slate-50 transition-all">
+                    <UserPlus strokeWidth={2} className="w-3.5 h-3.5" />
+                 </div>
               </div>
 
-              <div className="h-4 w-px bg-slate-200 hidden sm:block" />
-
-              {/* Notifications — FUNCTIONAL dropdown */}
-              <div className="relative">
-                <button
-                  onClick={(e) => { e.stopPropagation(); setShowNotifications(!showNotifications); setShowDatePicker(false); setShowSettings(false); }}
-                  className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition relative"
-                >
-                   <Bell className="w-4.5 h-4.5" />
-                   {notifications.length > 0 && notifications[0].type !== "muted" && (
-                     <span className="absolute top-1.5 right-2 w-2 h-2 rounded-full bg-rose-500 border-2 border-white"></span>
-                   )}
-                </button>
-                {showNotifications && (
-                  <div className="absolute right-0 top-[calc(100%+4px)] bg-white border border-slate-200 rounded-xl shadow-xl w-[320px] z-50 animate-in fade-in zoom-in-95 duration-150" onClick={(e) => e.stopPropagation()}>
-                    <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between">
-                      <span className="text-[14px] font-semibold text-slate-900">Notifications</span>
-                      <span className="text-[11px] font-medium text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded">{notifications.filter(n=>n.type!=="muted").length}</span>
-                    </div>
-                    <div className="max-h-[280px] overflow-y-auto">
-                      {notifications.map((n) => (
-                        <div key={n.id} className={`px-4 py-3 border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors ${n.type === "muted" ? "opacity-60" : ""}`}>
-                          <div className="flex items-start gap-3">
-                            <div className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
-                              n.type === "warning" ? "bg-amber-500" : n.type === "success" ? "bg-emerald-500" : n.type === "info" ? "bg-indigo-500" : "bg-slate-300"
-                            }`} />
-                            <div className="flex-1 min-w-0">
-                              <p className="text-[13px] text-slate-700 font-medium">{n.label}</p>
-                              {n.time && <p className="text-[11px] text-slate-400 mt-0.5">{n.time}</p>}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Settings — FUNCTIONAL dropdown */}
-              <div className="relative">
-                <button
-                  onClick={(e) => { e.stopPropagation(); setShowSettings(!showSettings); setShowDatePicker(false); setShowNotifications(false); }}
-                  className="p-2 text-slate-400 hover:text-slate-600 rounded-full hover:bg-slate-100 transition"
-                >
-                   <Settings className="w-4.5 h-4.5" />
-                </button>
-                {showSettings && (
-                  <div className="absolute right-0 top-[calc(100%+4px)] bg-white border border-slate-200 rounded-xl shadow-xl p-1.5 w-[180px] z-50 animate-in fade-in zoom-in-95 duration-150" onClick={(e) => e.stopPropagation()}>
-                    <button
-                      onClick={() => { statsQuery.refetch(); activityQuery.refetch(); setShowSettings(false); }}
-                      className="w-full text-left px-3 py-2.5 text-[13px] text-slate-600 hover:bg-slate-50 rounded-lg transition-colors flex items-center gap-2"
-                    >
-                      <RefreshCw className="w-3.5 h-3.5 text-slate-400" />
-                      Refresh All Data
-                    </button>
-                    <button
-                      onClick={() => { handleNavClick("health"); setShowSettings(false); }}
-                      className="w-full text-left px-3 py-2.5 text-[13px] text-slate-600 hover:bg-slate-50 rounded-lg transition-colors flex items-center gap-2"
-                    >
-                      <Activity className="w-3.5 h-3.5 text-slate-400" />
-                      System Health
-                    </button>
-                    <div className="border-t border-slate-100 mt-1 pt-1">
-                      <button
-                        onClick={() => { signOut(); }}
-                        className="w-full text-left px-3 py-2.5 text-[13px] text-rose-600 hover:bg-rose-50 rounded-lg transition-colors flex items-center gap-2"
-                      >
-                        <LogOut className="w-3.5 h-3.5" />
-                        Sign Out
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {statsQuery.isFetching && (
-                <div className="flex items-center gap-1.5 text-xs font-medium text-slate-400 ml-2">
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" /> Syncing
-                </div>
-              )}
-           </div>
-        </header>
-
-        {/* Content Body */}
-        <div className="flex-1 p-8 max-w-[1400px] w-full mx-auto">
-
-           {/* Error banner */}
-           {statsQuery.isError && (
-             <div className="mb-6 px-4 py-3 bg-rose-50 border border-rose-200 rounded-xl text-sm text-rose-600 flex items-center gap-2 shadow-sm">
-               <Shield className="w-4 h-4 text-rose-500" />
-               <p>
-                 <span className="font-semibold text-rose-700">Connection Error:</span> Could not reach the backend telemetry.
-                 {statsQuery.error?.response?.status === 403 && (
-                   <span className="ml-1">Admin access denied.</span>
-                 )}
-               </p>
-               <button
-                 onClick={() => statsQuery.refetch()}
-                 className="ml-auto px-3 py-1 text-[12px] font-medium bg-rose-100 hover:bg-rose-200 rounded-lg text-rose-700 transition-colors"
-               >
-                 Retry
-               </button>
-             </div>
-           )}
-
-           {/* Active Tab Content */}
-           <div className="animate-in fade-in duration-500">
-              {renderContent()}
+              <button className="px-4 py-2 bg-white border border-slate-200/60 rounded-xl text-[13px] font-bold text-slate-900 hover:bg-slate-50 transition-all flex items-center gap-2 shadow-sm border-dashed">
+                 <Palette strokeWidth={2} className="w-4 h-4 text-slate-500" />
+                 <span>Customize Widget</span>
+              </button>
            </div>
         </div>
 
+        <div data-lenis-prevent className="flex-1 w-full overflow-y-auto transparent-scrollbar min-h-0 rounded-3xl border border-transparent">
+          <div className="min-h-full">
+            {renderContent()}
+          </div>
+        </div>
       </main>
     </div>
   );

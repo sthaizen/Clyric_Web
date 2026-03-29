@@ -8,6 +8,7 @@
     "start": "node src/server.js"
   },
   "dependencies": {
+    "@clerk/backend": "^3.2.3",
     "@clerk/express": "^1.7.41",
     "@stream-io/node-sdk": "^0.7.12",
     "axios": "^1.13.6",
