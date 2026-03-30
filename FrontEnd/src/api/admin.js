@@ -83,4 +83,20 @@ export const adminApi = {
     const res = await axiosInstance.get("/admin/subscriptions/breakdown");
     return res.data;
   },
+
+  // Notifications
+  getNotifications: async () => {
+    const res = await axiosInstance.get("/admin/notifications");
+    return res.data;
+  },
+  
+  createNotification: async (data) => {
+    const res = await axiosInstance.post("/admin/notifications", data);
+    return res.data;
+  },
+  
+  deleteNotification: async (id) => {
+    const res = await axiosInstance.delete(`/admin/notifications/${id}`);
+    return res.data;
+  },
 };

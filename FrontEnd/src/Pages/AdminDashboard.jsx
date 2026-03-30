@@ -1,9 +1,10 @@
 import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import toast from "react-hot-toast";
 import {
   Sun, Moon, LayoutGrid, Calendar, Mail, FileText, ChevronDown,
   Users, Layers, HelpCircle, LogOut, Search, Bell, Info, Shield, Activity, Sparkles,
-  Settings, MessageSquare, Package, ShoppingCart, BarChart3, Mail as MailIcon, 
+  Settings, MessageSquare, Package, ShoppingCart, BarChart3, Mail as MailIcon,
   Workflow, Zap as ZapIcon, Globe, Palette, UserPlus, SlidersHorizontal, Share2, MoreHorizontal
 } from "lucide-react";
 import { useClerk, useUser } from "@clerk/clerk-react";
@@ -15,29 +16,30 @@ import ActiveSessionList from "../components/admin/ActiveSessionList";
 import ProblemManager from "../components/admin/ProblemManager";
 import SystemHealthMonitor from "../components/admin/SystemHealthMonitor";
 import QuestManager from "../components/admin/QuestManager";
+import NotificationManager from "../components/admin/NotificationManager";
 
 // ─── Refined Sidebar Sections ────────────────────────────────────────────────
 const SIDEBAR_SECTIONS = [
   {
     title: "MAIN MENU",
     items: [
-      { id: "overview", label: "Dashboard",   icon: LayoutGrid },
-      { id: "users",    label: "Account",     icon: Users },
-      { id: "messages", label: "Message",     icon: MessageSquare, count: 12 } // mock
+      { id: "overview", label: "Dashboard", icon: LayoutGrid },
+      { id: "users", label: "Account", icon: Users },
+      { id: "messages", label: "Message", icon: MessageSquare, count: 12 } // mock
     ]
   },
   {
     title: "TOOLS",
     items: [
-      { id: "sessions", label: "Activity",    icon: Activity },
-      { id: "health",   label: "System",      icon: Sparkles }
+      { id: "sessions", label: "Activity", icon: Activity },
+      { id: "health", label: "System", icon: Sparkles }
     ]
   },
   {
     title: "WORKSPACE",
     items: [
-      { id: "problems", label: "Library",     icon: FileText },
-      { id: "quests",   label: "Program",     icon: Layers }
+      { id: "problems", label: "Library", icon: FileText },
+      { id: "quests", label: "Program", icon: Layers }
     ]
   }
 ];
@@ -46,6 +48,19 @@ export default function AdminDashboard() {
   const { signOut } = useClerk();
   const { user } = useUser();
   const queryClient = useQueryClient();
+
+  const handleLogout = async () => {
+    try {
+      await toast.promise(signOut(), {
+        loading: 'Signing out...',
+        success: 'You have been logged out.',
+        error: 'Error signing out.',
+      });
+      // Clerk handles the redirect automatically
+    } catch (err) {
+      console.error("Logout error:", err);
+    }
+  };
 
   const [activeTab, setActiveTab] = useState("overview");
 
@@ -76,7 +91,17 @@ export default function AdminDashboard() {
             isLoading={statsQuery.isLoading || activityQuery.isLoading}
             userName={user?.firstName || user?.fullName || "Admin"}
             subTab="Overview"
+            onSwitchTab={setActiveTab}
           />
+        );
+      case "messages":
+        return (
+          <div className={containerClass}>
+            <h3 className="text-[22px] font-semibold text-[#18181B] mb-6">Global Broadcast Center</h3>
+            <div className="relative">
+              <NotificationManager />
+            </div>
+          </div>
         );
       case "users":
         return (
@@ -132,13 +157,23 @@ export default function AdminDashboard() {
 
       {/* ── LEFT SIDEBAR (Refined Blending) ────────────────────────────────────────────── */}
       <aside data-lenis-prevent className="w-[280px] h-full bg-slate-50/50 flex flex-col px-6 py-8 shrink-0 border-r border-slate-200/40 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none] z-10">
-        
+
         {/* Brand */}
         <div className="flex items-center gap-3 mb-10 px-2 cursor-pointer group">
-          <div className="w-10 h-10 bg-slate-900 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-lg shadow-slate-200 group-hover:scale-105 transition-transform">W.</div>
+          <div className="flex flex-col gap-[3px] group-hover:scale-105 transition-transform">
+            <div className="w-[21px] h-[6px] rounded-[2px] rounded-tl-md bg-slate-900"></div>
+            <div className="flex gap-[3px]">
+              <div className="w-[6px] h-[6px] rounded-[2px] bg-orange-500 shadow-sm bg-slate-900"></div>
+              <div className="w-[16px] h-[6px] rounded-[2px] bg-orange-500 shadow-sm shadow-orange-100"></div>
+            </div>
+            <div className="flex gap-[3px]">
+              <div className="w-[13px] h-[6px] bg-transparent"></div>
+              <div className="w-[9px] h-[9px] rounded-[2px] rounded-br-md bg-slate-900"></div>
+            </div>
+          </div>
           <div className="flex flex-col">
-            <span className="font-black text-[15px] text-slate-900 leading-none">Uxerflow Inc.</span>
-            <span className="text-[11px] text-slate-400 font-bold mt-1">Free Plan</span>
+            <span className="font-black text-[15px] text-slate-900 leading-none">CLYRIC</span>
+            <span className="text-[11px] text-slate-400 font-bold mt-1">Admin Portal</span>
           </div>
           <div className="ml-auto w-6 h-6 border border-slate-200 rounded-lg flex items-center justify-center text-slate-400 cursor-pointer hover:bg-white hover:text-slate-900 shadow-sm transition-all">«</div>
         </div>
@@ -171,9 +206,8 @@ export default function AdminDashboard() {
                     <button
                       key={item.id}
                       onClick={() => setActiveTab(item.id)}
-                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all relative group ${
-                        isActive ? "text-slate-900 bg-slate-50" : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
-                      }`}
+                      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all relative group ${isActive ? "text-slate-900 bg-slate-50" : "text-slate-500 hover:text-slate-900 hover:bg-slate-50"
+                        }`}
                     >
                       {isActive && (
                         <div className="absolute left-0 top-2 bottom-2 w-1 bg-orange-500 rounded-r-full" />
@@ -195,68 +229,103 @@ export default function AdminDashboard() {
 
         {/* Bottom Utils Group */}
         <div className="space-y-1 mb-10 pt-4 border-t border-slate-200/40">
-           <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-50 group">
-              <HelpCircle strokeWidth={2} className="w-4 h-4 text-slate-400" />
-              <span className="text-[13px] font-bold tracking-tight">Help center</span>
-           </button>
-           <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-50 group">
-              <MessageSquare strokeWidth={2} className="w-4 h-4 text-slate-400" />
-              <span className="text-[13px] font-bold tracking-tight">Feedback</span>
-           </button>
-           <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-50 group">
-              <Settings strokeWidth={2} className="w-4 h-4 text-slate-400" />
-              <span className="text-[13px] font-bold tracking-tight">Settings</span>
-           </button>
+          <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-50 group">
+            <HelpCircle strokeWidth={2} className="w-4 h-4 text-slate-400" />
+            <span className="text-[13px] font-bold tracking-tight">Help center</span>
+          </button>
+          <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-50 group">
+            <MessageSquare strokeWidth={2} className="w-4 h-4 text-slate-400" />
+            <span className="text-[13px] font-bold tracking-tight">Feedback</span>
+          </button>
+          <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-slate-500 hover:text-slate-900 hover:bg-slate-50 group">
+            <Settings strokeWidth={2} className="w-4 h-4 text-slate-400" />
+            <span className="text-[13px] font-bold tracking-tight">Settings</span>
+          </button>
         </div>
 
-        {/* Upgrade CTA Card */}
+        {/* Platform Pulse Card */}
         <div className="mt-auto px-1">
-           <div className="bg-orange-600 rounded-2xl p-5 text-white shadow-lg relative overflow-hidden group">
-              <div className="absolute top-0 right-0 w-20 h-20 bg-white/10 rounded-full -mr-10 -mt-10 blur-2xl group-hover:scale-125 transition-transform" />
-              <div className="relative z-10 flex flex-col items-center">
-                 <div className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center mb-4">
-                   <ZapIcon strokeWidth={2} className="w-5 h-5 text-white fill-white" />
-                 </div>
-                 <p className="text-[13px] font-bold text-center leading-snug mb-4">Upgrade & unlock <br /> all features</p>
-                 <button className="w-full py-2 bg-white/20 hover:bg-white/30 text-white rounded-lg text-[12px] font-bold transition-all border border-white/20">Upgrade Now</button>
+          <div className="bg-orange-600 rounded-2xl p-5 text-white shadow-xl relative overflow-hidden group border border-white/10">
+            <div className="absolute top-0 right-0 w-24 h-24 bg-white rounded-full -mr-12 -mt-12 blur-3xl opacity-20 transition-opacity group-hover:opacity-40" />
+            
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-white rounded-full animate-pulse shadow-[0_0_8px_rgba(255,255,255,0.6)]" />
+                  <span className="text-[11px] font-black text-orange-100 uppercase tracking-wider">Platform Pulse</span>
+                </div>
+                <Activity strokeWidth={2.5} className="w-3.5 h-3.5 text-orange-200" />
               </div>
-           </div>
+
+              <div className="space-y-3">
+                <div className="flex justify-between items-end">
+                  <div className="flex flex-col">
+                    <span className="text-[20px] font-black leading-none">{statsQuery.data?.activeSessionsCount || 0}</span>
+                    <span className="text-[10px] font-bold text-orange-100 mt-1 uppercase tracking-tight">Active Sessions</span>
+                  </div>
+                  <div className="w-12 h-6 flex items-end gap-0.5">
+                    {[40, 70, 45, 90, 65].map((h, i) => (
+                      <div key={i} className="flex-1 bg-white/40 rounded-t-[1px] group-hover:bg-white transition-colors" style={{ height: `${h}%` }} />
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-white/20 flex items-center justify-between">
+                  <div className="flex flex-col">
+                     <span className="text-[11px] font-bold text-white">API Latency</span>
+                     <span className="text-[9px] font-medium text-orange-100">Normal (24ms)</span>
+                  </div>
+                  <div className="px-2 py-0.5 bg-white/10 border border-white/20 rounded-md text-[9px] font-black text-white uppercase tracking-wider font-sans">Stable</div>
+                </div>
+              </div>
+
+              <button 
+                onClick={() => setActiveTab('overview')}
+                className="w-full mt-4 py-2 bg-white/20 hover:bg-white/30 text-white rounded-xl text-[11px] font-bold transition-all border border-white/20 flex items-center justify-center gap-2 group/btn"
+              >
+                Detailed Reports
+                <ChevronDown className="w-3 h-3 text-orange-100 group-hover/btn:translate-y-0.5 transition-transform" />
+              </button>
+            </div>
+          </div>
         </div>
       </aside>
 
       {/* ── MAIN CONTENT AREA ────────────────────────────────────────────── */}
       <main className="flex-1 overflow-hidden flex flex-col pt-6 pr-8 pb-6 pl-8 min-w-0 min-h-0 z-10 relative">
-        
+
         {/* Exact Match Top Navigation Row */}
         <div className="flex justify-between items-center mb-8 px-2">
-           <h2 className="text-[28px] font-bold text-slate-900 tracking-tight">
-             {SIDEBAR_SECTIONS.flatMap(s => s.items).find(i => i.id === activeTab)?.label || "Dashboard"}
-           </h2>
-           <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2">
-                 <button className="w-9 h-9 bg-white border border-slate-200/60 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all">
-                    <SlidersHorizontal strokeWidth={2} className="w-4 h-4" />
-                 </button>
-                 <button className="w-9 h-9 bg-white border border-slate-200/60 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all">
-                    <Bell strokeWidth={2} className="w-4 h-4" />
-                 </button>
-              </div>
-
-              <div className="flex items-center gap-2 px-1.5 py-1 bg-white border border-slate-200/60 rounded-full shadow-sm">
-                 <div className="flex -space-x-2">
-                    <img src={user?.imageUrl} className="w-7 h-7 rounded-full border-2 border-white object-cover" />
-                    <div className="w-7 h-7 rounded-full border-2 border-white bg-slate-100 flex items-center justify-center text-[9px] font-bold text-slate-500">+3</div>
-                 </div>
-                 <div className="w-7 h-7 bg-white border border-slate-200 rounded-full flex items-center justify-center text-slate-400 cursor-pointer hover:bg-slate-50 transition-all">
-                    <UserPlus strokeWidth={2} className="w-3.5 h-3.5" />
-                 </div>
-              </div>
-
-              <button className="px-4 py-2 bg-white border border-slate-200/60 rounded-xl text-[13px] font-bold text-slate-900 hover:bg-slate-50 transition-all flex items-center gap-2 shadow-sm border-dashed">
-                 <Palette strokeWidth={2} className="w-4 h-4 text-slate-500" />
-                 <span>Customize Widget</span>
+          <h2 className="text-[28px] font-bold text-slate-900 tracking-tight">
+            {SIDEBAR_SECTIONS.flatMap(s => s.items).find(i => i.id === activeTab)?.label || "Dashboard"}
+          </h2>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <button className="w-9 h-9 bg-white border border-slate-200/60 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all">
+                <SlidersHorizontal strokeWidth={2} className="w-4 h-4" />
               </button>
-           </div>
+              <button className="w-9 h-9 bg-white border border-slate-200/60 rounded-xl flex items-center justify-center text-slate-400 hover:text-slate-900 hover:bg-slate-50 transition-all">
+                <Bell strokeWidth={2} className="w-4 h-4" />
+              </button>
+            </div>
+
+            <div className="flex items-center p-1 bg-white border border-slate-200/60 rounded-full shadow-sm">
+              <img src={user?.imageUrl} className="w-8 h-8 rounded-full  flex-shrink-0" />
+            </div>
+
+            <button
+              onClick={handleLogout}
+              className="w-9 h-9 bg-white border border-slate-200/60 rounded-xl flex items-center justify-center text-rose-500 hover:text-rose-600 hover:bg-rose-50 transition-all shadow-sm"
+              title="Logout"
+            >
+              <LogOut strokeWidth={2.5} className="w-4 h-4" />
+            </button>
+
+            <button className="px-4 py-2 bg-white border border-slate-200/60 rounded-xl text-[13px] font-bold text-slate-900 hover:bg-slate-50 transition-all flex items-center gap-2 shadow-sm border-dashed">
+              <Palette strokeWidth={2} className="w-4 h-4 text-slate-500" />
+              <span>Customize Widget</span>
+            </button>
+          </div>
         </div>
 
         <div data-lenis-prevent className="flex-1 w-full overflow-y-auto transparent-scrollbar min-h-0 rounded-3xl border border-transparent">

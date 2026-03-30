@@ -8,6 +8,8 @@ import UserQuestProgress from "../models/UserQuestProgress.js";
 import UserLevelStats from "../models/UserLevelStats.js";
 import Transaction from "../models/Transaction.js";
 import Subscription from "../models/Subscription.js";
+import { Notification } from "../models/Notification.js";
+import { io } from "../lib/socket.js";
 
 // ─── Helper ──────────────────────────────────────────────────────────────────
 
@@ -829,5 +831,61 @@ export const getRecentActivity = async (req, res) => {
   } catch (error) {
     console.error("Error in getRecentActivity:", error);
     res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+// ─── NOTIFICATIONS ────────────────────────────────────────────────────────
+
+export const getNotifications = async (req, res) => {
+  try {
+    const notifications = await Notification.find({ isActive: true })
+      .sort({ createdAt: -1 })
+      .limit(20);
+    res.json({ notifications, success: true });
+  } catch (error) {
+    console.error("Error fetching notifications:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+export const createNotification = async (req, res) => {
+  try {
+    const { title, message, type, icon, isActive, expiresAt } = req.body;
+    const notification = new Notification({
+      title,
+      message,
+      type: type || 'info',
+      icon: icon || 'Bell',
+      isActive: isActive !== undefined ? isActive : true,
+      expiresAt: expiresAt || null
+    });
+    await notification.save();
+    
+    // Broadcast live event to all clients
+    if (io) {
+      io.emit("new-notification", notification);
+    }
+    
+    res.status(201).json({ success: true, notification });
+  } catch (error) {
+    console.error("Error creating notification:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
+  }
+};
+
+export const deleteNotification = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await Notification.findByIdAndDelete(id);
+    
+    // Broadcast notification deletion
+    if (io) {
+      io.emit("delete-notification", id);
+    }
+
+    res.json({ success: true, message: "Notification deleted" });
+  } catch (error) {
+    console.error("Error deleting notification:", error);
+    res.status(500).json({ success: false, message: "Internal Server Error" });
   }
 };

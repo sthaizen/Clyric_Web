@@ -3,6 +3,7 @@ import AdvancedProblem from "../models/AdvancedProblem.js";
 import Session from "../models/Session.js";
 import User from "../models/User.js";
 import Presence from "../models/Presence.js";
+import { Notification } from "../models/Notification.js";
 
 // GET /api/dashboard/:userId?year=YYYY
 export const getDashboardData = async (req, res) => {
@@ -388,3 +389,14 @@ export const getRecommendedPeers = async (req, res) => {
   }
 };
 
+export const getNotifications = async (req, res) => {
+  try {
+    const notifications = await Notification.find({ isActive: true })
+      .sort({ createdAt: -1 })
+      .limit(10);
+    res.json({ success: true, notifications });
+  } catch (error) {
+    console.error("Error fetching notifications:", error);
+    res.status(500).json({ success: false, message: "Error fetching notifications" });
+  }
+};

@@ -334,10 +334,10 @@ export default function ProblemManager({ globalStats, problems, pagination, isLo
         </div>
         <button
           onClick={handleOpenCreate}
-          className="flex items-center gap-2 px-6 py-2.5 bg-slate-900 hover:bg-black text-white rounded-xl text-[14px] font-bold transition-all shadow-sm"
+          className="flex items-center gap-2 px-6 py-2.5 bg-slate-900 hover:bg-black text-white rounded-xl text-[14px] font-bold transition-all shadow-sm group"
         >
-          <Plus strokeWidth={2.5} className="w-4 h-4" />
-          <span>New Problem</span>
+          <Plus strokeWidth={2.5} className="w-4 h-4 text-slate-400 group-hover:text-white transition-colors" />
+          <span>Add New Problem</span>
         </button>
       </div>
 
