@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { X, Loader2 } from "lucide-react";
+import React, { useState, useEffect, useRef } from "react";
+import { X, Loader2, ChevronRight, AlertCircle } from "lucide-react";
+import toast from "react-hot-toast";
 
 const defaultForm = {
   slug: "",
@@ -44,10 +45,37 @@ export default function ProblemFormModal({ isOpen, onClose, onSubmit, initialDat
     }
   }, [initialData, isOpen]);
 
+  const formRef = useRef(null);
+
+  const canGoNext = () => {
+    if (activeTab === "basic") {
+      if (!form.slug || !form.title || !form.descriptionText) {
+        toast.error("Please fill all required basic information");
+        return false;
+      }
+    }
+    if (activeTab === "technical") {
+      const hasEmptyExample = form.examples.some(ex => !ex.input || !ex.output);
+      if (hasEmptyExample) {
+        toast.error("All examples must have an input and output");
+        return false;
+      }
+    }
+    return true;
+  };
+
   if (!isOpen) return null;
 
   const handleSubmit = (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
+    
+    // Final validation across all tabs
+    if (!form.slug || !form.title || !form.descriptionText) {
+      setActiveTab("basic");
+      toast.error("Basic information is incomplete");
+      return;
+    }
+
     const payload = {
       slug: form.slug,
       title: form.title,
@@ -60,6 +88,13 @@ export default function ProblemFormModal({ isOpen, onClose, onSubmit, initialDat
       expectedOutput: form.expectedOutput
     };
     onSubmit(payload);
+  };
+
+  const handleNext = () => {
+    if (!canGoNext()) return;
+    
+    if (activeTab === "basic") setActiveTab("technical");
+    else if (activeTab === "technical") setActiveTab("code");
   };
 
   return (
@@ -101,9 +136,9 @@ export default function ProblemFormModal({ isOpen, onClose, onSubmit, initialDat
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-7 space-y-5 flex-1 overflow-y-auto transparent-scrollbar">
+        <form ref={formRef} onSubmit={handleSubmit} className="p-7 space-y-5 flex-1 overflow-y-auto transparent-scrollbar">
           
-          {/* ----- BASIC INFO TAB ----- */}
+          <button type="submit" className="hidden" aria-hidden="true"></button>
           {activeTab === "basic" && (
             <div className="grid grid-cols-2 gap-6 animate-in fade-in duration-200">
               <div className="space-y-2">
@@ -290,13 +325,11 @@ export default function ProblemFormModal({ isOpen, onClose, onSubmit, initialDat
           {activeTab !== "code" ? (
              <button
               type="button"
-              onClick={() => {
-                if(activeTab === "basic") setActiveTab("technical");
-                else if(activeTab === "technical") setActiveTab("code");
-              }}
-              className="px-6 py-2.5 bg-gray-900 hover:bg-black text-white rounded-full text-[13px] font-bold transition-all shadow-sm"
+              onClick={handleNext}
+              className="px-6 py-2.5 bg-gray-900 hover:bg-black text-white rounded-full text-[13px] font-bold transition-all shadow-sm flex items-center gap-2"
             >
               Next Step
+              <ChevronRight className="w-4 h-4" />
             </button>
           ) : (
             <button

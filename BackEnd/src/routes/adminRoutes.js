@@ -16,6 +16,9 @@ import {
   getRecentActivity,
   getAdminTransactions,
   getSubscriptionBreakdown,
+  getNotifications,
+  createNotification,
+  deleteNotification,
 } from "../controllers/adminController.js";
 
 const router = express.Router();
@@ -51,5 +54,10 @@ router.delete("/quests/:questId", deleteAdminQuest);
 // Financial management
 router.get("/transactions", getAdminTransactions);
 router.get("/subscriptions/breakdown", getSubscriptionBreakdown);
+
+// Notifications
+router.get("/notifications", getNotifications);
+router.post("/notifications", createNotification);
+router.delete("/notifications/:id", deleteNotification);
 
 export default router;

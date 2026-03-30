@@ -5,8 +5,10 @@ import Presence from "../models/Presence.js";
 // Map to track number of active connections per userId
 const userConnections = new Map();
 
+export let io;
+
 export const setupSocket = (server) => {
-  const io = new Server(server, {
+  io = new Server(server, {
     cors: {
       origin: [ENV.CLIENT_URL, "http://localhost:5173", "http://127.0.0.1:5173"],
       methods: ["GET", "POST"],
