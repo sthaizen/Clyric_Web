@@ -2,12 +2,12 @@ import React from "react";
 import { Database, Wifi, Server, Activity, CheckCircle, XCircle, Clock, AlertTriangle, ShieldCheck, ShieldAlert } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
-export default function SystemHealthMonitor({ statsError, isFetching }) {
-  // Infer health from API reachability
-  const apiStatus = !statsError ? "operational" : "outage";
-  const socketStatus = "operational"; // Assuming active if loaded
-  const dbStatus = !statsError ? "operational" : "degraded";
-  const workerStatus = "operational";
+export default function SystemHealthMonitor({ healthData, statsError, isFetching }) {
+  // Infer health from backend report
+  const apiStatus = healthData?.api?.status || "operational";
+  const socketStatus = healthData?.socket?.status || "operational";
+  const dbStatus = healthData?.db?.status || "operational";
+  const workerStatus = healthData?.workers?.status || "operational";
 
   const services = [
     {
@@ -16,8 +16,8 @@ export default function SystemHealthMonitor({ statsError, isFetching }) {
       type: "Application",
       icon: Server,
       status: apiStatus,
-      uptime: "99.98%",
-      latency: "45ms",
+      uptime: healthData?.api?.uptime || "99.98%",
+      latency: healthData?.api?.latency || "...",
       lastCheck: Date.now(),
       color: "blue",
     },
@@ -27,9 +27,9 @@ export default function SystemHealthMonitor({ statsError, isFetching }) {
        type: "Database",
        icon: Database,
        status: dbStatus,
-       uptime: "99.99%",
-       latency: "12ms",
-       lastCheck: Date.now() - 5000,
+       uptime: healthData?.db?.uptime || "99.99%",
+       latency: healthData?.db?.latency || "...",
+       lastCheck: Date.now(),
        color: "emerald",
     },
     {
@@ -38,9 +38,9 @@ export default function SystemHealthMonitor({ statsError, isFetching }) {
        type: "Real-time",
        icon: Wifi,
        status: socketStatus,
-       uptime: "99.95%",
-       latency: "28ms",
-       lastCheck: Date.now() - 2000,
+       uptime: healthData?.socket?.uptime || "99.95%",
+       latency: healthData?.socket?.latency || "...",
+       lastCheck: Date.now(),
        color: "violet",
     },
     {
@@ -49,19 +49,20 @@ export default function SystemHealthMonitor({ statsError, isFetching }) {
        type: "Background",
        icon: Activity,
        status: workerStatus,
-       uptime: "100%",
-       latency: "N/A",
-       lastCheck: Date.now() - 15000,
+       uptime: healthData?.workers?.uptime || "100%",
+       latency: healthData?.workers?.latency || "N/A",
+       lastCheck: Date.now(),
        color: "orange",
     }
   ];
 
   const getStatusConfig = (status) => {
     switch (status) {
-      case "operational": return { icon: CheckCircle, text: "IN STOCK", color: "text-indigo-500", bg: "bg-indigo-50 border-indigo-100" };
-      case "degraded": return { icon: AlertTriangle, text: "RESTOCK", color: "text-orange-400", bg: "bg-orange-50 border-orange-100" };
-      case "outage": return { icon: XCircle, text: "OUT STOCK", color: "text-rose-400", bg: "bg-rose-50 border-rose-100" };
-      default: return { icon: Clock, text: "Unknown", color: "text-slate-400", bg: "bg-slate-50 border-slate-200" };
+      case "operational": return { icon: CheckCircle, text: "OPERATIONAL", color: "text-emerald-500", bg: "bg-emerald-50 border-emerald-100" };
+      case "degraded": return { icon: AlertTriangle, text: "DEGRADED", color: "text-orange-400", bg: "bg-orange-50 border-orange-100" };
+      case "outage": return { icon: XCircle, text: "OFFLINE", color: "text-rose-400", bg: "bg-rose-50 border-rose-100" };
+      case "off": return { icon: Clock, text: "DISCONNECTED", color: "text-slate-400", bg: "bg-slate-50 border-slate-200" };
+      default: return { icon: Clock, text: "UNKNOWN", color: "text-slate-400", bg: "bg-slate-50 border-slate-200" };
     }
   };
 

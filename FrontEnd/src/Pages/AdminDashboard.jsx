@@ -74,6 +74,7 @@ export default function AdminDashboard() {
   const problemsQuery = useQuery({ queryKey: ["admin-problems", problemParams], queryFn: () => adminApi.getProblems(problemParams), enabled: activeTab === "problems", keepPreviousData: true });
   const sessionsQuery = useQuery({ queryKey: ["admin-sessions"], queryFn: adminApi.getActiveSessions, enabled: activeTab === "sessions", refetchInterval: 15_000 });
   const questsQuery = useQuery({ queryKey: ["admin-quests"], queryFn: adminApi.getQuests, enabled: activeTab === "quests" });
+  const healthQuery = useQuery({ queryKey: ["admin-health"], queryFn: adminApi.getHealth, refetchInterval: 15_000, enabled: activeTab === "health" || activeTab === "overview" });
 
   const updateUserParams = (p) => setUserParams((prev) => ({ ...prev, ...p, page: p.page ?? 1 }));
   const updateProblemParams = (p) => setProblemParams((prev) => ({ ...prev, ...p, page: p.page ?? 1 }));
@@ -145,7 +146,7 @@ export default function AdminDashboard() {
           <div className={containerClass}>
             <h3 className="text-[22px] font-semibold text-[#18181B] mb-6">System Health</h3>
             <div className="relative">
-              <SystemHealthMonitor statsError={statsQuery.isError} isFetching={statsQuery.isFetching} />
+              <SystemHealthMonitor healthData={healthQuery.data} statsError={statsQuery.isError} isFetching={healthQuery.isFetching} />
             </div>
           </div>
         );

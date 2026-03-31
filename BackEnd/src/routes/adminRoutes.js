@@ -19,6 +19,7 @@ import {
   getNotifications,
   createNotification,
   deleteNotification,
+  getSystemHealth,
 } from "../controllers/adminController.js";
 
 const router = express.Router();
@@ -59,5 +60,8 @@ router.get("/subscriptions/breakdown", getSubscriptionBreakdown);
 router.get("/notifications", getNotifications);
 router.post("/notifications", createNotification);
 router.delete("/notifications/:id", deleteNotification);
+
+// System health check
+router.get("/health", getSystemHealth);
 
 export default router;

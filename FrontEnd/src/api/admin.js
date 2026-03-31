@@ -99,4 +99,9 @@ export const adminApi = {
     const res = await axiosInstance.delete(`/admin/notifications/${id}`);
     return res.data;
   },
+
+  getHealth: async () => {
+    const res = await axiosInstance.get("/admin/health");
+    return res.data;
+  },
 };
