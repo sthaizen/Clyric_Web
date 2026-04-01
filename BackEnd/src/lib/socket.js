@@ -50,6 +50,14 @@ export const setupSocket = (server) => {
       console.log(`User ${socket.id} joined room: ${roomId}`);
     });
 
+    socket.on("join-leaderboard", () => {
+      socket.join("leaderboard");
+    });
+
+    socket.on("leave-leaderboard", () => {
+      socket.leave("leaderboard");
+    });
+
     socket.on("code-update", ({ roomId, code }) => {
       // Broadcast to everyone else in the room
       socket.to(roomId).emit("sync-code", code);

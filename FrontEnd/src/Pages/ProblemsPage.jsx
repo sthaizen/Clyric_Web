@@ -210,7 +210,7 @@ export default function LeetCodeClone() {
   const visibleTopics = isExpanded ? dynamicTopics : dynamicTopics.slice(0, 8);
 
   return (
-    <div style={{ minHeight: '100vh', background: '#111113', color: '#eff1f6', fontFamily: '"Segoe UI", system-ui, sans-serif', display: 'flex', flexDirection: 'column', fontSize: 14 }}>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(180deg, #1b1b1f 0%, #111113 300px)', color: '#eff1f6', fontFamily: '"Segoe UI", system-ui, sans-serif', display: 'flex', flexDirection: 'column', fontSize: 14 }}>
 
       {/* NAV */}
       <nav style={{ height: 56, background: '#1b1b1f', borderBottom: '1px solid #2c2c35', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', position: 'sticky', top: 0, zIndex: 100, flexShrink: 0 }}>
@@ -235,7 +235,7 @@ export default function LeetCodeClone() {
           {[
             { label: 'Dashboard', link: '/dashboard' },
             { label: 'Problems', link: '/problems', active: true },
-            { label: 'Contest', link: '/contest' },
+            { label: 'Contest', link: '/leaderboard' },
             { label: 'Discuss', link: '/discuss' },
             { label: 'Pricing', link: '/priceoverview', gold: true },
           ].map(({ label, link, active, caret, gold }) => (

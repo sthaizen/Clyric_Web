@@ -24,6 +24,7 @@ import adminRoutes from "./routes/adminRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import commentRoutes from "./routes/commentRoutes.js";
 import noteRoutes from "./routes/noteRoutes.js";
+import leaderboardRoutes from "./routes/leaderboardRoutes.js";
 import { checkExpiredSubscriptions } from "./services/subscriptionService.js";
 
 const app = express();
@@ -71,6 +72,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/comments", commentRoutes);
 app.use("/api/notes", noteRoutes);
+app.use("/api/leaderboard", leaderboardRoutes);
 
 app.get("/health", (req, res) => {
   res.status(200).json({ msg: "success api is running" });

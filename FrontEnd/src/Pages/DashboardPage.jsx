@@ -124,7 +124,7 @@ function DashboardPage() {
 
   return (
     <>
-      <div className="min-h-screen bg-[#111113] text-gray-200 font-sans selection:bg-indigo-500/30">
+      <div className="min-h-screen text-gray-200 font-sans selection:bg-indigo-500/30" style={{ background: 'linear-gradient(180deg, #1b1b1f 0%, #111113 300px)' }}>
 
         {/* INLINE NAVBAR */}
         <nav style={{ height: 56, background: '#1b1b1f', borderBottom: '1px solid #2c2c35', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 16px', position: 'sticky', top: 0, zIndex: 100, flexShrink: 0 }}>

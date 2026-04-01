@@ -16,7 +16,7 @@ const TIER_RANK = {
 // ─── Per-Tier Feature Permissions ──────────────────────────────────────────
 export const TIER_PERMISSIONS = {
   "free": {
-    languages: ["javascript"],
+    languages: ["javascript", "python", "java", "cpp"],
     maxSubmissionsPerDay: 3,
     maxInterviewsPerDay: 0,
     allowedDifficulties: ["easy"],
