@@ -4,6 +4,7 @@ import Submission from "../models/Submission.js";
 import AdvancedProblem from "../models/AdvancedProblem.js";
 import User from "../models/User.js";
 import { getTierPermissions } from "../middleware/subscriptionMiddleware.js";
+import { io } from "../lib/socket.js";
 
 // Maximum sizes to prevent DoS attacks
 const MAX_CODE_SIZE = 64 * 1024;   // 64KB
@@ -194,6 +195,15 @@ export const submitCode = async (req, res) => {
             totalTestCases: result.totalTestCases || 0,
             runtimeMs: result.executionTime || 0,
           });
+
+          // Emit leaderboard update if submission was accepted
+          if (result.verdict === "Accepted" && io) {
+            io.to("leaderboard").emit("leaderboard-update", {
+              userId,
+              problemSlug: problem.slug,
+              timestamp: Date.now(),
+            });
+          }
         }
       } catch (saveError) {
         console.error("[submitCode] Error saving submission:", saveError);
