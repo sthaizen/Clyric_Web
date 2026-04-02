@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useUser, useAuth, SignInButton, SignedOut, SignedIn, UserButton } from "@clerk/clerk-react";
-import { Search, ChevronLeft, ChevronRight, Info, ChevronDown } from 'lucide-react';
+import { Search, ChevronLeft, ChevronRight, Info, ChevronDown, RefreshCw } from 'lucide-react';
 import { useLeaderboard } from '../hooks/useLeaderboard';
 import { fetchMyRank } from '../lib/api/leaderboard';
 
@@ -15,21 +15,7 @@ function formatTime(totalSeconds) {
   return `${pad(h)}:${pad(m)}:${pad(s)}`;
 }
 
-// Deterministic mock data generator to simulate Q1-Q4 based on rank
-function getQData(entry, qIndex) {
-  const seed = (entry.rank || 0) + qIndex;
-  
-  // We remove the strict `entry.score < qIndex * 5` check 
-  // so the mock data populates consistently for the UI.
-  if (!entry.score) return null;
 
-  const languages = ['python.png', 'javascript.png', 'c++.png', 'java.png'];
-  const languageIcon = languages[seed % languages.length];
-  const time = `00:${String((seed * 7) % 60).padStart(2, '0')}:${String((seed * 13) % 60).padStart(2, '0')}`;
-  const penalty = seed % 5 === 0 ? ((seed % 3) + 1) * 5 : 0;
-
-  return { languageIcon, time, penalty };
-}
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
@@ -53,7 +39,7 @@ export default function LeaderboardPage() {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const { data, isLoading } = useLeaderboard(currentPage, ITEMS_PER_PAGE, debouncedSearch);
+  const { data, isLoading, refresh } = useLeaderboard(currentPage, ITEMS_PER_PAGE, debouncedSearch);
 
   // Fetch the logged-in user's rank
   useEffect(() => {
@@ -95,7 +81,7 @@ export default function LeaderboardPage() {
       <div
         style={{
           display: 'grid',
-          gridTemplateColumns: '80px minmax(220px, 1.5fr) 80px 140px 1fr 1fr 1fr 1fr',
+          gridTemplateColumns: '80px minmax(220px, 1.5fr) 80px 160px 140px 100px 120px 140px',
           alignItems: 'center',
           padding: '12px 16px',
           background: defaultBg,
@@ -136,15 +122,27 @@ export default function LeaderboardPage() {
               {entry.name?.charAt(0).toUpperCase() || 'U'}
             </div>
           )}
-          <span style={{
-            color: '#eff1f6',
-            fontWeight: 400,
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis'
-          }}>
-            {isPinned ? "You ID" : entry.name}
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflow: 'hidden' }}>
+            <span style={{
+              color: '#eff1f6',
+              fontWeight: 400,
+              whiteSpace: 'nowrap',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis'
+            }}>
+              {isPinned ? "You" : entry.name}
+            </span>
+            {entry.isOnline && (
+              <span
+                style={{
+                  width: 8, height: 8, borderRadius: '50%',
+                  background: 'rgb(239, 71, 67)', flexShrink: 0,
+                  boxShadow: '0 0 0 2px rgba(239, 71, 67, 0.2)'
+                }}
+                title="Online"
+              />
+            )}
+          </div>
           {/* Country/Region Tags mock */}
           {!isPinned && entry.rank <= 14 && (
             <span style={{ fontSize: '11px', color: '#6b7280', fontWeight: 600 }}>
@@ -154,44 +152,68 @@ export default function LeaderboardPage() {
         </div>
 
         {/* Score */}
-        <div style={{ color: '#9ca3af' }}>{entry.score || 20}</div>
+        <div style={{ color: '#9ca3af' }}>{entry.score || 0}</div>
+
+        {/* Difficulty */}
+        <div style={{ display: 'flex', gap: '4px' }}>
+          <span style={{ background: 'rgba(34, 197, 94, 0.1)', color: '#22c55e', padding: '2px 6px', borderRadius: '12px', fontSize: '11px', fontWeight: 600 }}>
+            E:{entry.easySolved || 0}
+          </span>
+          <span style={{ background: 'rgba(234, 179, 8, 0.1)', color: '#eab308', padding: '2px 6px', borderRadius: '12px', fontSize: '11px', fontWeight: 600 }}>
+            M:{entry.mediumSolved || 0}
+          </span>
+          <span style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: '2px 6px', borderRadius: '12px', fontSize: '11px', fontWeight: 600 }}>
+            H:{entry.hardSolved || 0}
+          </span>
+        </div>
+
+        {/* Acceptance Rate */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ color: '#eff1f6', minWidth: '36px' }}>
+            {entry.acceptanceRate || 0}%
+          </span>
+          <div style={{ width: '40px', height: '4px', background: '#3a3a47', borderRadius: '2px', overflow: 'hidden' }}>
+            <div style={{ width: `${entry.acceptanceRate || 0}%`, height: '100%', background: entry.acceptanceRate >= 70 ? '#22c55e' : entry.acceptanceRate >= 40 ? '#eab308' : '#ef4444', transition: 'width 0.3s ease' }} />
+          </div>
+        </div>
+
+        {/* Streak */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: entry.currentStreak > 0 ? '#f97316' : '#6b7280', fontWeight: entry.currentStreak > 0 ? 600 : 400 }}>
+          {entry.currentStreak > 0 ? (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg>
+          ) : (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg>
+          )}
+          <span>{entry.currentStreak || 0}</span>
+        </div>
 
         {/* Finish Time */}
-        <div style={{ color: '#9ca3af' }}>{formatTime(entry.totalTimeSpentSeconds || 26568)}</div>
+        <div style={{ color: '#9ca3af' }}>{formatTime(entry.totalTimeSpentSeconds || 0)}</div>
 
-        {/* Q1 - Q4 */}
-        {[1, 2, 3, 4].map(qIndex => {
-          // Hardcode the pinned row's data to perfectly match the screenshot
-          let qData = getQData(entry, qIndex);
-          if (isPinned) {
-            if (qIndex === 1) qData = { languageIcon: 'c++.png', time: '00:01:04', penalty: 5 };
-            if (qIndex === 2) qData = { languageIcon: 'c++.png', time: '00:01:45', penalty: 0 };
-            if (qIndex === 3) qData = { languageIcon: 'python.png', time: '01:16:25', penalty: 295 };
-            if (qIndex === 4) qData = { languageIcon: 'python.png', time: '01:17:48', penalty: 65 };
-          }
-
-          if (!qData) return <div key={qIndex} style={{ color: '#3f3f46' }}>—</div>;
-
-          return (
-            <div key={qIndex} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-              {/* Language Icon */}
-              <img 
-                src={`/${qData.languageIcon}`} 
-                alt="language icon" 
-                style={{ width: 14, height: 14, objectFit: 'contain' }} 
-              />
-              <span style={{ color: '#eff1f6' }}>{qData.time}</span>
-              {qData.penalty > 0 && (
-                <span style={{ color: '#ef4743', fontSize: '11px', display: 'flex', alignItems: 'center', fontWeight: 500 }}>
-                  <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style={{ marginRight: 2 }}>
-                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-                  </svg>
-                  {qData.penalty}min
-                </span>
-              )}
-            </div>
-          );
-        })}
+        {/* Most Used Language */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
+          {(() => {
+            if (!entry.topLanguages || entry.topLanguages.length === 0) return <span style={{ color: '#3f3f46' }}>—</span>;
+            const langMap = {
+              'javascript': 'javascript.png',
+              'python': 'python.png',
+              'java': 'java.png',
+              'cpp': 'c++.png'
+            };
+            return entry.topLanguages.map((lang, i) => {
+              const icon = langMap[lang] || 'javascript.png';
+              return (
+                <img
+                  key={i}
+                  src={`/${icon}`}
+                  alt={lang}
+                  style={{ width: 16, height: 16, objectFit: 'contain' }}
+                  title={`Used Language: ${lang}`}
+                />
+              );
+            });
+          })()}
+        </div>
       </div>
     );
   };
@@ -310,19 +332,32 @@ export default function LeaderboardPage() {
         {/* Header Section */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px' }}>
           <h1 style={{ fontSize: '30px', fontWeight: 600, margin: 0, letterSpacing: '-0.5px' }}>
-            Ranking of <span style={{ color: '#ffa116' }}>Weekly Contest 448</span>
+            Ranking of <span style={{ color: '#ffa116' }}>Community LeaderBoard</span>
           </h1>
-          <div style={{
-            padding: '6px 20px',
-            borderRadius: '999px',
-            border: '1px solid #3a3a47',
-            color: '#9ca3af',
-            fontSize: '13px',
-            background: 'transparent',
-            fontWeight: 500
-          }}>
-            Ended
-          </div>
+          <button
+            onClick={() => refresh()}
+            disabled={isLoading}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 16px',
+              borderRadius: '999px',
+              border: '1px solid #3a3a47',
+              color: '#eff1f6',
+              fontSize: '13px',
+              background: '#2c2c35',
+              fontWeight: 500,
+              cursor: isLoading ? 'not-allowed' : 'pointer',
+              transition: 'all 0.2s',
+              opacity: isLoading ? 0.7 : 1
+            }}
+            onMouseEnter={e => { if (!isLoading) e.currentTarget.style.background = '#3a3a47'; }}
+            onMouseLeave={e => { if (!isLoading) e.currentTarget.style.background = '#2c2c35'; }}
+          >
+            <RefreshCw size={14} style={{ animation: isLoading ? 'spin 1s linear infinite' : 'none' }} className={isLoading ? "animate-spin" : ""} />
+            {isLoading ? 'Refreshing' : 'Refresh'}
+          </button>
         </div>
 
         {/* Filters and Stats */}
@@ -358,7 +393,7 @@ export default function LeaderboardPage() {
         {/* Table Header */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: '80px minmax(220px, 1.5fr) 80px 140px 1fr 1fr 1fr 1fr',
+          gridTemplateColumns: '80px minmax(220px, 1.5fr) 80px 160px 140px 100px 120px 140px',
           alignItems: 'center',
           padding: '12px 16px',
           borderBottom: '1px solid #2c2c35',
@@ -368,18 +403,14 @@ export default function LeaderboardPage() {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>Rank <Info size={12} /></div>
           <div>Name</div>
-          <div>Score</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>Finish Time <Info size={12} /></div>
-          <div>Q1 (3)</div>
-          <div>Q2 (4)</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'help', position: 'relative' }} className="group">
-            Q3 (6)
-            {/* Tooltip mockup for Q3 */}
-            <div className="absolute bottom-full left-0 mb-2 hidden group-hover:block bg-[#2c2c35] text-[#eff1f6] text-[11px] py-1 px-2 rounded whitespace-nowrap z-10 shadow-lg">
-              59 incorrect attempt(s)
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'help', position: 'relative' }} title="Weighted Score: E×1 + M×3 + H×5">
+            Score
           </div>
-          <div>Q4 (7)</div>
+          <div>Difficulty</div>
+          <div>Acceptance</div>
+          <div>Streak</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>Finish Time <Info size={12} /></div>
+          <div style={{ textAlign: 'center' }}>Language</div>
         </div>
 
         <div style={{ paddingTop: '12px' }}>

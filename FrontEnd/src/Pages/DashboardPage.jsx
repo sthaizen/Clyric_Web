@@ -25,8 +25,8 @@ import TopicMastery from "../components/dashboard/TopicMastery";
 import RecentTransmissions from "../components/dashboard/RecentTransmissions";
 import ExecutionIntelligence from "../components/dashboard/ExecutionIntelligence";
 import GrowthTrajectory from "../components/dashboard/GrowthTrajectory";
-import UpcomingEvents from "../components/dashboard/UpcommingEvents.jsx"; 
-import RecommendedConnections from "../components/dashboard/RecommendedConnections.jsx"; 
+import UpcomingEvents from "../components/dashboard/UpcommingEvents.jsx";
+import RecommendedConnections from "../components/dashboard/RecommendedConnections.jsx";
 
 function DashboardPage() {
   const navigate = useNavigate();
@@ -147,7 +147,7 @@ function DashboardPage() {
             {[
               { label: 'Dashboard', link: '/dashboard', active: true },
               { label: 'Problems', link: '/problems' },
-              { label: 'Contest', link: '/contest' },
+              { label: 'Contest', link: '/leaderboard' },
               { label: 'Discuss', link: '/discuss' },
               { label: 'Pricing', link: '/priceoverview', gold: true },
             ].map(({ label, link, active, caret, gold }) => (
@@ -215,14 +215,14 @@ function DashboardPage() {
             <div className="relative group">
               <button
                 onClick={() => window.location.href = '/price'}
-                style={{ 
-                  background: '#222', 
-                  color: '#fff', 
+                style={{
+                  background: '#222',
+                  color: '#fff',
                   border: '1px solid #333',
-                  borderRadius: 8, 
-                  padding: '6px 16px', 
-                  fontWeight: 600, 
-                  fontSize: 13, 
+                  borderRadius: 8,
+                  padding: '6px 16px',
+                  fontWeight: 600,
+                  fontSize: 13,
                   cursor: 'pointer',
                   textTransform: 'capitalize',
                   display: 'flex',
@@ -231,8 +231,8 @@ function DashboardPage() {
                   transition: 'all 0.2s ease'
                 }}
               >
-                {user?.publicMetadata?.subscriptionTier && user.publicMetadata.subscriptionTier !== 'free' ? 
-                  (user.publicMetadata.subscriptionTier.replace(/-/g, ' ')) : 
+                {user?.publicMetadata?.subscriptionTier && user.publicMetadata.subscriptionTier !== 'free' ?
+                  (user.publicMetadata.subscriptionTier.replace(/-/g, ' ')) :
                   'Free'}
               </button>
 
@@ -261,9 +261,9 @@ function DashboardPage() {
                     </div>
 
                     <div className="h-2 w-full bg-[#111113] rounded-full overflow-hidden shadow-inner">
-                      <div 
+                      <div
                         className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-1000"
-                        style={{ 
+                        style={{
                           width: `${Math.max(5, Math.min(100, (() => {
                             const expiry = new Date(user.publicMetadata.subscriptionExpiry);
                             const now = new Date();
@@ -271,7 +271,7 @@ function DashboardPage() {
                             const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
                             const maxDays = days > 30 ? 60 : 30;
                             return (days / maxDays) * 100;
-                          })()))}%` 
+                          })()))}%`
                         }}
                       />
                     </div>
@@ -285,7 +285,7 @@ function DashboardPage() {
                       </p>
                     </div>
 
-                    <button 
+                    <button
                       onClick={() => window.location.href = '/price'}
                       className="mt-2 w-full py-2 bg-[#2c2c35] hover:bg-[#3b3350]/30 text-white text-[12px] font-medium rounded-lg border border-[#3b3350]/20 transition-colors"
                     >
@@ -385,17 +385,17 @@ function DashboardPage() {
                   {/* --- NEW: Graph and Events Layout --- */}
                   <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
                     <div className="lg:col-span-8 h-full">
-                      <DashboardContributionGraph2 
-                        data={analyticsData} 
-                        selectedYear={selectedYear} 
-                        setSelectedYear={setSelectedYear} 
+                      <DashboardContributionGraph2
+                        data={analyticsData}
+                        selectedYear={selectedYear}
+                        setSelectedYear={setSelectedYear}
                       />
                     </div>
                     <div className="lg:col-span-4 h-full">
                       <UpcomingEvents />
                     </div>
                   </div>
-                  
+
                   <WelcomeSection onCreateSession={() => {
                     if (tier === 'free') {
                       showUpgradeToast("Mock Interviews require Code Rooms. Upgrade to unlock.");
@@ -403,21 +403,21 @@ function DashboardPage() {
                       setShowCreateModal(true);
                     }
                   }} />
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full items-stretch">
-                  
-                  <div className="lg:col-span-4 h-full">
-                    <RecommendedConnections />
-                  </div>
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full items-stretch">
 
-                  <div className="lg:col-span-8 h-full">
-                    <ActiveSessions 
-                      sessions={activeSessions} 
-                      isLoading={loadingActiveSessions} 
-                      isUserInSession={isUserInSession} 
-                    />
+                    <div className="lg:col-span-4 h-full">
+                      <RecommendedConnections />
+                    </div>
+
+                    <div className="lg:col-span-8 h-full">
+                      <ActiveSessions
+                        sessions={activeSessions}
+                        isLoading={loadingActiveSessions}
+                        isUserInSession={isUserInSession}
+                      />
+                    </div>
+
                   </div>
-                  
-                </div>
                   <RecentSessions sessions={recentSessions} isLoading={loadingRecentSessions} />
                 </>
               )}

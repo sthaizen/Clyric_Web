@@ -56,6 +56,10 @@ async function buildLeaderboard({ search = "", page = 1, limit = 50 }) {
         currentStreak: { $max: "$streakSnapshot.currentStreak" },
         longestStreak: { $max: "$streakSnapshot.longestStreak" },
         lastSolvedAt: { $max: "$lastSolvedAt" },
+        jsUsage: { $sum: "$languageUsage.javascript" },
+        pyUsage: { $sum: "$languageUsage.python" },
+        javaUsage: { $sum: "$languageUsage.java" },
+        cppUsage: { $sum: "$languageUsage.cpp" },
       },
     },
     {
@@ -112,6 +116,18 @@ async function buildLeaderboard({ search = "", page = 1, limit = 50 }) {
   let leaderboard = userStats
     .map((stat) => {
       const user = userMap.get(stat._id);
+      const usages = [
+        { lang: "javascript", count: stat.jsUsage || 0 },
+        { lang: "python", count: stat.pyUsage || 0 },
+        { lang: "java", count: stat.javaUsage || 0 },
+        { lang: "cpp", count: stat.cppUsage || 0 },
+      ];
+      const topLanguages = usages
+        .filter(u => u.count > 0)
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 3)
+        .map(u => u.lang);
+
       return {
         clerkId: stat._id,
         name: user?.nickname || user?.name || null,
@@ -129,6 +145,7 @@ async function buildLeaderboard({ search = "", page = 1, limit = 50 }) {
         currentStreak: stat.currentStreak,
         longestStreak: stat.longestStreak,
         lastSolvedAt: stat.lastSolvedAt,
+        topLanguages: topLanguages,
         _hasUser: !!user,
       };
     })
