@@ -4,102 +4,27 @@ import {
   ArrowLeft, ArrowRight, ExternalLink, Info, AlertTriangle,
   Lightbulb, CheckCircle, Code2, Copy, Check, Hash,
   Home, Zap, User, LayoutDashboard, HelpCircle, CreditCard,
-  Shield, Settings, Users, MessageSquare, Star, FileQuestion
+  Shield, Settings, Users, MessageSquare, Star, FileQuestion,
+  Terminal, Layers, Monitor, PlayCircle, Globe, Cpu, Github,
+  Box, MousePointer2, Lock, Activity, Sparkles
 } from "lucide-react";
 import MonacoEditor from "@monaco-editor/react";
 
 import { docsApi } from "../api/docsApi";
+import Navbar from "../components/Navbar";
 
-// ─── Step Component ────────────────────────────────────────────────────────────
-const Step = ({ number, title, children }) => (
-  <div className="flex gap-4 my-4">
-    <div className="w-7 h-7 rounded-full bg-slate-900 text-white text-[12px] font-black flex items-center justify-center shrink-0 mt-0.5">
-      {number}
-    </div>
-    <div className="flex-1 min-w-0">
-      {title && <p className="text-[15px] font-bold text-slate-900 mb-1">{title}</p>}
-      {children && <p className="docs-p" style={{ whiteSpace: "pre-wrap" }}>{children}</p>}
-    </div>
-  </div>
-);
-
-// ─── Callout Component ─────────────────────────────────────────────────────────
-const CALLOUT_STYLES = {
-  info:    { bg: "#eff6ff", border: "#bfdbfe", icon: Info,         color: "#1d4ed8", label: "Info" },
-  warning: { bg: "#fffbeb", border: "#fcd34d", icon: AlertTriangle, color: "#b45309", label: "Warning" },
-  tip:     { bg: "#f0fdf4", border: "#86efac", icon: Lightbulb,    color: "#15803d", label: "Tip" },
-  success: { bg: "#f0fdf4", border: "#86efac", icon: CheckCircle,  color: "#15803d", label: "Success" },
-};
-const Callout = ({ type = "info", title, children }) => {
-  const s = CALLOUT_STYLES[type] || CALLOUT_STYLES.info;
-  const Icon = s.icon;
-  return (
-    <div style={{ background: s.bg, border: `1px solid ${s.border}`, borderRadius: 12, padding: "14px 18px", margin: "20px 0", display: "flex", gap: 12 }}>
-      <Icon style={{ color: s.color, width: 18, height: 18, flexShrink: 0, marginTop: 2 }} />
-      <div>
-        {title && <p style={{ fontWeight: 700, color: s.color, fontSize: 14, marginBottom: 4 }}>{title}</p>}
-        <p style={{ color: "#374151", fontSize: 14, lineHeight: 1.7, margin: 0 }}>{children}</p>
-      </div>
-    </div>
-  );
-};
-
-// ─── CodeBlock Component (Monaco read-only) ────────────────────────────────────
-const CodeBlock = ({ language = "bash", children }) => {
-  const [copied, setCopied] = useState(false);
-  const code = (children || "").trim();
-  const lineCount = code.split("\n").length;
-  const height = Math.max(56, Math.min(lineCount * 19 + 24, 480));
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(code);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
-  };
-
-  return (
-    <div style={{ margin: "20px 0", borderRadius: 14, overflow: "hidden", border: "1px solid #1e293b" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", background: "#0f172a", padding: "8px 14px" }}>
-        <span style={{ fontSize: 11, fontWeight: 700, color: "#64748b", textTransform: "uppercase", letterSpacing: "0.08em" }}>{language}</span>
-        <button
-          onClick={handleCopy}
-          style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, fontWeight: 700, color: copied ? "#34d399" : "#64748b", background: "none", border: "none", cursor: "pointer", padding: "2px 6px", borderRadius: 6, transition: "color 0.15s" }}
-        >
-          {copied ? <Check style={{ width: 12, height: 12 }} /> : <Copy style={{ width: 12, height: 12 }} />}
-          {copied ? "Copied" : "Copy"}
-        </button>
-      </div>
-      <MonacoEditor
-        height={height}
-        language={language === "bash" ? "shell" : language}
-        value={code}
-        theme="vs-dark"
-        options={{
-          readOnly: true,
-          minimap: { enabled: false },
-          scrollBeyondLastLine: false,
-          fontSize: 13,
-          lineNumbers: "on",
-          renderLineHighlight: "none",
-          folding: false,
-          contextmenu: false,
-          scrollbar: { vertical: "hidden", horizontal: "auto" },
-          overviewRulerLanes: 0,
-          hideCursorInOverviewRuler: true,
-          overviewRulerBorder: false,
-          padding: { top: 10, bottom: 10 },
-        }}
-      />
-    </div>
-  );
-};
+// Extracted Components
+import { Step, Callout, CodeBlock } from "../components/Docs/DocsComponents";
+import { DocsFeatureContent } from "../components/Docs/DocsFeatureContent";
 
 // ─── Dynamic Article Renderer ───────────────────────────────────────────────────
 const DynamicSection = ({ section }) => {
   if (section.heading) {
     return (
       <>
-        <h2 id={section.id} className="docs-h2">{section.heading}</h2>
+        <h2 id={section.id} className="text-[26px] font-bold text-zinc-100 mt-15 mb-5 tracking-tight scroll-mt-24 after:content-[''] after:block after:w-10 after:h-[3px] after:bg-zinc-100 after:mt-3 after:rounded-full after:opacity-20">
+          {section.heading}
+        </h2>
         <SectionContent section={section} />
       </>
     );
@@ -110,19 +35,19 @@ const DynamicSection = ({ section }) => {
 const SectionContent = ({ section }) => {
   switch (section.type) {
     case "text":
-      return <p className="docs-p" style={{ whiteSpace: "pre-wrap" }}>{section.content}</p>;
-    
+      return <p className="mb-5 text-zinc-400 leading-relaxed text-[16px]">{section.content}</p>;
+
     case "steps":
       return (
-        <>
+        <div className="my-8">
           {section.steps?.map((s, i) => (
             <Step key={s.id} number={i + 1} title={s.title}>
               {s.content}
             </Step>
           ))}
-        </>
+        </div>
       );
-      
+
     case "callout":
       return (
         <Callout type={section.calloutType || "info"} title={section.title}>
@@ -139,25 +64,28 @@ const SectionContent = ({ section }) => {
 
     case "image":
       return (
-        <div className="docs-screenshot-container">
-          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-2 flex items-center justify-center overflow-hidden">
+        <div className="my-8 group">
+          <div className="bg-white/5 border border-white/10 rounded-3xl p-3 flex items-center justify-center overflow-hidden transition-all group-hover:border-white/20">
             {section.imageUrl ? (
-              <img src={section.imageUrl} alt={section.altText || section.caption} className="max-w-full rounded-xl" />
+              <img src={section.imageUrl} alt={section.altText || section.caption} className="max-w-full rounded-2xl shadow-sm" />
             ) : (
-              <div className="py-12 text-slate-300">Image missing</div>
+              <div className="py-20 text-zinc-600 italic flex flex-col items-center gap-3">
+                <Monitor className="w-10 h-10 opacity-20" />
+                Image missing
+              </div>
             )}
           </div>
-          {section.caption && <p className="docs-caption">{section.caption}</p>}
+          {section.caption && <p className="text-center text-sm text-zinc-500 mt-3">{section.caption}</p>}
         </div>
       );
 
     case "faq":
       return (
-        <div className="space-y-4 my-6">
+        <div className="space-y-4 my-8">
           {section.faqs?.map((f) => (
-            <div key={f.id} className="bg-slate-50 rounded-xl p-5 border border-slate-100">
-              <p className="text-[15px] font-bold text-slate-900 mb-2">{f.question}</p>
-              <p className="docs-p mb-0">{f.answer}</p>
+            <div key={f.id} className="bg-white/5 rounded-2xl p-6 border border-white/10 hover:border-white/20 transition-all backdrop-blur-sm">
+              <p className="text-[16px] font-bold text-zinc-100 mb-3">{f.question}</p>
+              <p className="text-[15px] text-zinc-400 mb-0 leading-relaxed">{f.answer}</p>
             </div>
           ))}
         </div>
@@ -169,23 +97,24 @@ const SectionContent = ({ section }) => {
 };
 
 const ArticleBody = ({ page }) => {
-  if (!page) return <div className="py-12 text-slate-400">Page not found.</div>;
+  if (!page) return <div className="py-20 text-zinc-600 text-center flex flex-col items-center gap-3"><HelpCircle className="w-10 h-10 opacity-20" />Page not found.</div>;
   if (!page.sections || page.sections.length === 0) {
-    return <div className="py-12 text-slate-400">This page has no content yet.</div>;
+    return <div className="py-20 text-zinc-600 text-center italic">This page has no content yet.</div>;
   }
   return (
-    <div className="docs-article-body">
+    <div className="text-zinc-300">
       {page.sections.map(sec => <DynamicSection key={sec.id} section={sec} />)}
     </div>
   );
 };
 
-// ─── Main Public Docs Page ─────────────────────────────────────────────────
+// ─── Main Public DocsPage Redesign ─────────────────────────────────────────────────
 export default function DocsPage() {
-  // Load mock DB from localStorage
   const [dbCategories, setDbCategories] = useState([]);
   const [dbPages, setDbPages] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeSlug, setActiveSlug] = useState("");
+  const [isHome, setIsHome] = useState(true);
 
   useEffect(() => {
     const fetchDocs = async () => {
@@ -201,7 +130,9 @@ export default function DocsPage() {
           .map(c => ({
             id: c.slug || c.name,
             label: c.name,
-            icon: FileQuestion,
+            icon: c.name.toLowerCase().includes("getting started") ? Zap :
+              c.name.toLowerCase().includes("ui") ? Box :
+                c.name.toLowerCase().includes("sdks") ? Terminal : FileQuestion,
             pages: pgs
               .filter(p => p.category?.toLowerCase() === c.name?.toLowerCase())
               .sort((a, b) => (Number(a.sortOrder) || 999) - (Number(b.sortOrder) || 999))
@@ -215,6 +146,13 @@ export default function DocsPage() {
 
         setDbCategories(structuredCats);
         setDbPages(pgs);
+
+        const path = window.location.pathname;
+        const slugMatch = path.match(/\/docs\/(.+)/);
+        if (slugMatch) {
+          setActiveSlug(slugMatch[1]);
+          setIsHome(false);
+        }
       } catch (err) {
         console.error("Failed to load documents", err);
       } finally {
@@ -223,14 +161,6 @@ export default function DocsPage() {
     };
     fetchDocs();
   }, []);
-
-  // Determine active page
-  const [activeSlug, setActiveSlug] = useState("");
-  useEffect(() => {
-    if (!activeSlug && dbCategories.length > 0 && dbCategories[0].pages.length > 0) {
-      setActiveSlug(dbCategories[0].pages[0].slug);
-    }
-  }, [dbCategories, activeSlug]);
 
   const activePageData = dbPages.find(p => p.slug === activeSlug);
 
@@ -244,6 +174,13 @@ export default function DocsPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeSection, setActiveSection] = useState("");
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const toggleCategory = (id) => {
     setExpandedCategories(prev =>
@@ -251,13 +188,33 @@ export default function DocsPage() {
     );
   };
 
-  const navigateTo = (slug) => {
+  const scrollToId = (id) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  const navigateTo = (slug, targetId = null) => {
+    if (slug === "" || slug === "home") {
+      setIsHome(true);
+      setActiveSlug("");
+      setSidebarOpen(false);
+      setActiveSection(targetId || "");
+      if (targetId) {
+        setTimeout(() => scrollToId(targetId), 100);
+      } else {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      return;
+    }
     setActiveSlug(slug);
+    setIsHome(false);
     setSidebarOpen(false);
+    setActiveSection("");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Filter search
   const filteredCategories = dbCategories.map(cat => ({
     ...cat,
     pages: cat.pages.filter(p =>
@@ -265,488 +222,370 @@ export default function DocsPage() {
     )
   })).filter(cat => cat.pages.length > 0);
 
-  // Compute Prev / Next
   let prevPage = null;
   let nextPage = null;
   let allPagesFlat = [];
   dbCategories.forEach(c => {
     c.pages.forEach(p => { allPagesFlat.push(p); });
   });
-  
+
   const currentIndex = allPagesFlat.findIndex(p => p.slug === activeSlug);
   if (currentIndex > 0) prevPage = allPagesFlat[currentIndex - 1];
   if (currentIndex !== -1 && currentIndex < allPagesFlat.length - 1) nextPage = allPagesFlat[currentIndex + 1];
 
-  // Dynamic TOC
   const articleToc = activePageData?.sections
     ?.filter(s => s.heading)
     ?.map(s => ({ id: s.id, label: s.heading })) || [];
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f8fafc]">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1a1a2e]"></div>
+      <div className="min-h-screen flex items-center justify-center bg-[#0b0b0c]">
+        <div className="animate-pulse flex flex-col items-center gap-4">
+          <div className="w-12 h-12 bg-white/5 rounded-2xl border border-white/10"></div>
+          <div className="h-4 w-32 bg-white/5 rounded-full"></div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="docs-root">
-      <style>{`
-        .docs-root {
-          font-family: 'Manrope', sans-serif;
-          background: #ffffff;
-          min-height: 100vh;
-          color: #1a1a2e;
-        }
+    <div className="min-h-screen bg-[#0b0b0c] text-zinc-100 font-sans selection:bg-zinc-800">
+      <Navbar forceLight={false} />
 
-        /* ── TOP HEADER ── */
-        .docs-header {
-          position: fixed;
-          top: 0; left: 0; right: 0;
-          height: 60px;
-          background: rgba(255,255,255,0.95);
-          backdrop-filter: blur(12px);
-          border-bottom: 1px solid #f1f1f4;
-          display: flex;
-          align-items: center;
-          padding: 0 24px;
-          gap: 16px;
-          z-index: 100;
-        }
-        .docs-header-brand {
-          display: flex; align-items: center; gap: 10px;
-          text-decoration: none; color: inherit;
-          flex-shrink: 0;
-        }
-        .docs-header-logo-mark {
-          display: flex; flex-direction: column; gap: 2px;
-        }
-        .docs-divider { width: 1px; height: 20px; background: #e5e7eb; flex-shrink: 0; }
-        .docs-badge {
-          font-size: 11px; font-weight: 800; color: #64748b;
-          background: #f1f5f9; padding: 2px 8px; border-radius: 6px;
-          border: 1px solid #e2e8f0; letter-spacing: 0.05em; text-transform: uppercase;
-          flex-shrink: 0;
-        }
-        .docs-search-bar {
-          flex: 1; max-width: 440px; position: relative; display: flex; align-items: center;
-        }
-        .docs-search-input {
-          width: 100%; padding: 8px 14px 8px 36px;
-          background: #f8fafc; border: 1px solid #e2e8f0;
-          border-radius: 10px; font-size: 13px; font-weight: 600;
-          color: #1e293b; outline: none; transition: all 0.15s;
-          font-family: inherit;
-        }
-        .docs-search-input:focus {
-          background: white; border-color: #cbd5e1;
-          box-shadow: 0 0 0 3px rgba(100,116,139,0.08);
-        }
-        .docs-search-icon {
-          position: absolute; left: 10px; color: #94a3b8;
-          display: flex; align-items: center;
-        }
-        .docs-search-kbd {
-          position: absolute; right: 10px;
-          display: flex; align-items: center; gap: 1px;
-          font-size: 10px; font-weight: 800; color: #94a3b8;
-        }
-        .docs-header-actions { margin-left: auto; display: flex; align-items: center; gap: 8px; }
-        .docs-hamburger {
-          display: none; padding: 8px; border-radius: 8px; cursor: pointer;
-          background: none; border: none; color: #64748b;
-        }
+      {/* ── MOBILE OVERLAY ── */}
+      {sidebarOpen && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[49] lg:hidden" onClick={() => setSidebarOpen(false)} />
+      )}
 
-        /* ── LAYOUT ── */
-        .docs-layout {
-          display: flex; padding-top: 60px; min-height: 100vh;
-        }
+      {/* ── MAIN LAYOUT WRAPPER ── */}
+      <div className="flex pt-20 min-h-screen">
 
-        /* ── LEFT SIDEBAR ── */
-        .docs-sidebar {
-          width: 260px; flex-shrink: 0; position: fixed;
-          top: 60px; left: 0; bottom: 0;
-          overflow-y: auto; padding: 24px 12px 40px;
-          border-right: 1px solid #f1f5f9;
-          background: #fafbfc;
-          scrollbar-width: thin;
-          scrollbar-color: rgba(0,0,0,0.1) transparent;
-          z-index: 50;
-          transition: transform 0.25s ease;
-        }
-        .docs-sidebar::-webkit-scrollbar { width: 4px; }
-        .docs-sidebar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.1); border-radius: 99px; }
-
-        .docs-sidebar-section { margin-bottom: 8px; }
-        .docs-sidebar-section-header {
-          display: flex; align-items: center; gap: 8px;
-          padding: 6px 12px; border-radius: 8px; cursor: pointer;
-          font-size: 12px; font-weight: 800; color: #64748b;
-          text-transform: uppercase; letter-spacing: 0.08em;
-          border: none; background: none; width: 100%;
-          transition: all 0.1s; user-select: none;
-        }
-        .docs-sidebar-section-header:hover { background: #f1f5f9; color: #1e293b; }
-        .docs-sidebar-pages { padding-left: 8px; margin-top: 2px; }
-        .docs-sidebar-link {
-          display: flex; align-items: center; gap-8px;
-          padding: 6px 12px; border-radius: 8px; cursor: pointer;
-          font-size: 13px; font-weight: 600; color: #64748b;
-          border: none; background: none; width: 100%;
-          text-align: left; transition: all 0.12s;
-          margin-bottom: 1px; position: relative;
-        }
-        .docs-sidebar-link:hover { background: #f1f5f9; color: #1e293b; }
-        .docs-sidebar-link.active {
-          background: #fff; color: #1e293b; font-weight: 700;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.06), 0 0 0 1px #e2e8f0;
-        }
-        .docs-sidebar-link.active::before {
-          content: ''; position: absolute; left: 0; top: 6px; bottom: 6px;
-          width: 3px; background: #f97316; border-radius: 0 2px 2px 0;
-        }
-
-        /* ── MAIN CONTENT ── */
-        .docs-main {
-          flex: 1; margin-left: 260px;
-          display: flex; justify-content: center;
-          padding: 0 24px;
-        }
-        .docs-content-wrapper {
-          width: 100%; max-width: 720px;
-          padding: 40px 0 80px;
-        }
-
-        /* Breadcrumb */
-        .docs-breadcrumb {
-          display: flex; align-items: center; gap: 6px;
-          font-size: 12px; color: #94a3b8; font-weight: 600;
-          margin-bottom: 20px;
-        }
-        .docs-breadcrumb span { cursor: pointer; }
-        .docs-breadcrumb span:hover { color: #1e293b; }
-
-        /* Article Header */
-        .docs-article-header { margin-bottom: 40px; }
-        .docs-article-title {
-          font-size: 30px; font-weight: 800; color: #0f172a;
-          letter-spacing: -0.02em; line-height: 1.2; margin-bottom: 12px;
-        }
-        .docs-article-desc {
-          font-size: 16px; color: #64748b; line-height: 1.7;
-          font-weight: 500; border-bottom: 1px solid #f1f5f9; padding-bottom: 32px;
-        }
-
-        /* Article Body Typography */
-        .docs-article-body { font-size: 15px; line-height: 1.8; color: #374151; }
-        .docs-h2 {
-          font-size: 20px; font-weight: 800; color: #0f172a;
-          margin-top: 40px; margin-bottom: 12px; letter-spacing: -0.01em;
-          scroll-margin-top: 80px; padding-top: 4px;
-        }
-        .docs-p { margin-bottom: 16px; color: #4b5563; line-height: 1.8; }
-        .docs-list { margin-bottom: 16px; padding-left: 20px; }
-        .docs-list li { margin-bottom: 10px; color: #4b5563; line-height: 1.7; }
-        .docs-list li strong { color: #1e293b; }
-        .docs-inline-code {
-          background: #f1f5f9; border: 1px solid #e2e8f0;
-          border-radius: 5px; padding: 2px 6px;
-          font-family: 'Fira Code', 'Courier New', monospace;
-          font-size: 12px; color: #e11d48;
-        }
-
-        /* Screenshot placeholder */
-        .docs-screenshot-container { margin: 28px 0; }
-        .docs-screenshot-placeholder {
-          background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-          border: 1px solid #e2e8f0; border-radius: 16px;
-          padding: 48px 24px; text-align: center;
-          display: flex; flex-direction: column; align-items: center; justify-content: center;
-          min-height: 200px;
-        }
-        .docs-caption {
-          font-size: 12px; color: #94a3b8; text-align: center;
-          margin-top: 10px; font-weight: 600; font-style: italic;
-        }
-
-        /* Feature Cards */
-        .docs-cards-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0; }
-        .docs-feature-card {
-          background: #f8fafc; border: 1px solid #e2e8f0;
-          border-radius: 12px; padding: 16px;
-        }
-
-        /* Nav Footer */
-        .docs-nav-footer {
-          display: flex; justify-content: space-between; align-items: center;
-          margin-top: 64px; padding-top: 24px; border-top: 1px solid #f1f5f9;
-          gap: 16px;
-        }
-        .docs-nav-btn {
-          display: flex; align-items: center; gap: 10px;
-          padding: 14px 20px; border: 1px solid #e2e8f0;
-          border-radius: 12px; cursor: pointer; background: white;
-          text-align: left; transition: all 0.15s; text-decoration: none; flex: 1;
-          max-width: 260px;
-        }
-        .docs-nav-btn:hover { border-color: #cbd5e1; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
-        .docs-nav-btn.next { margin-left: auto; text-align: right; flex-direction: row-reverse; }
-        .docs-nav-label { font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.06em; }
-        .docs-nav-title { font-size: 14px; font-weight: 700; color: #1e293b; }
-
-        /* RIGHT TOC */
-        .docs-toc {
-          width: 220px; flex-shrink: 0; position: sticky; top: 80px;
-          padding: 0 0 40px; align-self: flex-start;
-          display: none;
-        }
-        .docs-toc-title {
-          font-size: 11px; font-weight: 800; color: #94a3b8;
-          text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px;
-        }
-        .docs-toc-link {
-          display: flex; align-items: center; gap: 8px;
-          font-size: 12px; font-weight: 600; color: #94a3b8;
-          padding: 5px 0; cursor: pointer; transition: color 0.1s;
-          text-decoration: none;
-        }
-        .docs-toc-link:hover, .docs-toc-link.active { color: #1e293b; }
-        .docs-toc-link.active { font-weight: 700; }
-        .docs-toc-dot {
-          width: 5px; height: 5px; border-radius: 50%;
-          background: #e2e8f0; flex-shrink: 0; transition: background 0.1s;
-        }
-        .docs-toc-link.active .docs-toc-dot { background: #f97316; }
-
-        /* Mobile overlay */
-        .docs-sidebar-overlay {
-          display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 49;
-        }
-
-        @media (min-width: 1200px) {
-          .docs-toc { display: block; }
-          .docs-main { padding: 0 24px 0 0; }
-          .docs-content-wrapper { max-width: 680px; }
-        }
-
-        @media (max-width: 768px) {
-          .docs-sidebar { transform: translateX(-100%); }
-          .docs-sidebar.open { transform: translateX(0); }
-          .docs-sidebar-overlay.open { display: block; }
-          .docs-hamburger { display: flex; }
-          .docs-main { margin-left: 0; }
-          .docs-article-title { font-size: 24px; }
-          .docs-cards-grid { grid-template-columns: 1fr; }
-          .docs-search-bar { max-width: 260px; }
-          .docs-badge { display: none; }
-        }
-      `}</style>
-
-      {/* ── HEADER ── */}
-      <header className="docs-header">
-        <button className="docs-hamburger" onClick={() => setSidebarOpen(true)}>
-          <Menu className="w-5 h-5" />
-        </button>
-
-        <a href="/" className="docs-header-brand">
-          <div className="docs-header-logo-mark">
-            <div style={{ width: 21, height: 6, background: "#0f172a", borderRadius: 2 }}></div>
-            <div style={{ display: "flex", gap: 3 }}>
-              <div style={{ width: 6, height: 6, background: "#0f172a", borderRadius: 2 }}></div>
-              <div style={{ width: 16, height: 6, background: "#f97316", borderRadius: 2 }}></div>
-            </div>
-            <div style={{ display: "flex", gap: 3 }}>
-              <div style={{ width: 13, height: 6 }}></div>
-              <div style={{ width: 9, height: 9, background: "#0f172a", borderRadius: "2px 2px 4px 2px" }}></div>
-            </div>
+        {/* ── SIDEBAR ── */}
+        <aside className={`
+  /* 1. Positioning & Sticky Logic */
+  fixed lg:sticky top-10 left-0 z-50
+  
+  /* 2. Dimensions & Clipping */
+  w-[280px] h-screen shrink-0 
+  
+  /* 3. Smooth Scrolling Logic */
+  overflow-y-auto overflow-x-hidden
+  scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent
+  hover:scrollbar-thumb-white/20
+  
+  /* 4. Visuals & Performance */
+  bg-[#0b0b0c] border-r border-white/5 
+  /* 'transform-gpu' ensures the transition is handled by the graphics card for 60fps smoothness */
+  transition-transform duration-500 ease-in-out transform-gpu
+  
+  /* 5. The Dynamic Offset */
+  /* Starts with a large top padding to simulate being "below" the header.
+     As the page scrolls, the sticky container moves up smoothly. */
+  pt-20 lg:pt-12 px-4 pb-16
+  
+  /* 6. Toggle State */
+  ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+`}>
+          {/* TOP NAVIGATION SECTION */}
+          <div className="flex flex-col gap-1.5 mb-10 shrink-0">
+            {[
+              { label: "Overview", icon: Home, slug: "", active: isHome && activeSection === "" },
+              { label: "Practice Problems", icon: Code2, slug: "problem-library", active: isHome && activeSection === "problem-library" },
+              { label: "Collaboration", icon: Users, slug: "collaborative-ide", active: isHome && activeSection === "collaborative-ide" },
+              { label: "Performance", icon: Activity, slug: "skill-analytics", active: isHome && activeSection === "skill-analytics" },
+            ].map((item) => (
+              <button
+                key={item.label}
+                onClick={() => navigateTo("", item.slug)}
+                className={`
+          group flex items-center gap-3 px-4 py-2.5 rounded-xl text-[14px] font-semibold
+          transition-all duration-200 ease-out active:scale-[0.98]
+          ${item.active
+                    ? "bg-white text-[#0b0b0c] shadow-lg shadow-white/5"
+                    : "text-zinc-500 hover:text-zinc-100 hover:bg-white/[0.06]"}
+        `}
+              >
+                <item.icon className={`w-4 h-4 transition-colors ${item.active ? "text-[#0b0b0c]" : "text-zinc-500 group-hover:text-zinc-200"}`} />
+                {item.label}
+              </button>
+            ))}
           </div>
-          <span style={{ fontWeight: 900, fontSize: 15, color: "#0f172a", letterSpacing: "-0.02em" }}>CLYRIC</span>
-        </a>
 
-        <div className="docs-divider"></div>
-        <span className="docs-badge">Docs</span>
+          {/* DYNAMIC CATEGORIES SECTION */}
+          <div className="space-y-2">
+            {filteredCategories.map(category => {
+              const Icon = category.icon;
+              const isEx = expandedCategories.includes(category.id);
+              return (
+                <div key={category.id} className="group/cat">
+                  <button
+                    className="flex items-center gap-2.5 px-3 py-2 rounded-lg cursor-pointer text-[11px] font-bold text-zinc-500 uppercase tracking-[0.1em] w-full hover:text-zinc-200 transition-colors select-none"
+                    onClick={() => toggleCategory(category.id)}
+                  >
+                    <Icon className="w-3.5 h-3.5 text-zinc-600 group-hover/cat:text-zinc-400 transition-colors" />
+                    <span className="flex-1 text-left">{category.label}</span>
+                    <ChevronRight className={`w-3.5 h-3.5 transition-all duration-300 ${isEx ? "rotate-90 opacity-100 text-zinc-300" : "opacity-30"}`} />
+                  </button>
 
-        <div className="docs-search-bar">
-          <span className="docs-search-icon">
-            <Search className="w-4 h-4" />
-          </span>
-          <input
-            type="text"
-            className="docs-search-input"
-            placeholder="Search documentation..."
-            value={searchQuery}
-            onChange={e => setSearchQuery(e.target.value)}
-          />
-          <span className="docs-search-kbd">
-            <span>⌘</span><span>K</span>
-          </span>
-        </div>
-
-        <div className="docs-header-actions">
-          <a
-            href="/"
-            style={{
-              fontSize: 13, fontWeight: 700, color: "#64748b",
-              textDecoration: "none", padding: "6px 12px",
-              borderRadius: 8, transition: "all 0.1s"
-            }}
-            onMouseEnter={e => e.target.style.color = "#1e293b"}
-            onMouseLeave={e => e.target.style.color = "#64748b"}
-          >
-            Sign In
-          </a>
-          <a
-            href="/"
-            style={{
-              fontSize: 13, fontWeight: 700, color: "white",
-              background: "#0f172a", padding: "7px 16px",
-              borderRadius: 9, textDecoration: "none"
-            }}
-          >
-            Get Started →
-          </a>
-        </div>
-      </header>
-
-      {/* ── SIDEBAR MOBILE OVERLAY ── */}
-      <div
-        className={`docs-sidebar-overlay ${sidebarOpen ? "open" : ""}`}
-        onClick={() => setSidebarOpen(false)}
-      />
-
-      <div className="docs-layout">
-        {/* ── LEFT SIDEBAR ── */}
-        <nav className={`docs-sidebar ${sidebarOpen ? "open" : ""}`}>
-          {/* Home link */}
-          <a
-            href="/"
-            style={{
-              display: "flex", alignItems: "center", gap: 8,
-              padding: "6px 12px", borderRadius: 8, marginBottom: 16,
-              fontSize: 13, fontWeight: 700, color: "#64748b",
-              textDecoration: "none", transition: "all 0.1s"
-            }}
-          >
-            <Home className="w-4 h-4" />
-            Home
-          </a>
-
-          {filteredCategories.map(category => {
-            const CategoryIcon = category.icon;
-            const isExpanded = expandedCategories.includes(category.id);
-            return (
-              <div key={category.id} className="docs-sidebar-section">
-                <button
-                  className="docs-sidebar-section-header"
-                  onClick={() => toggleCategory(category.id)}
-                >
-                  <CategoryIcon className="w-3.5 h-3.5" strokeWidth={2.5} />
-                  <span style={{ flex: 1, textAlign: "left" }}>{category.label}</span>
-                  {isExpanded
-                    ? <ChevronDown className="w-3.5 h-3.5 opacity-50" />
-                    : <ChevronRight className="w-3.5 h-3.5 opacity-50" />
-                  }
-                </button>
-
-                {isExpanded && (
-                  <div className="docs-sidebar-pages">
-                    {category.pages.map(page => (
-                      <button
-                        key={page.id}
-                        className={`docs-sidebar-link ${activeSlug === page.slug ? "active" : ""}`}
-                        onClick={() => navigateTo(page.slug)}
-                      >
-                        {page.label}
-                      </button>
-                    ))}
+                  {/* Smooth Dropdown Animation */}
+                  <div className={`
+            grid transition-all duration-300 ease-in-out
+            ${isEx ? "grid-rows-[1fr] opacity-100 mt-2" : "grid-rows-[0fr] opacity-0 pointer-events-none"}
+          `}>
+                    <div className="overflow-hidden pl-3 border-l border-white/5 ml-4.5 space-y-1">
+                      {category.pages.map(p => (
+                        <button
+                          key={p.id}
+                          className={`
+                    flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium w-full text-left 
+                    transition-all duration-200 active:scale-[0.97]
+                    ${activeSlug === p.slug
+                              ? "text-white bg-white/10"
+                              : "text-zinc-400 hover:text-zinc-100 hover:bg-white/5"}
+                  `}
+                          onClick={() => navigateTo(p.slug)}
+                        >
+                          {p.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                )}
-              </div>
-            );
-          })}
-        </nav>
+                </div>
+              );
+            })}
+          </div>
+        </aside>
 
         {/* ── MAIN CONTENT ── */}
-        <main className="docs-main">
-          <div className="docs-content-wrapper">
-            {/* Breadcrumb */}
-            <div className="docs-breadcrumb">
-              <span onClick={() => {}}>Docs</span>
-              <ChevronRight className="w-3.5 h-3.5 opacity-50" />
-              <span>{activePageData?.category || "Documentation"}</span>
-              {activePageData?.title && (
-                <>
+        <main className="flex-1 flex justify-center px-8 w-full min-w-0">
+          <div className="w-full max-w-[1040px] pt-15 pb-32">
+            {isHome ? (
+              /* Documentation Home Layout */
+              <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <p className="text-[14px] font-bold text-zinc-500 mb-2 tracking-wide uppercase">Introduction</p>
+                <h1 className="text-4xl sm:text-[40px] font-extrabold text-zinc-100 tracking-tight leading-tight mb-4">
+                  Master coding interviews with Clyric
+                </h1>
+                <p className="text-[19px] text-zinc-400 leading-relaxed font-medium mb-8">
+                  Practice real interview-style problems, track your progress, follow structured study plans, and improve with collaborative coding sessions built for serious preparation.
+                </p>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-15">
+                  <div
+                    className="group bg-[#0b0b0c] border border-white/5 rounded-3xl p-8 transition-all duration-300 ease-in-out flex flex-col gap-4 shadow-sm hover:border-zinc-700 hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/50 cursor-pointer"
+                    onClick={() => navigateTo(dbPages[0]?.slug)}
+                  >
+                    <div className="w-11 h-11 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-zinc-100 transition-colors group-hover:bg-zinc-100 group-hover:text-[#0b0b0c]">
+                      <Zap className="w-5 h-5" />
+                    </div>
+                    <p className="text-[19px] font-bold text-zinc-100">Problems & Practice</p>
+                    <p className="text-[15px] text-zinc-500 leading-relaxed">
+                      Solve carefully curated coding problems across topics and difficulty levels to strengthen your problem-solving skills.
+                    </p>
+                  </div>
+
+                  <div className="group bg-[#0b0b0c] border border-white/5 rounded-3xl p-8 transition-all duration-300 ease-in-out flex flex-col gap-4 shadow-sm hover:border-zinc-700 hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/50 cursor-pointer">
+                    <div className="w-11 h-11 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-zinc-100 transition-colors group-hover:bg-zinc-100 group-hover:text-[#0b0b0c]">
+                      <Box className="w-5 h-5" />
+                    </div>
+                    <p className="text-[19px] font-bold text-zinc-100">Study Plans</p>
+                    <p className="text-[15px] text-zinc-500 leading-relaxed">
+                      Follow guided learning paths designed to help you prepare consistently for placements, interviews, and contests.
+                    </p>
+                  </div>
+
+                  <div
+                    onClick={() => scrollToId("skill-analytics")}
+                    className="group bg-[#0b0b0c] border border-white/5 rounded-3xl p-8 transition-all duration-300 ease-in-out flex flex-col gap-4 shadow-sm hover:border-zinc-700 hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/50 cursor-pointer"
+                  >
+                    <div className="w-11 h-11 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-zinc-100 transition-colors group-hover:bg-zinc-100 group-hover:text-[#0b0b0c]">
+                      <Activity className="w-5 h-5" />
+                    </div>
+                    <p className="text-[19px] font-bold text-zinc-100">Progress Analytics</p>
+                    <p className="text-[15px] text-zinc-500 leading-relaxed">
+                      Track solved problems, streaks, weak topics, and performance insights to stay consistent and improve faster.
+                    </p>
+                  </div>
+
+                  <div
+                    onClick={() => scrollToId("collaborative-ide")}
+                    className="group bg-[#0b0b0c] border border-white/5 rounded-3xl p-8 transition-all duration-300 ease-in-out flex flex-col gap-4 shadow-sm hover:border-zinc-700 hover:-translate-y-1 hover:shadow-2xl hover:shadow-black/50 cursor-pointer"
+                  >
+                    <div className="w-11 h-11 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center text-zinc-100 transition-colors group-hover:bg-zinc-100 group-hover:text-[#0b0b0c]">
+                      <Users className="w-5 h-5" />
+                    </div>
+                    <p className="text-[19px] font-bold text-zinc-100">Collaborative Coding</p>
+                    <p className="text-[15px] text-zinc-500 leading-relaxed">
+                      Practice together with friends or peers in live coding sessions, share ideas, and prepare for real interview environments.
+                    </p>
+                  </div>
+                </div>
+
+
+                <div className="mt-15">
+                  <h2 className="text-[26px] font-bold text-zinc-100 mb-10 tracking-tight">Explore by feature</h2>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
+                    <div onClick={() => scrollToId("interview-simulator")} className="flex gap-5 group cursor-pointer">
+                      <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover:border-zinc-700 transition-colors">
+                        <Monitor className="w-6 h-6 text-zinc-400 group-hover:text-zinc-100 transition-colors" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-[16px] font-bold text-zinc-100 mb-1">Interview Simulator</p>
+                        <p className="text-[14px] leading-relaxed text-zinc-500">Experience realistic technical assessment environments with built-in evaluation tools and session recording.</p>
+                      </div>
+                    </div>
+
+                    <div onClick={() => scrollToId("collaborative-ide")} className="flex gap-5 group cursor-pointer">
+                      <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover:border-zinc-700 transition-colors">
+                        <Users className="w-6 h-6 text-zinc-400 group-hover:text-zinc-100 transition-colors" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-[16px] font-bold text-zinc-100 mb-1">Collaborative IDE</p>
+                        <p className="text-[14px] leading-relaxed text-zinc-500">Pair program in real-time with zero-latency synchronization, shared terminal access, and integrated video calls.</p>
+                      </div>
+                    </div>
+
+                    <div onClick={() => scrollToId("problem-library")} className="flex gap-5 group cursor-pointer">
+                      <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover:border-zinc-700 transition-colors">
+                        <Code2 className="w-6 h-6 text-zinc-400 group-hover:text-zinc-100 transition-colors" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-[16px] font-bold text-zinc-100 mb-1">Problem Library</p>
+                        <p className="text-[14px] leading-relaxed text-zinc-500">Access thousands of curated coding challenges across all data structures and algorithms with verified solutions.</p>
+                      </div>
+                    </div>
+
+                    <div onClick={() => scrollToId("skill-analytics")} className="flex gap-5 group cursor-pointer">
+                      <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover:border-zinc-700 transition-colors">
+                        <Activity className="w-6 h-6 text-zinc-400 group-hover:text-zinc-100 transition-colors" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-[16px] font-bold text-zinc-100 mb-1">Skill Analytics</p>
+                        <p className="text-[14px] leading-relaxed text-zinc-500">Get deep AI-driven insights into your coding speed, accuracy, and logic to identify exactly where you need to improve.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-15 ">
+                  <h2 className="text-[26px] font-bold text-zinc-100 mb-10 tracking-tight">Explore by language</h2>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-12">
+                    <div className="flex gap-4 group cursor-pointer">
+                      <div className="w-10 h-10 shrink-0 flex items-center justify-center">
+                        <img src="/javascript.png" alt="JavaScript" className="w-8 h-8 object-contain transition-transform group-hover:scale-110" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-[16px] font-bold text-zinc-100 mb-1">JavaScript</p>
+                        <p className="text-[14px] leading-relaxed text-zinc-500">The standard for web development and Clyric's primary integration language for real-time apps.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-4 group cursor-pointer">
+                      <div className="w-10 h-10 shrink-0 flex items-center justify-center">
+                        <img src="/python.png" alt="Python" className="w-8 h-8 object-contain transition-transform group-hover:scale-110" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-[16px] font-bold text-zinc-100 mb-1">Python</p>
+                        <p className="text-[14px] leading-relaxed text-zinc-500">Deep dive into algorithmic data structures with our optimized Python interpreter and debugging tools.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-4 group cursor-pointer">
+                      <div className="w-10 h-10 shrink-0 flex items-center justify-center">
+                        <img src="/java.png" alt="Java" className="w-8 h-8 object-contain transition-transform group-hover:scale-110" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-[16px] font-bold text-zinc-100 mb-1">Java</p>
+                        <p className="text-[14px] leading-relaxed text-zinc-500">Robust, enterprise-grade problem solving with full Java 17+ support and automated JVM testing.</p>
+                      </div>
+                    </div>
+
+                    <div className="flex gap-4 group cursor-pointer">
+                      <div className="w-10 h-10 shrink-0 flex items-center justify-center">
+                        <img src="/c++.png" alt="C++" className="w-8 h-8 object-contain transition-transform group-hover:scale-110" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-[16px] font-bold text-zinc-100 mb-1">C++</p>
+                        <p className="text-[14px] leading-relaxed text-zinc-500">High-performance competitive programming environment with the latest STL features and C++20 support.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Detailed Feature Documentation (In-page) */}
+                <DocsFeatureContent />
+              </div>
+            ) : (
+              /* Standard Article Layout */
+              <div className="animate-in fade-in duration-300">
+                <div className="flex items-center gap-2 text-[14px] font-semibold text-zinc-500 mb-8">
+                  <span>Docs</span>
                   <ChevronRight className="w-3.5 h-3.5 opacity-50" />
-                  <span>{activePageData.title}</span>
-                </>
-              )}
-            </div>
+                  <span className="text-zinc-400">{activePageData?.category}</span>
+                  {activePageData?.title && (
+                    <>
+                      <ChevronRight className="w-3.5 h-3.5 opacity-50" />
+                      <span className="text-zinc-100 font-bold">{activePageData.title}</span>
+                    </>
+                  )}
+                </div>
 
-            {/* Article Header */}
-            <header className="docs-article-header">
-              <h1 className="docs-article-title">{activePageData?.title || "Welcome to Docs"}</h1>
-              <p className="docs-article-desc">{activePageData?.shortDesc || "Select an article from the sidebar to begin reading."}</p>
-            </header>
+                <header className="mb-12">
+                  <h1 className="text-4xl sm:text-[40px] font-extrabold text-zinc-100 tracking-tight leading-tight mb-4">{activePageData?.title || "Documentation"}</h1>
+                  <p className="text-[19px] text-zinc-400 leading-relaxed font-medium mb-8">{activePageData?.shortDesc || "Detailed technical documentation and guides."}</p>
+                </header>
 
-            {/* Article Body */}
-            <ArticleBody page={activePageData} />
+                <ArticleBody page={activePageData} />
 
-            {/* Prev / Next Navigation */}
-            <div className="docs-nav-footer">
-              {prevPage ? (
-                <button
-                  className="docs-nav-btn"
-                  onClick={() => navigateTo(prevPage.slug)}
-                >
-                  <ArrowLeft className="w-4 h-4 text-slate-400 shrink-0" />
-                  <div>
-                    <p className="docs-nav-label">Previous</p>
-                    <p className="docs-nav-title">{prevPage.label}</p>
-                  </div>
-                </button>
-              ) : <div />}
+                {/* Footer Navigation */}
+                <div className="flex justify-between items-center mt-16 pt-8 border-t border-white/10">
+                  {prevPage ? (
+                    <button onClick={() => navigateTo(prevPage.slug)} className="group flex flex-col items-start gap-2 text-left bg-transparent border-none p-0 cursor-pointer">
+                      <span className="text-[12px] font-bold text-zinc-500 uppercase tracking-widest">Previous</span>
+                      <div className="flex items-center gap-3 text-[16px] font-bold text-zinc-100 group-hover:-translate-x-1 transition-transform">
+                        <ArrowLeft className="w-4 h-4" /> {prevPage.label}
+                      </div>
+                    </button>
+                  ) : <div />}
 
-              {nextPage && (
-                <button
-                  className="docs-nav-btn next"
-                  onClick={() => navigateTo(nextPage.slug)}
-                >
-                  <ArrowRight className="w-4 h-4 text-slate-400 shrink-0" />
-                  <div>
-                    <p className="docs-nav-label">Next</p>
-                    <p className="docs-nav-title">{nextPage.label}</p>
-                  </div>
-                </button>
-              )}
-            </div>
+                  {nextPage && (
+                    <button onClick={() => navigateTo(nextPage.slug)} className="group flex flex-col items-end gap-2 text-right bg-transparent border-none p-0 cursor-pointer">
+                      <span className="text-[12px] font-bold text-zinc-500 uppercase tracking-widest">Next</span>
+                      <div className="flex items-center gap-3 text-[16px] font-bold text-zinc-100 group-hover:translate-x-1 transition-transform">
+                        {nextPage.label} <ArrowRight className="w-4 h-4" />
+                      </div>
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* ── RIGHT TOC ── */}
-          <aside className="docs-toc">
-            <p className="docs-toc-title">On this page</p>
-            {articleToc.map((item) => (
-              <a
-                key={item.id}
-                href={`#${item.id}`}
-                className={`docs-toc-link ${activeSection === item.id ? "active" : ""}`}
-                onClick={() => setActiveSection(item.id)}
-              >
-                <span className="docs-toc-dot"></span>
-                {item.label}
-              </a>
-            ))}
+          {!isHome && articleToc.length > 0 && (
+            <aside className="hidden xl:block w-[240px] shrink-0 pt-14 pb-12 self-start h-fit ml-8">
+              <div className="text-[11px] font-extrabold text-zinc-500 uppercase tracking-[0.12em] mb-5 flex items-center gap-2"><Layers className="w-3.5 h-3.5" /> On this page</div>
+              {articleToc.map((item) => (
+                <a
+                  key={item.id}
+                  href={`#${item.id}`}
+                  className={`flex items-center gap-2.5 text-[13px] font-medium py-1.5 cursor-pointer transition-colors border-l-2 pl-4 -ml-px ${activeSection === item.id ? "text-zinc-100 font-bold border-zinc-100" : "text-zinc-500 border-transparent hover:text-zinc-200"}`}
+                >
+                  {item.label}
+                </a>
+              ))}
 
-            <div style={{ marginTop: 32, paddingTop: 20, borderTop: "1px solid #f1f5f9" }}>
-              <p style={{ fontSize: 11, fontWeight: 800, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Resources</p>
-              <a href="/" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: "#64748b", textDecoration: "none", padding: "4px 0" }}>
-                <ExternalLink className="w-3.5 h-3.5" /> Changelog
-              </a>
-              <a href="/" style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 12, fontWeight: 600, color: "#64748b", textDecoration: "none", padding: "4px 0" }}>
-                <ExternalLink className="w-3.5 h-3.5" /> Community
-              </a>
-            </div>
-          </aside>
+              <div className="mt-12 pt-8 border-t border-white/5 flex flex-col gap-4">
+                <a href="/" className="flex items-center gap-3 text-[13px] font-bold text-zinc-500 hover:text-zinc-100 transition-colors">
+                  <Github className="w-4 h-4" /> Edit on GitHub
+                </a>
+                <a href="/" className="flex items-center gap-3 text-[13px] font-bold text-zinc-500 hover:text-zinc-100 transition-colors">
+                  <MessageSquare className="w-4 h-4" /> Community Chat
+                </a>
+              </div>
+            </aside>
+          )}
         </main>
       </div>
     </div>

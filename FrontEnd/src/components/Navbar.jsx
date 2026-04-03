@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import assets from "../assets/assets";
 import { SignInButton, SignedOut, SignedIn, SignOutButton, UserButton } from "@clerk/clerk-react";
-const Navbar = () => {
+const Navbar = ({ forceLight = false }) => {
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
     const [activeMenu, setActiveMenu] = useState(null);
 
-    const isLightMode = activeMenu || isScrolled;
+    const isLightMode = activeMenu || isScrolled || forceLight;
 
     useEffect(() => {
         const handleScroll = () => {
@@ -25,16 +25,15 @@ const Navbar = () => {
     return (
         <>
             <div
-                className={`fixed inset-0 z-40 bg-black/10 backdrop-blur-sm transition-all duration-300 ${activeMenu ? 'opacity-100 visible' : 'opacity-0 invisible'
+                className={`fixed inset-0 z-[90] bg-black/10 backdrop-blur-sm transition-all duration-300 ${activeMenu ? 'opacity-100 visible' : 'opacity-0 invisible'
                     }`}
             />
 
-            <header className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ease-in-out ${isScrolled ? 'py-2' : 'py-4'
-                } ${activeMenu
-                    ? 'bg-[#f0efee] shadow-sm text-gray-900'
-                    : isScrolled
-                        ? 'bg-white/95 backdrop-blur-md shadow-sm text-gray-900'
-                        : 'bg-transparent text-white border-b border-white/20'
+            <header className={`fixed top-0 left-0 w-full z-[100] transition-all duration-300 ease-in-out ${forceLight || activeMenu
+                ? 'bg-white shadow-sm py-4 text-gray-900 border-b border-gray-100'
+                : isScrolled
+                    ? 'bg-white/95 backdrop-blur-md shadow-sm py-2 text-gray-900'
+                    : 'bg-transparent py-4 text-white border-b border-white/20'
                 }`}>
                 <nav className="max-w-[1560px] mx-auto px-6 md:px-5 flex items-center justify-between">
 
@@ -130,11 +129,87 @@ const Navbar = () => {
                             </div>
                         </div>
 
-                        <Link to="/docs" className="text-[13px] font-medium hover:opacity-60 transition-opacity">
-                            Documentation
-                        </Link>
+                        <div
+                            className="h-full flex items-center py-6 -my-6"
+                            onMouseEnter={() => setActiveMenu('integrations')}
+                            onMouseLeave={() => setActiveMenu(null)}
+                        >
+                            <Link to="/docs" className="text-[13px] font-medium hover:opacity-60 transition-opacity">
+                                Documentation
+                            </Link>
 
-                        <Link to="/admin" className="text-[13px] font-medium hover:opacity-60 transition-opacity">
+                            <div
+                                className={`absolute top-full left-0 w-full bg-[#f0efee] text-gray-900 border-t border-black/5 shadow-xl transition-all duration-300 origin-top ${activeMenu === 'integrations' ? 'opacity-100 visible scale-y-100' : 'opacity-0 invisible scale-y-95'
+                                    }`}
+                                style={{ cursor: 'default' }}
+                            >
+                                <div className="max-w-[1580px] mx-auto py-8 px-6 flex gap-6">
+                                    <div className="w-[30%] bg-[#fcfcfc] p-8 rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] flex flex-col justify-center items-start">
+                                        <svg className="w-7 h-7 text-gray-800 mb-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M21 12a6 6 0 11-12 0 6 6 0 0112 0z" />
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a6 6 0 11-12 0 6 6 0 0112 0z" />
+                                        </svg>
+                                        <h3 className="font-medium text-[22px] text-gray-900 mb-2">Discover all features</h3>
+                                        <p className="text-[17px] text-gray-500 leading-relaxed mb-6">Make your interview prep faster and smoother with one clean workflow — problems, mock sessions, and progress tracking.</p>
+                                        <button className="bg-[#18181B] text-white px-6 py-2.5 rounded-full text-[13px] font-medium hover:bg-black transition-colors">
+                                            See all
+                                        </button>
+                                    </div>
+
+                                    <div className="w-[70%] bg-[#ffffff] p-8 rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.02)] grid grid-cols-3 gap-8">
+                                        <div>
+                                            <h4 className="text-[15px] text-gray-500 border-b border-gray-100 pb-3 mb-4 font-medium">Problem practice</h4>
+                                            <div className="flex flex-col gap-2.5">
+                                                {['Topic-wise Problems', 'Difficulty Levels', 'Timed Mode'].map((item) => (
+                                                    <div key={item} className="bg-[#f9fafb] px-4 py-3.5 rounded-xl flex justify-between items-center hover:bg-gray-100 cursor-pointer transition-colors group">
+                                                        <span className="text-[17px] font-medium text-gray-800">{item}</span>
+                                                        <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center group-hover:bg-gray-200 transition-colors shadow-sm">
+                                                            <svg className="w-3 h-3 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <h4 className="text-[15px] text-gray-500 border-b border-gray-100 pb-3 mb-4 font-medium">Live sessions</h4>
+                                            <div className="flex flex-col gap-2.5">
+                                                {['Mock Interviews', 'Screen Share', 'Collaborative Editor'].map((item) => (
+                                                    <div key={item} className="bg-[#f8f9fa] px-4 py-3.5 rounded-xl flex justify-between items-center hover:bg-gray-100 cursor-pointer transition-colors group">
+                                                        <span className="text-[17px] font-medium text-gray-800">{item}</span>
+                                                        <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center group-hover:bg-gray-200 transition-colors shadow-sm">
+                                                            <svg className="w-3 h-3 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <h4 className="text-[15px] text-gray-500 border-b border-gray-100 pb-3 mb-4 font-medium">Progress & profile</h4>
+                                            <div className="flex flex-col gap-2.5">
+                                                {['Session Reviews', 'Skill Insights', 'Leaderboard'].map((item) => (
+                                                    <div key={item} className="bg-[#f8f9fa] px-4 py-3.5 rounded-xl flex justify-between items-center hover:bg-gray-100 cursor-pointer transition-colors group">
+                                                        <span className="text-[17px] font-medium text-gray-800">{item}</span>
+                                                        <div className="w-6 h-6 bg-white rounded-full flex items-center justify-center group-hover:bg-gray-200 transition-colors shadow-sm">
+                                                            <svg className="w-3 h-3 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                                <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 19.5l15-15m0 0H8.25m11.25 0v11.25" />
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <Link to="/customers" className="text-[13px] font-medium hover:opacity-60 transition-opacity">
                             Customers
                         </Link>
                         <Link to="/priceoverview" className="text-[13px] font-medium hover:opacity-60 transition-opacity">
@@ -205,9 +280,9 @@ const Navbar = () => {
 
                 <div className="flex flex-col gap-6 text-white/90 mt-8 text-[15px] font-medium">
                     <Link onClick={() => setSidebarOpen(false)} to="/products" className="hover:text-white transition-colors">Products</Link>
-                    <Link onClick={() => setSidebarOpen(false)} to="/docs" className="hover:text-white transition-colors">Documentation</Link>
+                    <Link onClick={() => setSidebarOpen(false)} to="/integrations" className="hover:text-white transition-colors">Integrations</Link>
                     <Link onClick={() => setSidebarOpen(false)} to="/customers" className="hover:text-white transition-colors">Customers</Link>
-                    <Link onClick={() => setSidebarOpen(false)} to="/priceoverview" className="hover:text-white transition-colors">Pricing</Link>
+                    <Link onClick={() => setSidebarOpen(false)} to="/price" className="hover:text-white transition-colors">Pricing</Link>
                     <Link onClick={() => setSidebarOpen(false)} to="/resources" className="hover:text-white transition-colors">Resources</Link>
 
                     <hr className="border-white/10 my-2" />
