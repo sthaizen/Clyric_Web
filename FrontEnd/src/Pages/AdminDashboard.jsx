@@ -1,14 +1,17 @@
-import React, { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import React, { useState, useEffect } from "react";
+// Forced rebuild to invalidate stale browser bundle 2026-04-02
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import toast from "react-hot-toast";
 import {
-  Sun, Moon, LayoutGrid, Calendar, Mail, FileText, ChevronDown,
+  Sun, Moon, LayoutGrid, Calendar, Mail, FileText, ChevronDown, ChevronRight,
   Users, Layers, HelpCircle, LogOut, Search, Bell, Info, Shield, Activity, Sparkles,
   Settings, MessageSquare, Package, ShoppingCart, BarChart3, Mail as MailIcon,
-  Workflow, Zap as ZapIcon, Globe, Palette, UserPlus, SlidersHorizontal, Share2, MoreHorizontal
+  Workflow, Zap as ZapIcon, Globe, Palette, UserPlus, SlidersHorizontal, Share2, MoreHorizontal,
+  BookOpen, FolderOpen, Image, Plus, LayoutDashboard
 } from "lucide-react";
 import { useClerk, useUser } from "@clerk/clerk-react";
 import { adminApi } from "../api/admin";
+import { docsApi } from "../api/docsApi";
 
 import AdminOverviewTab from "../components/admin/AdminOverviewTab";
 import UserManagementTable from "../components/admin/UserManagementTable";
@@ -17,6 +20,13 @@ import ProblemManager from "../components/admin/ProblemManager";
 import SystemHealthMonitor from "../components/admin/SystemHealthMonitor";
 import QuestManager from "../components/admin/QuestManager";
 import NotificationManager from "../components/admin/NotificationManager";
+
+// Docs module imports
+import DocsDashboard from "../components/admin/docs/DocsDashboard";
+import DocsListPage from "../components/admin/docs/DocsListPage";
+import DocsCreatePage from "../components/admin/docs/DocsCreatePage";
+import DocsCategoryManager from "../components/admin/docs/DocsCategoryManager";
+import DocsMediaLibrary from "../components/admin/docs/DocsMediaLibrary";
 
 // ─── Refined Sidebar Sections ────────────────────────────────────────────────
 const SIDEBAR_SECTIONS = [
@@ -41,6 +51,12 @@ const SIDEBAR_SECTIONS = [
       { id: "problems", label: "Library", icon: FileText },
       { id: "quests", label: "Program", icon: Layers }
     ]
+  },
+  {
+    title: "CONTENT",
+    items: [
+      { id: "docs", label: "Documentation", icon: BookOpen }
+    ]
   }
 ];
 
@@ -63,6 +79,77 @@ export default function AdminDashboard() {
   };
 
   const [activeTab, setActiveTab] = useState("overview");
+  const [docsSubTab, setDocsSubTab] = useState("docs-dashboard"); // docs sub-navigation
+  const [editingDoc, setEditingDoc] = useState(null);
+
+  // ── Backend Documentation CMS State ──────────────────────────────
+  const docsCategoriesQuery = useQuery({ queryKey: ["docs-categories"], queryFn: docsApi.getCategories });
+  const docsPagesQuery = useQuery({ queryKey: ["docs-pages"], queryFn: () => docsApi.getPages() });
+
+  const docsCategories = docsCategoriesQuery.data || [];
+  const docsPages = docsPagesQuery.data || [];
+
+  // Mutations
+  const updateCategoryMutation = useMutation({
+    mutationFn: docsApi.upsertCategory,
+    onSuccess: () => { queryClient.invalidateQueries(["docs-categories"]); toast.success("Category saved!"); }
+  });
+  const deleteCategoryMutation = useMutation({
+    mutationFn: docsApi.deleteCategory,
+    onSuccess: () => { queryClient.invalidateQueries(["docs-categories"]); toast.success("Category deleted!"); }
+  });
+  const updatePageMutation = useMutation({
+    mutationFn: docsApi.upsertPage,
+    onSuccess: () => { queryClient.invalidateQueries(["docs-pages"]); queryClient.invalidateQueries(["docs-categories"]); toast.success("Document saved!"); }
+  });
+  const deletePageMutation = useMutation({
+    mutationFn: docsApi.deletePage,
+    onSuccess: () => { queryClient.invalidateQueries(["docs-pages"]); toast.success("Document deleted!"); }
+  });
+  const bulkDeletePagesMutation = useMutation({
+    mutationFn: docsApi.bulkDeletePages,
+    onSuccess: (data) => { 
+      queryClient.invalidateQueries(["docs-pages"]); 
+      toast.success(`${data.count} documents deleted!`); 
+    }
+  });
+  const duplicatePageMutation = useMutation({
+    mutationFn: (id) => docsApi.duplicatePage(id),
+    onSuccess: () => { 
+      queryClient.invalidateQueries(["docs-pages"]); 
+      toast.success("Document duplicated!"); 
+    }
+  });
+
+  const handleSaveCategory = (cat) => updateCategoryMutation.mutate({ ...cat, id: cat.slug || cat.id });
+  const handleDeleteCategory = (id) => deleteCategoryMutation.mutate(id);
+
+  const handleSaveDoc = (doc) => {
+    updatePageMutation.mutate(doc);
+    setDocsSubTab("docs-dashboard");
+  };
+
+  const handleDeleteDoc = (id) => deletePageMutation.mutate(id);
+  const handleToggleDocStatus = (id) => {
+    const doc = docsPages.find(p => p.id === id || p._id === id);
+    if (!doc) return;
+    // Use lowercase to match the backend enum: "draft" | "published"
+    const next = (doc.status || "draft").toLowerCase() === "published" ? "draft" : "published";
+    updatePageMutation.mutate({ ...doc, slug: doc.slug, status: next });
+  };
+  const handleBulkDeleteDocs = (ids) => {
+    if (confirm(`Are you sure you want to delete ${ids.length} documents?`)) {
+      bulkDeletePagesMutation.mutate(ids);
+    }
+  };
+  const handleDuplicateDoc = (id) => duplicatePageMutation.mutate(id);
+
+
+  // Media is still local for now unles requested
+  const [docsMedia, setDocsMedia] = useState(() => {
+    try { return JSON.parse(localStorage.getItem('clyric_docsMedia') || '[]'); } catch { return []; }
+  });
+  useEffect(() => { localStorage.setItem('clyric_docsMedia', JSON.stringify(docsMedia)); }, [docsMedia]);
 
   const [userParams, setUserParams] = useState({ page: 1, limit: 20, search: "", role: "", status: "" });
   const [problemParams, setProblemParams] = useState({ page: 1, limit: 30, search: "", difficulty: "" });
@@ -141,13 +228,113 @@ export default function AdminDashboard() {
           </div>
         );
       case "health":
-      default:
         return (
           <div className={containerClass}>
             <h3 className="text-[22px] font-semibold text-[#18181B] mb-6">System Health</h3>
             <div className="relative">
               <SystemHealthMonitor healthData={healthQuery.data} statsError={statsQuery.isError} isFetching={healthQuery.isFetching} />
             </div>
+          </div>
+        );
+
+      case "docs":
+        return (
+          <div className={containerClass}>
+            {/* Docs Sub-Tab Header */}
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-1 bg-slate-50 border border-slate-200/60 rounded-2xl p-1">
+                {[
+                  { id: "docs-dashboard", label: "Overview", icon: LayoutDashboard },
+                  { id: "docs-list",      label: "All Pages",  icon: FileText },
+                  { id: "docs-create",   label: "New Page",    icon: Plus },
+                  { id: "docs-categories", label: "Categories", icon: FolderOpen },
+                  { id: "docs-media",    label: "Media",       icon: Image },
+                ].map(sub => {
+                  const SubIcon = sub.icon;
+                  const isActive = docsSubTab === sub.id;
+                  return (
+                    <button
+                      key={sub.id}
+                      onClick={() => {
+                        setDocsSubTab(sub.id);
+                        if (sub.id !== "docs-create") setEditingDoc(null);
+                      }}
+                      className={`flex items-center gap-2 px-4 py-2 rounded-xl text-[13px] font-bold transition-all ${
+                        isActive
+                          ? "bg-white text-slate-900 shadow-sm border border-slate-200/60"
+                          : "text-slate-500 hover:text-slate-900"
+                      }`}
+                    >
+                      <SubIcon strokeWidth={2} className="w-3.5 h-3.5" />
+                      {sub.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <a
+                href="/docs"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200/60 rounded-xl text-[13px] font-bold text-slate-700 hover:bg-slate-50 transition-all shadow-sm"
+              >
+                <Globe strokeWidth={2} className="w-3.5 h-3.5 text-slate-400" />
+                View Live Docs
+              </a>
+            </div>
+
+            {/* Docs Sub-Tab Content */}
+            <div className="relative">
+              {docsSubTab === "docs-dashboard" && (
+                <DocsDashboard
+                  pages={docsPages}
+                  categories={docsCategories}
+                  media={docsMedia}
+                  onNavigate={(tab) => setDocsSubTab(tab)}
+                />
+              )}
+              {docsSubTab === "docs-list" && (
+                <DocsListPage
+                  pages={docsPages}
+                  categories={docsCategories}
+                  onNavigate={(tab) => setDocsSubTab(tab)}
+                  onEdit={(doc) => { setEditingDoc(doc); setDocsSubTab("docs-create"); }}
+                  onDelete={handleDeleteDoc}
+                  onBulkDelete={handleBulkDeleteDocs}
+                  onDuplicate={handleDuplicateDoc}
+                  onToggleStatus={(id) => handleToggleDocStatus(id)}
+                />
+              )}
+              {docsSubTab === "docs-create" && (
+                <DocsCreatePage
+                  categories={docsCategories}
+                  editDoc={editingDoc}
+                  onSave={handleSaveDoc}
+                  onNavigate={(tab) => { setEditingDoc(null); setDocsSubTab(tab); }}
+                />
+              )}
+              {docsSubTab === "docs-categories" && (
+                <DocsCategoryManager
+                  categories={docsCategories}
+                  onAdd={handleSaveCategory}
+                  onUpdate={handleSaveCategory}
+                  onDelete={handleDeleteCategory}
+                />
+              )}
+              {docsSubTab === "docs-media" && (
+                <DocsMediaLibrary
+                  media={docsMedia}
+                  onAdd={(items) => setDocsMedia(prev => [...items, ...prev])}
+                  onDelete={(id) => setDocsMedia(prev => prev.filter(m => m.id !== id))}
+                />
+              )}
+            </div>
+          </div>
+        );
+
+      default:
+        return (
+          <div className={containerClass}>
+            <h3 className="text-[22px] font-semibold text-[#18181B] mb-6">Dashboard</h3>
           </div>
         );
     }
@@ -298,7 +485,29 @@ export default function AdminDashboard() {
         {/* Exact Match Top Navigation Row */}
         <div className="flex justify-between items-center mb-8 px-2">
           <h2 className="text-[28px] font-bold text-slate-900 tracking-tight">
-            {SIDEBAR_SECTIONS.flatMap(s => s.items).find(i => i.id === activeTab)?.label || "Dashboard"}
+            {activeTab === "docs"
+              ? (() => {
+                  const labels = {
+                    "docs-dashboard":  "Documentation",
+                    "docs-list":       "All Pages",
+                    "docs-create":     editingDoc ? "Edit Document" : "New Document",
+                    "docs-categories": "Categories",
+                    "docs-media":      "Media Library",
+                  };
+                  return (
+                    <span className="flex items-center gap-2">
+                      <span className="text-slate-400 font-semibold text-[22px]">Documentation</span>
+                      {docsSubTab !== "docs-dashboard" && (
+                        <>
+                          <ChevronRight className="w-5 h-5 text-slate-300" />
+                          <span>{labels[docsSubTab]}</span>
+                        </>
+                      )}
+                    </span>
+                  );
+                })()
+              : SIDEBAR_SECTIONS.flatMap(s => s.items).find(i => i.id === activeTab)?.label || "Dashboard"
+            }
           </h2>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-2">
