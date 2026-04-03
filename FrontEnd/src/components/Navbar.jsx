@@ -243,7 +243,7 @@ const Navbar = ({ forceLight = false }) => {
                         </SignedIn>
 
                         <Link
-                            to="/coding"
+                            to="/problem/balanced-binary-tree"
                             className={`text-[14px] font-medium px-8 py-2 rounded-full transition-colors duration-300 ${isLightMode
                                 ? 'bg-[#18181B] text-white hover:bg-black'
                                 : 'bg-white/10 backdrop-blur-md border border-white/10 text-white hover:bg-[#18181B]/60'

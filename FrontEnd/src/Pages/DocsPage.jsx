@@ -122,7 +122,6 @@ const ArticleBody = ({ page }) => {
 export default function DocsPage() {
   const [dbCategories, setDbCategories] = useState([]);
   const [dbPages, setDbPages] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [activeSlug, setActiveSlug] = useState("");
   const [isHome, setIsHome] = useState(true);
 
@@ -165,8 +164,6 @@ export default function DocsPage() {
         }
       } catch (err) {
         console.error("Failed to load documents", err);
-      } finally {
-        setLoading(false);
       }
     };
     fetchDocs();
@@ -181,7 +178,7 @@ export default function DocsPage() {
       const initialExpanded = dbCategories
         .filter(c => c.label.toLowerCase().includes("getting started"))
         .map(c => c.id);
-      
+
       setExpandedCategories(initialExpanded);
     }
   }, [dbCategories]);
@@ -245,16 +242,7 @@ export default function DocsPage() {
     ?.filter(s => s.heading)
     ?.map(s => ({ id: s.id, label: s.heading })) || [];
 
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0b0b0c]">
-        <div className="animate-pulse flex flex-col items-center gap-4">
-          <div className="w-12 h-12 bg-white/5 rounded-2xl border border-white/10"></div>
-          <div className="h-4 w-32 bg-white/5 rounded-full"></div>
-        </div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="min-h-screen bg-[#0b0b0c] text-zinc-100 font-sans selection:bg-zinc-800">
