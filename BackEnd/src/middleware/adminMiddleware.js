@@ -30,8 +30,12 @@ export const adminRoute = [
       req.user = user;
       next();
     } catch (error) {
-      console.error("Error in adminRoute middleware:", error);
-      res.status(500).json({ message: "Internal Server Error" });
+      console.error("CRITICAL CLERK/ADMIN AUTH ERROR:", error);
+      res.status(500).json({ 
+        message: "Internal Server Error in AdminMiddleware", 
+        details: error.message,
+        stack: error.stack 
+      });
     }
   },
 ];

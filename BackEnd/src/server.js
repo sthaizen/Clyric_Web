@@ -25,6 +25,7 @@ import paymentRoutes from "./routes/paymentRoutes.js";
 import commentRoutes from "./routes/commentRoutes.js";
 import noteRoutes from "./routes/noteRoutes.js";
 import leaderboardRoutes from "./routes/leaderboardRoutes.js";
+import docsRoutes from "./routes/docsRoutes.js";
 import { checkExpiredSubscriptions } from "./services/subscriptionService.js";
 
 const app = express();
@@ -45,9 +46,12 @@ if (ENV.NODE_ENV === "production") {
 }
 
 // Request parsing middleware
-app.use(express.json());
-app.use(cors({ origin: [ENV.CLIENT_URL, "http://localhost:3000", "http://127.0.0.1:3000"], credentials: true }));
-app.use(clerkMiddleware());
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
+
+app.use(cors({ origin: [ENV.CLIENT_URL, "http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:3000"], credentials: true }));
+
+app.use(clerkMiddleware()); // Re-enabled after audit
 
 // Rate limiting for APIs
 const apiLimiter = rateLimit({
@@ -73,6 +77,7 @@ app.use("/api/payments", paymentRoutes);
 app.use("/api/comments", commentRoutes);
 app.use("/api/notes", noteRoutes);
 app.use("/api/leaderboard", leaderboardRoutes);
+app.use("/api/docs", docsRoutes);
 
 app.get("/health", (req, res) => {
   res.status(200).json({ msg: "success api is running" });

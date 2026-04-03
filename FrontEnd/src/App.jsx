@@ -16,6 +16,7 @@ import AdminDashboard from "./Pages/AdminDashboard";
 import PriceOverview from "./Pages/PriceOverview";
 import Connection from "./components/Connection";
 import LeaderboardPage from "./Pages/LeaderboardPage";
+import DocsPage from "./Pages/DocsPage";
 
 // CSS Imports
 import "slick-carousel/slick/slick.css";
@@ -86,6 +87,8 @@ const App = () => {
           <Route path="/priceoverview" element={<PriceOverview />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/checkout" element={<CosmicCheckout />} />
+          <Route path="/docs" element={<DocsPage />} />
+          <Route path="/docs/:slug" element={<DocsPage />} />
         </Routes>
       </div>
       <Toaster />
