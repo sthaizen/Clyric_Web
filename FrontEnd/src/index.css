@@ -130,3 +130,68 @@ body {
   font-weight: bold;
   font-size: 12px;
 }
+
+/* Rich Text Formatting for Docs */
+.docs-rich-content h1 {
+  color: white;
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 1rem;
+}
+.docs-rich-content h2 {
+  color: white;
+  font-size: 1.25rem;
+  font-weight: bold;
+  margin-bottom: 0.75rem;
+}
+.docs-rich-content h3 {
+  color: white;
+  font-size: 1.125rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+.docs-rich-content p {
+  margin-bottom: 1rem;
+}
+.docs-rich-content strong, .docs-rich-content b {
+  font-weight: 700;
+  color: #f4f4f5; /* zinc-100 */
+}
+.docs-rich-content em, .docs-rich-content i {
+  font-style: italic;
+}
+.docs-rich-content ul {
+  list-style-type: disc;
+  padding-left: 1.25rem;
+  margin-bottom: 1rem;
+}
+.docs-rich-content ol {
+  list-style-type: decimal;
+  padding-left: 1.25rem;
+  margin-bottom: 1rem;
+}
+.docs-rich-content a {
+  color: #60a5fa; /* blue-400 */
+  text-decoration: underline;
+}
+.docs-rich-content blockquote {
+  border-left-width: 4px;
+  border-color: #3f3f46; /* zinc-700 */
+  padding-left: 1rem;
+  font-style: italic;
+  margin-bottom: 1rem;
+}
+.docs-rich-content pre {
+  background-color: rgba(255, 255, 255, 0.05); /* white/5 */
+  padding: 1rem;
+  border-radius: 0.75rem; /* rounded-xl */
+  overflow-x: auto;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  margin-bottom: 1rem;
+}
+.docs-rich-content u {
+  text-decoration: underline;
+}
+.docs-rich-content s {
+  text-decoration: line-through;
+}

@@ -7,10 +7,11 @@ import {
 } from "lucide-react";
 import { docsApi } from "../../../api/docsApi";
 import toast from "react-hot-toast";
-
+import { DocsRichText } from "./DocsRichText";
 
 // ─── Section Types (Code, Image, FAQ only) ─────────────────────────────────────
 const SECTION_TYPES = [
+  { value: "text",  label: "Text Block", icon: FileText,   desc: "Rich text content" },
   { value: "code",  label: "Code Block", icon: Code2,      desc: "Syntax-highlighted code" },
   { value: "image", label: "Image",      icon: Image,      desc: "Image with caption" },
   { value: "faq",   label: "FAQ",        icon: HelpCircle, desc: "Q&A pairs" },
@@ -66,7 +67,7 @@ const Lbl = ({ children, required }) => (
 const TextEditor = ({ s, onChange }) => (
   <div className="space-y-3">
     <div><Lbl>Section Heading</Lbl><Inp value={s.heading} onChange={e => onChange({ ...s, heading: e.target.value })} placeholder="e.g. Overview" /></div>
-    <div><Lbl required>Content</Lbl><Txt value={s.content} onChange={e => onChange({ ...s, content: e.target.value })} placeholder="Write your documentation content here…" rows={6} /></div>
+    <div><Lbl required>Content</Lbl><DocsRichText value={s.content} onChange={val => onChange({ ...s, content: val })} placeholder="Write your documentation content here…" /></div>
   </div>
 );
 
@@ -471,7 +472,7 @@ export default function DocsCreatePage({ categories = [], editDoc = null, onSave
                 </div>
                 <div>
                   <Lbl>Short Description</Lbl>
-                  <Txt value={form.shortDesc} onChange={e => upd({ shortDesc: e.target.value })} placeholder="1–2 sentence summary shown in listings and article subtitle." rows={3} />
+                  <DocsRichText value={form.shortDesc} onChange={val => upd({ shortDesc: val })} placeholder="1–2 sentence summary shown in listings and article subtitle." />
                 </div>
               </div>
 

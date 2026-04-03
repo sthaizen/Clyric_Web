@@ -21,12 +21,12 @@ import { DocsFeatureContent } from "../components/Docs/DocsFeatureContent";
 const DynamicSection = ({ section }) => {
   if (section.heading) {
     return (
-      <>
+      <div className="w-full">
         <h2 id={section.id} className="text-[26px] font-bold text-zinc-100 mt-15 mb-5 tracking-tight scroll-mt-24 after:content-[''] after:block after:w-10 after:h-[3px] after:bg-zinc-100 after:mt-3 after:rounded-full after:opacity-20">
           {section.heading}
         </h2>
         <SectionContent section={section} />
-      </>
+      </div>
     );
   }
   return <SectionContent section={section} />;
@@ -35,11 +35,16 @@ const DynamicSection = ({ section }) => {
 const SectionContent = ({ section }) => {
   switch (section.type) {
     case "text":
-      return <p className="mb-5 text-zinc-400 leading-relaxed text-[16px]">{section.content}</p>;
+      return (
+        <div
+          className="mb-5 text-zinc-400 leading-relaxed text-[16px] docs-rich-content break-words overflow-wrap-anywhere min-w-0"
+          dangerouslySetInnerHTML={{ __html: section.content }}
+        />
+      );
 
     case "steps":
       return (
-        <div className="my-8">
+        <div className="my-8 w-full">
           {section.steps?.map((s, i) => (
             <Step key={s.id} number={i + 1} title={s.title}>
               {s.content}
@@ -50,24 +55,28 @@ const SectionContent = ({ section }) => {
 
     case "callout":
       return (
-        <Callout type={section.calloutType || "info"} title={section.title}>
-          {section.content}
-        </Callout>
+        <div className="w-full">
+          <Callout type={section.calloutType || "info"} title={section.title}>
+            {section.content}
+          </Callout>
+        </div>
       );
 
     case "code":
       return (
-        <CodeBlock language={section.language}>
-          {section.code || ""}
-        </CodeBlock>
+        <div className="w-full overflow-hidden rounded-2xl my-6">
+          <CodeBlock language={section.language}>
+            {section.code || ""}
+          </CodeBlock>
+        </div>
       );
 
     case "image":
       return (
-        <div className="my-8 group">
+        <div className="my-8 group w-full">
           <div className="bg-white/5 border border-white/10 rounded-3xl p-3 flex items-center justify-center overflow-hidden transition-all group-hover:border-white/20">
             {section.imageUrl ? (
-              <img src={section.imageUrl} alt={section.altText || section.caption} className="max-w-full rounded-2xl shadow-sm" />
+              <img src={section.imageUrl} alt={section.altText || section.caption} className="max-w-full h-auto rounded-2xl shadow-sm object-contain" />
             ) : (
               <div className="py-20 text-zinc-600 italic flex flex-col items-center gap-3">
                 <Monitor className="w-10 h-10 opacity-20" />
@@ -81,7 +90,7 @@ const SectionContent = ({ section }) => {
 
     case "faq":
       return (
-        <div className="space-y-4 my-8">
+        <div className="space-y-4 my-8 w-full">
           {section.faqs?.map((f) => (
             <div key={f.id} className="bg-white/5 rounded-2xl p-6 border border-white/10 hover:border-white/20 transition-all backdrop-blur-sm">
               <p className="text-[16px] font-bold text-zinc-100 mb-3">{f.question}</p>
@@ -99,10 +108,11 @@ const SectionContent = ({ section }) => {
 const ArticleBody = ({ page }) => {
   if (!page) return <div className="py-20 text-zinc-600 text-center flex flex-col items-center gap-3"><HelpCircle className="w-10 h-10 opacity-20" />Page not found.</div>;
   if (!page.sections || page.sections.length === 0) {
+    if (page.shortDesc && page.shortDesc.trim() !== "" && page.shortDesc !== "<p><br></p>") return null;
     return <div className="py-20 text-zinc-600 text-center italic">This page has no content yet.</div>;
   }
   return (
-    <div className="text-zinc-300">
+    <div className="text-zinc-300 w-full">
       {page.sections.map(sec => <DynamicSection key={sec.id} section={sec} />)}
     </div>
   );
@@ -167,20 +177,18 @@ export default function DocsPage() {
   const [expandedCategories, setExpandedCategories] = useState([]);
   useEffect(() => {
     if (expandedCategories.length === 0 && dbCategories.length > 0) {
-      setExpandedCategories(dbCategories.map(c => c.id));
+      // Initially, only expand the "Getting Started" category
+      const initialExpanded = dbCategories
+        .filter(c => c.label.toLowerCase().includes("getting started"))
+        .map(c => c.id);
+      
+      setExpandedCategories(initialExpanded);
     }
   }, [dbCategories]);
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [activeSection, setActiveSection] = useState("");
-  const [isScrolled, setIsScrolled] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 20);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   const toggleCategory = (id) => {
     setExpandedCategories(prev =>
@@ -258,34 +266,35 @@ export default function DocsPage() {
       )}
 
       {/* ── MAIN LAYOUT WRAPPER ── */}
-      <div className="flex pt-20 min-h-screen">
+      {/* CRITICAL FIX: Removed overflow-x-hidden from parents to allow child stickiness to work */}
+      <div className="flex pt-20 min-h-screen w-full">
 
         {/* ── SIDEBAR ── */}
         <aside className={`
-  /* 1. Positioning & Sticky Logic */
-  fixed lg:sticky top-10 left-0 z-50
-  
-  /* 2. Dimensions & Clipping */
-  w-[280px] h-screen shrink-0 
-  
-  /* 3. Smooth Scrolling Logic */
-  overflow-y-auto overflow-x-hidden
-  scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent
-  hover:scrollbar-thumb-white/20
-  
-  /* 4. Visuals & Performance */
-  bg-[#0b0b0c] border-r border-white/5 
-  /* 'transform-gpu' ensures the transition is handled by the graphics card for 60fps smoothness */
-  transition-transform duration-500 ease-in-out transform-gpu
-  
-  /* 5. The Dynamic Offset */
-  /* Starts with a large top padding to simulate being "below" the header.
-     As the page scrolls, the sticky container moves up smoothly. */
-  pt-20 lg:pt-12 px-4 pb-16
-  
-  /* 6. Toggle State */
-  ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
-`}>
+         /* 1. Positioning & Sticky Logic */
+        fixed lg:sticky top-10 left-0 z-50
+        
+        /* 2. Dimensions & Clipping */
+        w-[280px] h-screen shrink-0 
+        
+        /* 3. Smooth Scrolling Logic */
+        overflow-y-auto overflow-x-hidden
+        scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent
+        hover:scrollbar-thumb-white/20
+        
+        /* 4. Visuals & Performance */
+        bg-[#0b0b0c] border-r border-white/5 
+        /* 'transform-gpu' ensures the transition is handled by the graphics card for 60fps smoothness */
+        transition-transform duration-500 ease-in-out transform-gpu
+        
+        /* 5. The Dynamic Offset */
+        /* Starts with a large top padding to simulate being "below" the header.
+          As the page scrolls, the sticky container moves up smoothly. */
+        pt-20 lg:pt-12 px-4 pb-16
+        
+        /* 6. Toggle State */
+        ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+        `}>
           {/* TOP NAVIGATION SECTION */}
           <div className="flex flex-col gap-1.5 mb-10 shrink-0">
             {[
@@ -298,12 +307,12 @@ export default function DocsPage() {
                 key={item.label}
                 onClick={() => navigateTo("", item.slug)}
                 className={`
-          group flex items-center gap-3 px-4 py-2.5 rounded-xl text-[14px] font-semibold
-          transition-all duration-200 ease-out active:scale-[0.98]
-          ${item.active
+                  group flex items-center gap-3 px-4 py-2.5 rounded-xl text-[14px] font-semibold
+                  transition-all duration-200 ease-out active:scale-[0.98]
+                  ${item.active
                     ? "bg-white text-[#0b0b0c] shadow-lg shadow-white/5"
                     : "text-zinc-500 hover:text-zinc-100 hover:bg-white/[0.06]"}
-        `}
+                `}
               >
                 <item.icon className={`w-4 h-4 transition-colors ${item.active ? "text-[#0b0b0c]" : "text-zinc-500 group-hover:text-zinc-200"}`} />
                 {item.label}
@@ -327,22 +336,21 @@ export default function DocsPage() {
                     <ChevronRight className={`w-3.5 h-3.5 transition-all duration-300 ${isEx ? "rotate-90 opacity-100 text-zinc-300" : "opacity-30"}`} />
                   </button>
 
-                  {/* Smooth Dropdown Animation */}
                   <div className={`
-            grid transition-all duration-300 ease-in-out
-            ${isEx ? "grid-rows-[1fr] opacity-100 mt-2" : "grid-rows-[0fr] opacity-0 pointer-events-none"}
-          `}>
+                    grid transition-all duration-300 ease-in-out
+                    ${isEx ? "grid-rows-[1fr] opacity-100 mt-2" : "grid-rows-[0fr] opacity-0 pointer-events-none"}
+                  `}>
                     <div className="overflow-hidden pl-3 border-l border-white/5 ml-4.5 space-y-1">
                       {category.pages.map(p => (
                         <button
                           key={p.id}
                           className={`
-                    flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium w-full text-left 
-                    transition-all duration-200 active:scale-[0.97]
-                    ${activeSlug === p.slug
+                            flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm font-medium w-full text-left 
+                            transition-all duration-200 active:scale-[0.97]
+                            ${activeSlug === p.slug
                               ? "text-white bg-white/10"
                               : "text-zinc-400 hover:text-zinc-100 hover:bg-white/5"}
-                  `}
+                          `}
                           onClick={() => navigateTo(p.slug)}
                         >
                           {p.label}
@@ -357,10 +365,9 @@ export default function DocsPage() {
         </aside>
 
         {/* ── MAIN CONTENT ── */}
-        <main className="flex-1 flex justify-center px-8 w-full min-w-0">
-          <div className="w-full max-w-[1040px] pt-15 pb-32">
+        <main className="flex-1 flex justify-center px-4 sm:px-8 w-full min-w-0 overflow-hidden">
+          <div className="w-full max-w-[1040px] pt-15 pb-32 min-w-0">
             {isHome ? (
-              /* Documentation Home Layout */
               <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <p className="text-[14px] font-bold text-zinc-500 mb-2 tracking-wide uppercase">Introduction</p>
                 <h1 className="text-4xl sm:text-[40px] font-extrabold text-zinc-100 tracking-tight leading-tight mb-4">
@@ -421,105 +428,12 @@ export default function DocsPage() {
                   </div>
                 </div>
 
-
-                <div className="mt-15">
-                  <h2 className="text-[26px] font-bold text-zinc-100 mb-10 tracking-tight">Explore by feature</h2>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
-                    <div onClick={() => scrollToId("interview-simulator")} className="flex gap-5 group cursor-pointer">
-                      <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover:border-zinc-700 transition-colors">
-                        <Monitor className="w-6 h-6 text-zinc-400 group-hover:text-zinc-100 transition-colors" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-[16px] font-bold text-zinc-100 mb-1">Interview Simulator</p>
-                        <p className="text-[14px] leading-relaxed text-zinc-500">Experience realistic technical assessment environments with built-in evaluation tools and session recording.</p>
-                      </div>
-                    </div>
-
-                    <div onClick={() => scrollToId("collaborative-ide")} className="flex gap-5 group cursor-pointer">
-                      <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover:border-zinc-700 transition-colors">
-                        <Users className="w-6 h-6 text-zinc-400 group-hover:text-zinc-100 transition-colors" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-[16px] font-bold text-zinc-100 mb-1">Collaborative IDE</p>
-                        <p className="text-[14px] leading-relaxed text-zinc-500">Pair program in real-time with zero-latency synchronization, shared terminal access, and integrated video calls.</p>
-                      </div>
-                    </div>
-
-                    <div onClick={() => scrollToId("problem-library")} className="flex gap-5 group cursor-pointer">
-                      <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover:border-zinc-700 transition-colors">
-                        <Code2 className="w-6 h-6 text-zinc-400 group-hover:text-zinc-100 transition-colors" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-[16px] font-bold text-zinc-100 mb-1">Problem Library</p>
-                        <p className="text-[14px] leading-relaxed text-zinc-500">Access thousands of curated coding challenges across all data structures and algorithms with verified solutions.</p>
-                      </div>
-                    </div>
-
-                    <div onClick={() => scrollToId("skill-analytics")} className="flex gap-5 group cursor-pointer">
-                      <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0 group-hover:border-zinc-700 transition-colors">
-                        <Activity className="w-6 h-6 text-zinc-400 group-hover:text-zinc-100 transition-colors" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-[16px] font-bold text-zinc-100 mb-1">Skill Analytics</p>
-                        <p className="text-[14px] leading-relaxed text-zinc-500">Get deep AI-driven insights into your coding speed, accuracy, and logic to identify exactly where you need to improve.</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-15 ">
-                  <h2 className="text-[26px] font-bold text-zinc-100 mb-10 tracking-tight">Explore by language</h2>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-12 gap-y-12">
-                    <div className="flex gap-4 group cursor-pointer">
-                      <div className="w-10 h-10 shrink-0 flex items-center justify-center">
-                        <img src="/javascript.png" alt="JavaScript" className="w-8 h-8 object-contain transition-transform group-hover:scale-110" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-[16px] font-bold text-zinc-100 mb-1">JavaScript</p>
-                        <p className="text-[14px] leading-relaxed text-zinc-500">The standard for web development and Clyric's primary integration language for real-time apps.</p>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-4 group cursor-pointer">
-                      <div className="w-10 h-10 shrink-0 flex items-center justify-center">
-                        <img src="/python.png" alt="Python" className="w-8 h-8 object-contain transition-transform group-hover:scale-110" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-[16px] font-bold text-zinc-100 mb-1">Python</p>
-                        <p className="text-[14px] leading-relaxed text-zinc-500">Deep dive into algorithmic data structures with our optimized Python interpreter and debugging tools.</p>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-4 group cursor-pointer">
-                      <div className="w-10 h-10 shrink-0 flex items-center justify-center">
-                        <img src="/java.png" alt="Java" className="w-8 h-8 object-contain transition-transform group-hover:scale-110" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-[16px] font-bold text-zinc-100 mb-1">Java</p>
-                        <p className="text-[14px] leading-relaxed text-zinc-500">Robust, enterprise-grade problem solving with full Java 17+ support and automated JVM testing.</p>
-                      </div>
-                    </div>
-
-                    <div className="flex gap-4 group cursor-pointer">
-                      <div className="w-10 h-10 shrink-0 flex items-center justify-center">
-                        <img src="/c++.png" alt="C++" className="w-8 h-8 object-contain transition-transform group-hover:scale-110" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-[16px] font-bold text-zinc-100 mb-1">C++</p>
-                        <p className="text-[14px] leading-relaxed text-zinc-500">High-performance competitive programming environment with the latest STL features and C++20 support.</p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Detailed Feature Documentation (In-page) */}
                 <DocsFeatureContent />
               </div>
             ) : (
               /* Standard Article Layout */
-              <div className="animate-in fade-in duration-300">
-                <div className="flex items-center gap-2 text-[14px] font-semibold text-zinc-500 mb-8">
+              <div className="animate-in fade-in duration-300 min-w-0">
+                <div className="flex flex-wrap items-center gap-2 text-[14px] font-semibold text-zinc-500 mb-8">
                   <span>Docs</span>
                   <ChevronRight className="w-3.5 h-3.5 opacity-50" />
                   <span className="text-zinc-400">{activePageData?.category}</span>
@@ -531,29 +445,34 @@ export default function DocsPage() {
                   )}
                 </div>
 
-                <header className="mb-12">
-                  <h1 className="text-4xl sm:text-[40px] font-extrabold text-zinc-100 tracking-tight leading-tight mb-4">{activePageData?.title || "Documentation"}</h1>
-                  <p className="text-[19px] text-zinc-400 leading-relaxed font-medium mb-8">{activePageData?.shortDesc || "Detailed technical documentation and guides."}</p>
+                <header className="mb-10 min-w-0">
+                  <h1 className="text-4xl sm:text-[40px] font-extrabold text-zinc-100 tracking-tight leading-tight mb-6 break-words">
+                    {activePageData?.title || "Documentation"}
+                  </h1>
+                  <div
+                    className="text-[18px] text-zinc-400 leading-relaxed font-medium mb-12 docs-rich-content border-b border-white/5 pb-10 break-words min-w-0"
+                    dangerouslySetInnerHTML={{ __html: activePageData?.shortDesc || "Detailed technical documentation and guides." }}
+                  />
                 </header>
 
                 <ArticleBody page={activePageData} />
 
                 {/* Footer Navigation */}
-                <div className="flex justify-between items-center mt-16 pt-8 border-t border-white/10">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-8 mt-16 pt-8 border-t border-white/10">
                   {prevPage ? (
-                    <button onClick={() => navigateTo(prevPage.slug)} className="group flex flex-col items-start gap-2 text-left bg-transparent border-none p-0 cursor-pointer">
+                    <button onClick={() => navigateTo(prevPage.slug)} className="group flex flex-col items-start gap-2 text-left bg-transparent border-none p-0 cursor-pointer max-w-[200px]">
                       <span className="text-[12px] font-bold text-zinc-500 uppercase tracking-widest">Previous</span>
                       <div className="flex items-center gap-3 text-[16px] font-bold text-zinc-100 group-hover:-translate-x-1 transition-transform">
-                        <ArrowLeft className="w-4 h-4" /> {prevPage.label}
+                        <ArrowLeft className="w-4 h-4 shrink-0" /> <span className="truncate">{prevPage.label}</span>
                       </div>
                     </button>
                   ) : <div />}
 
                   {nextPage && (
-                    <button onClick={() => navigateTo(nextPage.slug)} className="group flex flex-col items-end gap-2 text-right bg-transparent border-none p-0 cursor-pointer">
+                    <button onClick={() => navigateTo(nextPage.slug)} className="group flex flex-col items-end gap-2 text-right bg-transparent border-none p-0 cursor-pointer max-w-[200px]">
                       <span className="text-[12px] font-bold text-zinc-500 uppercase tracking-widest">Next</span>
                       <div className="flex items-center gap-3 text-[16px] font-bold text-zinc-100 group-hover:translate-x-1 transition-transform">
-                        {nextPage.label} <ArrowRight className="w-4 h-4" />
+                        <span className="truncate">{nextPage.label}</span> <ArrowRight className="w-4 h-4 shrink-0" />
                       </div>
                     </button>
                   )}
@@ -563,26 +482,20 @@ export default function DocsPage() {
           </div>
 
           {/* ── RIGHT TOC ── */}
+          {/* Ensure the TOC is also sticky and doesn't get cut off! */}
           {!isHome && articleToc.length > 0 && (
-            <aside className="hidden xl:block w-[240px] shrink-0 pt-14 pb-12 self-start h-fit ml-8">
+            <aside className="hidden xl:block w-[240px] shrink-0 pt-14 pb-12 self-start sticky top-[80px] max-h-[calc(100vh-80px)] overflow-y-auto ml-8 scrollbar-none">
               <div className="text-[11px] font-extrabold text-zinc-500 uppercase tracking-[0.12em] mb-5 flex items-center gap-2"><Layers className="w-3.5 h-3.5" /> On this page</div>
-              {articleToc.map((item) => (
-                <a
-                  key={item.id}
-                  href={`#${item.id}`}
-                  className={`flex items-center gap-2.5 text-[13px] font-medium py-1.5 cursor-pointer transition-colors border-l-2 pl-4 -ml-px ${activeSection === item.id ? "text-zinc-100 font-bold border-zinc-100" : "text-zinc-500 border-transparent hover:text-zinc-200"}`}
-                >
-                  {item.label}
-                </a>
-              ))}
-
-              <div className="mt-12 pt-8 border-t border-white/5 flex flex-col gap-4">
-                <a href="/" className="flex items-center gap-3 text-[13px] font-bold text-zinc-500 hover:text-zinc-100 transition-colors">
-                  <Github className="w-4 h-4" /> Edit on GitHub
-                </a>
-                <a href="/" className="flex items-center gap-3 text-[13px] font-bold text-zinc-500 hover:text-zinc-100 transition-colors">
-                  <MessageSquare className="w-4 h-4" /> Community Chat
-                </a>
+              <div className="space-y-1">
+                {articleToc.map((item) => (
+                  <a
+                    key={item.id}
+                    href={`#${item.id}`}
+                    className={`flex items-center gap-2.5 text-[13px] font-medium py-1.5 cursor-pointer transition-colors border-l-2 pl-4 -ml-px ${activeSection === item.id ? "text-zinc-100 font-bold border-zinc-100" : "text-zinc-500 border-transparent hover:text-zinc-200"}`}
+                  >
+                    {item.label}
+                  </a>
+                ))}
               </div>
             </aside>
           )}
