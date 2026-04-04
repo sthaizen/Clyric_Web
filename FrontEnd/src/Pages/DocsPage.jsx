@@ -141,7 +141,14 @@ export default function DocsPage() {
             label: c.name,
             icon: c.name.toLowerCase().includes("getting started") ? Zap :
               c.name.toLowerCase().includes("ui") ? Box :
-                c.name.toLowerCase().includes("sdks") ? Terminal : FileQuestion,
+                c.name.toLowerCase().includes("sdks") ? Terminal :
+                  c.name.toLowerCase().includes("solving problems") ? Code2 :
+                    c.name.toLowerCase().includes("study plans") ? BookOpen :
+                      c.name.toLowerCase().includes("quests") ? Sparkles :
+                        c.name.toLowerCase().includes("collaboration") ? Users :
+                          c.name.toLowerCase().includes("profile") ? User :
+                            c.name.toLowerCase().includes("admin") ? Shield :
+                              c.name.toLowerCase().includes("payment") ? CreditCard : FileQuestion,
             pages: pgs
               .filter(p => p.category?.toLowerCase() === c.name?.toLowerCase())
               .sort((a, b) => (Number(a.sortOrder) || 999) - (Number(b.sortOrder) || 999))
@@ -263,7 +270,7 @@ export default function DocsPage() {
         fixed lg:sticky top-10 left-0 z-50
         
         /* 2. Dimensions & Clipping */
-        w-[280px] h-screen shrink-0 
+        w-[280px] h-[calc(100vh-5rem)] shrink-0 
         
         /* 3. Smooth Scrolling Logic */
         overflow-y-auto overflow-x-hidden
@@ -354,7 +361,7 @@ export default function DocsPage() {
 
         {/* ── MAIN CONTENT ── */}
         <main className="flex-1 flex justify-center px-4 sm:px-8 w-full min-w-0 overflow-hidden">
-          <div className="w-full max-w-[1040px] pt-15 pb-32 min-w-0">
+          <div className="w-full max-w-[1040px] pt-15 pb-22 min-w-0">
             {isHome ? (
               <div className="animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <p className="text-[14px] font-bold text-zinc-500 mb-2 tracking-wide uppercase">Introduction</p>
@@ -417,6 +424,34 @@ export default function DocsPage() {
                 </div>
 
                 <DocsFeatureContent />
+
+                {/* Home Footer Navigation */}
+                <div className="flex justify-end items-center mt-12 pt-8 border-t border-white/10">
+                  {(() => {
+                    const homeSections = [
+                      { id: "", label: "Overview", next: { id: "problem-library", label: "Practice Problems" } },
+                      { id: "problem-library", label: "Practice Problems", next: { id: "collaborative-ide", label: "Collaboration" } },
+                      { id: "collaborative-ide", label: "Collaboration", next: { id: "skill-analytics", label: "Performance" } },
+                      { id: "skill-analytics", label: "Performance", next: allPagesFlat[0] ? { slug: allPagesFlat[0].slug, label: allPagesFlat[0].label } : null }
+                    ];
+                    const current = homeSections.find(s => s.id === activeSection);
+                    const next = current?.next;
+
+                    if (!next) return null;
+
+                    return (
+                      <button
+                        onClick={() => navigateTo(next.slug || "", next.id)}
+                        className="group flex flex-col items-end gap-2 text-right bg-transparent border-none p-0 cursor-pointer max-w-[300px]"
+                      >
+                        <span className="text-[12px] font-bold text-zinc-500 uppercase tracking-widest">Next</span>
+                        <div className="flex items-center gap-3 text-[16px] font-bold text-zinc-100 group-hover:translate-x-1 transition-transform">
+                          <span className="truncate">{next.label}</span> <ArrowRight className="w-4 h-4 shrink-0" />
+                        </div>
+                      </button>
+                    );
+                  })()}
+                </div>
               </div>
             ) : (
               /* Standard Article Layout */
