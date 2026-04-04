@@ -315,6 +315,7 @@ export default function AdminDashboard() {
               {docsSubTab === "docs-categories" && (
                 <DocsCategoryManager
                   categories={docsCategories}
+                  pages={docsPages}
                   onAdd={handleSaveCategory}
                   onUpdate={handleSaveCategory}
                   onDelete={handleDeleteCategory}

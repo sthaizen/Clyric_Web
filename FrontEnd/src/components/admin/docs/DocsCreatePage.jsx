@@ -57,9 +57,10 @@ const Sel = ({ value, onChange, children }) => (
   </select>
 );
 
-const Lbl = ({ children, required }) => (
-  <label className="text-[11px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
-    {children}{required && <span className="text-rose-400 ml-0.5">*</span>}
+const Lbl = ({ children, required, icon: Icon }) => (
+  <label className="flex items-center gap-2 text-[11px] font-black text-slate-400 uppercase tracking-widest block mb-1.5 cursor-default group-hover:text-slate-600 transition-colors">
+    {Icon && <Icon className="w-3.5 h-3.5 mb-0.5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" strokeWidth={2.5} />}
+    {children}{required && <span className="text-rose-500 ml-0.5">*</span>}
   </label>
 );
 
@@ -67,7 +68,7 @@ const Lbl = ({ children, required }) => (
 const TextEditor = ({ s, onChange }) => (
   <div className="space-y-3">
     <div><Lbl>Section Heading</Lbl><Inp value={s.heading} onChange={e => onChange({ ...s, heading: e.target.value })} placeholder="e.g. Overview" /></div>
-    <div><Lbl required>Content</Lbl><DocsRichText value={s.content} onChange={val => onChange({ ...s, content: val })} placeholder="Write your documentation content here…" /></div>
+    <div><Lbl required icon={FileText}>Content</Lbl><DocsRichText value={s.content} onChange={val => onChange({ ...s, content: val })} placeholder="Write your documentation content here…" /></div>
   </div>
 );
 
@@ -121,7 +122,7 @@ const CodeEditor = ({ s, onChange }) => (
       </div>
     </div>
     <div>
-      <Lbl required>Code</Lbl>
+      <Lbl required icon={Code2}>Code</Lbl>
       <div className="rounded-xl overflow-hidden border border-slate-200/60" style={{ minHeight: 200 }}>
         <MonacoEditor
           height={260}
@@ -276,33 +277,33 @@ const SectionCard = ({ section, index, isFirst, isLast, onUpdate, onDelete, onMo
 };
 
 // ─── Add Section Picker ─────────────────────────────────────────────────────────
-const AddSectionPicker = ({ onAdd }) => {
+const AddSectionPicker = ({ onAdd, isCentered }) => {
   const [open, setOpen] = useState(false);
   return (
     <div className="relative">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-center gap-2 py-3 border-2 border-dashed border-slate-200 rounded-2xl text-[13px] font-bold text-slate-400 hover:border-slate-300 hover:text-slate-600 hover:bg-slate-50/50 transition-all"
+        className={`${isCentered ? "px-6 py-2.5 bg-slate-900 text-white" : "w-full py-3 border-2 border-dashed border-slate-200 text-slate-400 hover:border-slate-300 hover:text-slate-600 hover:bg-slate-50/50"} flex items-center justify-center gap-2 rounded-2xl text-[13px] font-bold transition-all shadow-sm`}
       >
-        <Plus className="w-4 h-4" /> Add Section
+        <Plus className="w-4 h-4" /> Add {isCentered ? "First Section" : "Section"}
       </button>
       {open && (
-        <div className="absolute bottom-full left-0 right-0 mb-3 bg-white border border-slate-200 rounded-2xl shadow-2xl p-4 z-20">
+        <div className={`absolute bottom-full left-0 right-0 mb-3 bg-white border border-slate-200 rounded-2xl shadow-2xl p-4 z-20 ${isCentered ? "w-[400px] left-1/2 -translate-x-1/2" : ""}`}>
           <div className="flex items-center justify-between mb-3">
             <p className="text-[11px] font-black text-slate-400 uppercase tracking-wider">Select Section Type</p>
             <button onClick={() => setOpen(false)} className="text-slate-300 hover:text-slate-600"><X className="w-4 h-4" /></button>
           </div>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 gap-2">
             {SECTION_TYPES.map(type => {
               const Icon = type.icon;
               return (
                 <button key={type.value}
                   onClick={() => { onAdd(type.value); setOpen(false); }}
-                  className="flex flex-col items-start gap-1.5 p-3 rounded-xl border border-slate-100 bg-slate-50 hover:bg-white hover:border-slate-200 hover:shadow-sm transition-all text-left"
+                  className="flex flex-col items-start gap-1.5 p-3 rounded-xl border border-slate-100 bg-slate-50 hover:bg-white hover:border-slate-200 hover:shadow-sm transition-all text-left group/picker"
                 >
-                  <Icon className="w-4 h-4 text-slate-500" strokeWidth={2} />
+                  <Icon className="w-4 h-4 text-slate-400 group-hover/picker:text-indigo-500" strokeWidth={2.5} />
                   <span className="text-[13px] font-bold text-slate-900">{type.label}</span>
-                  <span className="text-[11px] text-slate-400">{type.desc}</span>
+                  <span className="text-[11px] text-slate-400 leading-tight">{type.desc}</span>
                 </button>
               );
             })}
@@ -312,6 +313,8 @@ const AddSectionPicker = ({ onAdd }) => {
     </div>
   );
 };
+
+// ... keep main comp ...
 
 // ─── Main Component ─────────────────────────────────────────────────────────────
 export default function DocsCreatePage({ categories = [], editDoc = null, onSave, onNavigate }) {
@@ -458,7 +461,10 @@ export default function DocsCreatePage({ categories = [], editDoc = null, onSave
             <>
               {/* Page details */}
               <div className="bg-white border border-slate-200/60 rounded-2xl p-6 shadow-sm space-y-5">
-                <h3 className="text-[13px] font-bold text-slate-900 pb-3 border-b border-slate-100">Page Details</h3>
+                <h3 className="text-[14px] font-black text-slate-900 pb-3 border-b border-slate-100 flex items-center gap-2">
+                  <div className="w-1.5 h-4 bg-indigo-500 rounded-full" />
+                  Page Details
+                </h3>
                 <div>
                   <Lbl required>Page Title</Lbl>
                   <Inp value={form.title} onChange={handleTitleChange} placeholder="e.g. Getting Started with Clyric" className={hasError("title")} />
@@ -466,46 +472,72 @@ export default function DocsCreatePage({ categories = [], editDoc = null, onSave
                 <div>
                   <Lbl required>URL Slug</Lbl>
                   <div className="flex items-center gap-2">
-                    <span className="text-[12px] font-mono text-slate-400 shrink-0">/docs/</span>
+                    <span className="text-[12px] font-mono text-slate-400 shrink-0 bg-slate-50 px-2 py-2.5 rounded-xl border border-slate-200/60">/docs/</span>
                     <Inp value={form.slug} onChange={e => upd({ slug: e.target.value })} placeholder="getting-started" mono className={hasError("slug")} />
                   </div>
                 </div>
-                <div>
-                  <Lbl>Short Description</Lbl>
-                  <DocsRichText value={form.shortDesc} onChange={val => upd({ shortDesc: val })} placeholder="1–2 sentence summary shown in listings and article subtitle." />
+                <div className="group">
+                  <Lbl icon={FileText}>Short Description</Lbl>
+                  <div className="bg-slate-50/50 rounded-2xl p-4 border border-slate-100 focus-within:bg-white focus-within:border-slate-200 focus-within:shadow-sm transition-all">
+                    <DocsRichText value={form.shortDesc} onChange={val => upd({ shortDesc: val })} placeholder="1–2 sentence summary shown in listings and article subtitle." />
+                  </div>
                 </div>
               </div>
 
               {/* Sections */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-[13px] font-bold text-slate-900">Content Sections</h3>
-                  <span className="text-[12px] text-slate-400">{sections.length} section{sections.length !== 1 ? "s" : ""}</span>
+              <div className="space-y-4 pt-2">
+                <div className="flex items-center justify-between px-1">
+                  <h3 className="text-[15px] font-black text-slate-900 tracking-tight flex items-center gap-2">
+                    Content Sections
+                    {sections.length > 0 && (
+                      <span className="bg-indigo-50 text-indigo-600 text-[10px] font-black px-2 py-0.5 rounded-full border border-indigo-100">
+                        {sections.length}
+                      </span>
+                    )}
+                  </h3>
+                  {sections.length > 0 && (
+                    <span className="text-[11px] font-bold text-slate-400 capitalize">
+                      {sections.length === 1 ? "document part" : "structured blocks"}
+                    </span>
+                  )}
                 </div>
 
-                {sections.length === 0 && (
-                  <div className="flex flex-col items-center justify-center py-12 border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/30">
-                    <FileText className="w-10 h-10 text-slate-200 mb-3" strokeWidth={1.5} />
-                    <p className="text-[13px] font-bold text-slate-400 mb-1">No sections yet</p>
-                    <p className="text-[12px] text-slate-300">Use the button below to add your first content block</p>
+                {sections.length === 0 ? (
+                  <div className="relative group overflow-hidden flex flex-col items-center justify-center py-20 px-6 border-2 border-dashed border-slate-200 rounded-[32px] bg-white transition-all hover:border-indigo-200">
+                    {/* Decorative background glow */}
+                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-40 h-40 bg-indigo-50 rounded-full blur-[60px] opacity-0 group-hover:opacity-100 transition-opacity" />
+                    
+                    <div className="relative z-10 flex flex-col items-center text-center">
+                      <div className="w-20 h-20 bg-slate-50 rounded-[28px] border border-slate-100 flex items-center justify-center mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-500 shadow-sm">
+                        <FileText className="w-8 h-8 text-slate-200 group-hover:text-indigo-400 transition-colors" strokeWidth={1.5} />
+                      </div>
+                      <h4 className="text-[16px] font-black text-slate-900 mb-2">No content sections yet</h4>
+                      <p className="text-[13px] text-slate-400 max-w-[240px] leading-relaxed mb-8">
+                        Break your documentation into manageable blocks of text, code, or images.
+                      </p>
+                      <AddSectionPicker onAdd={addSection} isCentered={true} />
+                    </div>
                   </div>
+                ) : (
+                  <>
+                    {sections.map((section, idx) => (
+                      <SectionCard
+                        key={section.id}
+                        section={section}
+                        index={idx}
+                        isFirst={idx === 0}
+                        isLast={idx === sections.length - 1}
+                        onUpdate={(data) => updateSection(section.id, data)}
+                        onDelete={() => deleteSection(section.id)}
+                        onMoveUp={() => moveSection(section.id, "up")}
+                        onMoveDown={() => moveSection(section.id, "down")}
+                      />
+                    ))}
+                    <div className="pt-2">
+                       <AddSectionPicker onAdd={addSection} />
+                    </div>
+                  </>
                 )}
-
-                {sections.map((section, idx) => (
-                  <SectionCard
-                    key={section.id}
-                    section={section}
-                    index={idx}
-                    isFirst={idx === 0}
-                    isLast={idx === sections.length - 1}
-                    onUpdate={(data) => updateSection(section.id, data)}
-                    onDelete={() => deleteSection(section.id)}
-                    onMoveUp={() => moveSection(section.id, "up")}
-                    onMoveDown={() => moveSection(section.id, "down")}
-                  />
-                ))}
-
-                <AddSectionPicker onAdd={addSection} />
               </div>
             </>
           )}

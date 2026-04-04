@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Plus, Pencil, Trash2, Search, ChevronDown, Eye, Globe,
   EyeOff, FileText, SlidersHorizontal, X, BookOpen, Copy
@@ -34,6 +34,8 @@ export default function DocsListPage({ pages = [], categories = [], onNavigate, 
   const [search, setSearch] = useState("");
   const [filterCat, setFilterCat] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [selected, setSelected] = useState([]);
 
   const [showFilters, setShowFilters] = useState(false);
@@ -48,12 +50,45 @@ export default function DocsListPage({ pages = [], categories = [], onNavigate, 
     });
   }, [pages, search, filterCat, filterStatus]);
 
+  // Derived Pagination
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const paginatedData = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filtered.slice(start, start + itemsPerPage);
+  }, [filtered, currentPage, itemsPerPage]);
+
+  // Reset to first page when filtering
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, filterCat, filterStatus, itemsPerPage]);
+
   const toggleSelect = (id) =>
     setSelected(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
   const toggleAll = () =>
-    setSelected(prev => prev.length === filtered.length ? [] : filtered.map(getId));
-  const bulkDelete = () => {
+    setSelected(prev => prev.length === paginatedData.length ? [] : paginatedData.map(getId));
 
+  const handleGoToPage = (val) => {
+    const p = parseInt(val);
+    if (p > 0 && p <= totalPages) setCurrentPage(p);
+  };
+
+  const getPageRange = () => {
+    const range = [];
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) range.push(i);
+    } else {
+      if (currentPage <= 3) {
+        range.push(1, 2, 3, "...", totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        range.push(1, "...", totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        range.push(1, "...", currentPage, "...", totalPages);
+      }
+    }
+    return range;
+  };
+  
+  const bulkDelete = () => {
     onBulkDelete(selected);
     setSelected([]);
   };
@@ -61,7 +96,10 @@ export default function DocsListPage({ pages = [], categories = [], onNavigate, 
 
   const confirmDelete = (page) => setDeleteConfirm(page);
   const doDelete = () => {
-    if (deleteConfirm) { onDelete(deleteConfirm.id); setDeleteConfirm(null); }
+    if (deleteConfirm) {
+      onDelete(getId(deleteConfirm));
+      setDeleteConfirm(null);
+    }
   };
 
   const hasFilters = search || filterCat || filterStatus;
@@ -191,7 +229,7 @@ export default function DocsListPage({ pages = [], categories = [], onNavigate, 
           <div className="flex items-center gap-4 px-5 py-3 border-b border-slate-100 bg-slate-50/30">
             <input
               type="checkbox"
-              checked={selected.length === filtered.length && filtered.length > 0}
+              checked={selected.length === paginatedData.length && paginatedData.length > 0}
               onChange={toggleAll}
               className="w-3.5 h-3.5 accent-slate-900 cursor-pointer"
             />
@@ -204,7 +242,7 @@ export default function DocsListPage({ pages = [], categories = [], onNavigate, 
           </div>
 
           {/* Rows */}
-          {filtered.map(page => {
+          {paginatedData.map(page => {
             const pid = getId(page);
             return (
               <div key={pid} className="group flex items-center gap-4 px-5 py-4 border-b border-slate-50 hover:bg-slate-50/40 transition-all last:border-0">
@@ -274,18 +312,89 @@ export default function DocsListPage({ pages = [], categories = [], onNavigate, 
 
               </div>
             </div>
-          );
-        })}
+            );
+          })}
 
 
-          {/* Footer */}
-          <div className="px-5 py-3 border-t border-slate-50 bg-slate-50/20 flex items-center justify-between">
-            <p className="text-[12px] font-bold text-slate-400">
-              {filtered.length} of {pages.length} documents
-            </p>
-            {selected.length > 0 && (
-              <p className="text-[12px] font-bold text-slate-500">{selected.length} selected</p>
-            )}
+          {/* ── Pagination Footer ── */}
+          <div className="px-6 py-4 flex items-center justify-between border-t border-slate-50 bg-white flex-wrap gap-3">
+            {/* Showing Limit */}
+            <div className="flex items-center gap-3">
+              <span className="text-[13px] text-slate-500 font-bold">Showing per page</span>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => setItemsPerPage(parseInt(e.target.value))}
+                className="bg-slate-50 border border-slate-200/60 rounded-lg text-[12px] font-bold px-2 py-1 focus:outline-none cursor-pointer hover:border-slate-300 transition-colors"
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </select>
+            </div>
+
+            {/* Nav Arrows & Numbers */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="w-8 h-8 flex items-center justify-center border border-slate-200 rounded-lg text-slate-400 hover:bg-slate-50 disabled:opacity-30 text-[13px] font-bold transition-all"
+              >
+                «
+              </button>
+              <div className="flex items-center gap-1">
+                {getPageRange().map((p, i) => (
+                  <button
+                    key={i}
+                    onClick={() => typeof p === "number" && setCurrentPage(p)}
+                    disabled={typeof p !== "number"}
+                    className={`min-w-[32px] h-8 px-2 rounded-lg text-[13px] font-bold transition-all ${
+                      currentPage === p 
+                        ? "bg-slate-900 text-white" 
+                        : typeof p === "number"
+                          ? "text-slate-600 hover:bg-slate-50"
+                          : "text-slate-300 cursor-default"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages || totalPages === 0}
+                className="w-8 h-8 flex items-center justify-center border border-slate-200 rounded-lg text-slate-400 hover:bg-slate-50 disabled:opacity-30 text-[13px] font-bold transition-all"
+              >
+                »
+              </button>
+            </div>
+
+            {/* Go To Page */}
+            <div className="flex items-center gap-2">
+              <span className="text-[13px] text-slate-500 font-bold">Go to page</span>
+              <div className="flex items-center bg-slate-50 border border-slate-200/60 rounded-lg px-2 py-1 focus-within:border-slate-300 transition-colors">
+                <input
+                  type="text"
+                  className="w-8 bg-transparent text-[12px] font-bold text-slate-900 outline-none"
+                  placeholder={currentPage}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleGoToPage(e.target.value);
+                      e.target.value = "";
+                    }
+                  }}
+                />
+                <button
+                  onClick={(e) => {
+                    const input = e.currentTarget.previousSibling;
+                    handleGoToPage(input.value);
+                    input.value = "";
+                  }}
+                  className="text-[11px] font-black text-indigo-600 ml-1 hover:text-indigo-700 uppercase tracking-wider"
+                >
+                  GO
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

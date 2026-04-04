@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Plus, Pencil, Trash2, Eye, EyeOff, Check, X,
   FolderOpen, Hash, ArrowUpDown, Info
@@ -179,13 +179,29 @@ const CategoryRow = ({ cat, pageCount, onEdit, onDelete, onToggle }) => (
 );
 
 // ─── Main Component ─────────────────────────────────────────────────────────────
-export default function DocsCategoryManager({ categories = [], onAdd, onUpdate, onDelete }) {
+export default function DocsCategoryManager({ categories = [], pages = [], onAdd, onUpdate, onDelete }) {
   const [editing, setEditing] = useState(null);   // null | "new" | category object
   const [search, setSearch] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  const filtered = categories.filter(c =>
-    !search || c.name.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = useMemo(() => {
+    return categories
+      .filter(c => !search || c.name.toLowerCase().includes(search.toLowerCase()))
+      .sort((a, b) => (Number(a.sortOrder) || 999) - (Number(b.sortOrder) || 999));
+  }, [categories, search]);
+
+  // Derived Pagination
+  const totalPages = Math.ceil(filtered.length / itemsPerPage);
+  const paginatedData = useMemo(() => {
+    const start = (currentPage - 1) * itemsPerPage;
+    return filtered.slice(start, start + itemsPerPage);
+  }, [filtered, currentPage, itemsPerPage]);
+
+  // Reset to first page when filtering
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, itemsPerPage]);
 
   const handleSave = (form) => {
     if (editing?.id) {
@@ -199,6 +215,27 @@ export default function DocsCategoryManager({ categories = [], onAdd, onUpdate, 
   const handleToggle = (id) => {
     const cat = categories.find(c => c.id === id);
     if (cat) onUpdate({ ...cat, visible: !cat.visible });
+  };
+
+  const handleGoToPage = (val) => {
+    const p = parseInt(val);
+    if (p > 0 && p <= totalPages) setCurrentPage(p);
+  };
+
+  const getPageRange = () => {
+    const range = [];
+    if (totalPages <= 5) {
+      for (let i = 1; i <= totalPages; i++) range.push(i);
+    } else {
+      if (currentPage <= 3) {
+        range.push(1, 2, 3, "...", totalPages);
+      } else if (currentPage >= totalPages - 2) {
+        range.push(1, "...", totalPages - 2, totalPages - 1, totalPages);
+      } else {
+        range.push(1, "...", currentPage, "...", totalPages);
+      }
+    }
+    return range;
   };
 
   const stats = {
@@ -296,25 +333,100 @@ export default function DocsCategoryManager({ categories = [], onAdd, onUpdate, 
           </div>
 
           {/* Rows */}
-          {filtered.length === 0 ? (
+          {paginatedData.length === 0 ? (
             <div className="py-12 text-center">
               <p className="text-[13px] font-bold text-slate-400">No categories match "{search}"</p>
             </div>
-          ) : filtered.map(cat => (
+          ) : paginatedData.map(cat => (
             <CategoryRow
               key={cat.id}
               cat={cat}
-              pageCount={cat.pageCount || 0}
+              pageCount={pages.filter(p => p.category === cat.name).length}
               onEdit={setEditing}
               onDelete={onDelete}
               onToggle={handleToggle}
             />
           ))}
 
-          {/* Footer */}
-          <div className="px-5 py-3 border-t border-slate-50 bg-slate-50/20 flex items-center justify-between">
-            <p className="text-[12px] font-bold text-slate-400">{filtered.length} categor{filtered.length !== 1 ? "ies" : "y"}</p>
-            <p className="text-[11px] text-slate-300">Hover a row to edit or toggle visibility</p>
+          {/* ── Pagination Footer ── */}
+          <div className="px-6 py-4 flex items-center justify-between border-t border-slate-50 bg-white flex-wrap gap-3">
+            {/* Showing Limit */}
+            <div className="flex items-center gap-3">
+              <span className="text-[13px] text-slate-500 font-bold">Showing per page</span>
+              <select
+                value={itemsPerPage}
+                onChange={(e) => setItemsPerPage(parseInt(e.target.value))}
+                className="bg-slate-50 border border-slate-200/60 rounded-lg text-[12px] font-bold px-2 py-1 focus:outline-none cursor-pointer hover:border-slate-300 transition-colors"
+              >
+                <option value={10}>10</option>
+                <option value={20}>20</option>
+                <option value={50}>50</option>
+              </select>
+            </div>
+
+            {/* Nav Arrows & Numbers */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="w-8 h-8 flex items-center justify-center border border-slate-200 rounded-lg text-slate-400 hover:bg-slate-50 disabled:opacity-30 text-[13px] font-bold transition-all"
+              >
+                «
+              </button>
+              <div className="flex items-center gap-1">
+                {getPageRange().map((p, i) => (
+                  <button
+                    key={i}
+                    onClick={() => typeof p === "number" && setCurrentPage(p)}
+                    disabled={typeof p !== "number"}
+                    className={`min-w-[32px] h-8 px-2 rounded-lg text-[13px] font-bold transition-all ${
+                      currentPage === p 
+                        ? "bg-slate-900 text-white" 
+                        : typeof p === "number"
+                          ? "text-slate-600 hover:bg-slate-50"
+                          : "text-slate-300 cursor-default"
+                    }`}
+                  >
+                    {p}
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages || totalPages === 0}
+                className="w-8 h-8 flex items-center justify-center border border-slate-200 rounded-lg text-slate-400 hover:bg-slate-50 disabled:opacity-30 text-[13px] font-bold transition-all"
+              >
+                »
+              </button>
+            </div>
+
+            {/* Go To Page */}
+            <div className="flex items-center gap-2">
+              <span className="text-[13px] text-slate-500 font-bold">Go to page</span>
+              <div className="flex items-center bg-slate-50 border border-slate-200/60 rounded-lg px-2 py-1 focus-within:border-slate-300 transition-colors">
+                <input
+                  type="text"
+                  className="w-8 bg-transparent text-[12px] font-bold text-slate-900 outline-none"
+                  placeholder={currentPage}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      handleGoToPage(e.target.value);
+                      e.target.value = "";
+                    }
+                  }}
+                />
+                <button
+                  onClick={(e) => {
+                    const input = e.currentTarget.previousSibling;
+                    handleGoToPage(input.value);
+                    input.value = "";
+                  }}
+                  className="text-[11px] font-black text-indigo-600 ml-1 hover:text-indigo-700 uppercase tracking-wider"
+                >
+                  GO
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

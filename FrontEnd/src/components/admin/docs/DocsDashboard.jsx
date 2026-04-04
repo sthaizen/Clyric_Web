@@ -8,9 +8,9 @@ import {
 const KpiCard = ({ label, value, sub, badgeText, badgeColor, icon: Icon }) => {
   const colors = {
     emerald: "bg-emerald-50 text-emerald-600",
-    orange:  "bg-orange-50 text-orange-500",
-    slate:   "bg-slate-100 text-slate-500",
-    violet:  "bg-violet-50 text-violet-500",
+    orange: "bg-orange-50 text-orange-500",
+    slate: "bg-slate-100 text-slate-500",
+    violet: "bg-violet-50 text-violet-500",
   };
   return (
     <div className="bg-white border border-slate-200/60 rounded-[18px] p-6 shadow-sm flex flex-col justify-between">
@@ -40,15 +40,13 @@ const KpiCard = ({ label, value, sub, badgeText, badgeColor, icon: Icon }) => {
 const QuickAction = ({ icon: Icon, label, desc, accent, onClick }) => (
   <button
     onClick={onClick}
-    className={`w-full flex items-center gap-4 p-4 rounded-2xl border transition-all text-left group ${
-      accent
-        ? "bg-slate-900 border-slate-900 hover:bg-slate-800"
-        : "bg-white border-slate-200/60 hover:border-slate-300 hover:shadow-sm"
-    }`}
+    className={`w-full flex items-center gap-4 p-4 rounded-2xl border transition-all text-left group ${accent
+      ? "bg-slate-900 border-slate-900 hover:bg-slate-800"
+      : "bg-white border-slate-200/60 hover:border-slate-300 hover:shadow-sm"
+      }`}
   >
-    <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${
-      accent ? "bg-white/10" : "bg-slate-50 border border-slate-100"
-    }`}>
+    <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${accent ? "bg-white/10" : "bg-slate-50 border border-slate-100"
+      }`}>
       <Icon className={`w-4 h-4 ${accent ? "text-white" : "text-slate-500"}`} strokeWidth={2} />
     </div>
     <div className="min-w-0 flex-1">
@@ -61,10 +59,37 @@ const QuickAction = ({ icon: Icon, label, desc, accent, onClick }) => (
 
 export default function DocsDashboard({ pages = [], categories = [], media = [], onNavigate }) {
   const published = pages.filter(p => p.status === "published").length;
-  const drafts     = pages.filter(p => p.status === "draft").length;
-  const totalDocs  = pages.length;
-  const totalCats  = categories.length;
+  const drafts = pages.filter(p => p.status === "draft").length;
+  const totalDocs = pages.length;
+  const totalCats = categories.length;
   const totalMedia = media.length;
+
+  // -- Real Data Calculations --
+
+  // 1. Find the truly most recent updated page
+  const sortedByUpdate = [...pages].sort((a, b) =>
+    new Date(b.updatedAt || b.createdAt || 0) - new Date(a.updatedAt || a.createdAt || 0)
+  );
+  const lastUpdatedPage = sortedByUpdate[0];
+
+  // 2. Simple relative time helper
+  const getTimeAgo = (date) => {
+    if (!date) return "—";
+    const seconds = Math.floor((new Date() - new Date(date)) / 1000);
+    if (seconds < 60) return "Just now";
+    const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) return `${minutes}m ago`;
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours}h ago`;
+    const days = Math.floor(hours / 24);
+    return `${days}d ago`;
+  };
+
+  // 3. Proper Media Count (Tracked in storage + used in page sections)
+  const imageSections = pages.reduce((acc, p) =>
+    acc + (p.sections?.filter(s => s.type === "image" && s.imageUrl).length || 0), 0
+  );
+  const realMediaCount = Math.max(totalMedia, imageSections);
 
   const isEmpty = totalDocs === 0 && totalCats === 0;
 
@@ -85,7 +110,7 @@ export default function DocsDashboard({ pages = [], categories = [], media = [],
             href="/docs"
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200/60 rounded-xl text-[13px] font-bold text-slate-900 hover:bg-slate-50 transition-all shadow-sm"
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200/60 rounded-xl text-[13px] font-bold text-slate-700 hover:bg-slate-50 transition-all shadow-sm"
           >
             <ExternalLink strokeWidth={2} className="w-3.5 h-3.5 text-slate-400" />
             View Live Docs
@@ -172,9 +197,8 @@ export default function DocsDashboard({ pages = [], categories = [], media = [],
                     <p className="text-[11px] text-slate-400 font-mono">/docs/{page.slug}</p>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
-                    <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg uppercase tracking-wider ${
-                      page.status === "published" ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-500"
-                    }`}>
+                    <span className={`text-[10px] font-black px-2 py-0.5 rounded-lg uppercase tracking-wider ${page.status === "published" ? "bg-emerald-50 text-emerald-600" : "bg-slate-100 text-slate-500"
+                      }`}>
                       {page.status}
                     </span>
                     <span className="text-[11px] text-slate-300">{page.category}</span>
@@ -200,11 +224,11 @@ export default function DocsDashboard({ pages = [], categories = [], media = [],
 
             {/* Category breakdown */}
             {categories.length > 0 && (
-              <div className="bg-white border border-slate-200/60 rounded-[20px] shadow-sm overflow-hidden">
-                <div className="px-5 py-4 border-b border-slate-50">
+              <div className="bg-white border border-slate-200/60 rounded-[20px] shadow-sm overflow-hidden flex flex-col h-[170px]">
+                <div className="px-5 py-4 border-b border-slate-50 shrink-0">
                   <h3 className="text-[14px] font-bold text-slate-900">Pages by Category</h3>
                 </div>
-                <div className="p-5 space-y-4">
+                <div className="p-5 space-y-4 max-h-[268px] overflow-y-auto transparent-scrollbar">
                   {categories.map(cat => {
                     const count = pages.filter(p => p.category === cat.name).length;
                     const pct = totalDocs > 0 ? Math.round((count / totalDocs) * 100) : 0;
@@ -231,8 +255,8 @@ export default function DocsDashboard({ pages = [], categories = [], media = [],
       <div className="grid grid-cols-3 gap-6 px-1">
         {[
           { icon: BookOpen, label: "Total Sections", value: pages.reduce((s, p) => s + (p.sections?.length || 0), 0), sub: "across all pages", color: "text-blue-500", bg: "bg-blue-50" },
-          { icon: Image,    label: "Media Files",   value: totalMedia, sub: "images uploaded", color: "text-orange-500", bg: "bg-orange-50" },
-          { icon: Clock,    label: "Last Updated",  value: pages.length > 0 ? "Just now" : "—", sub: pages.length > 0 ? pages[pages.length - 1]?.title || "" : "No pages yet", color: "text-violet-500", bg: "bg-violet-50" },
+          { icon: Image, label: "Media Files", value: realMediaCount, sub: "images uploaded", color: "text-orange-500", bg: "bg-orange-50" },
+          { icon: Clock, label: "Last Updated", value: lastUpdatedPage ? getTimeAgo(lastUpdatedPage.updatedAt) : "—", sub: lastUpdatedPage ? lastUpdatedPage.title : "No pages yet", color: "text-violet-500", bg: "bg-violet-50" },
         ].map((stat, i) => (
           <div key={i} className="bg-white border border-slate-200/60 rounded-[18px] p-5 shadow-sm flex items-center gap-4">
             <div className={`w-10 h-10 rounded-2xl ${stat.bg} flex items-center justify-center shrink-0`}>
