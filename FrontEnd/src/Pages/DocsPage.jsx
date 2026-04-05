@@ -302,7 +302,7 @@ export default function DocsPage() {
                 key={item.label}
                 onClick={() => navigateTo("", item.slug)}
                 className={`
-                  group flex items-center gap-3 px-4 py-2.5 rounded-xl text-[14px] font-semibold
+                  group flex w-full items-center gap-3 px-4 py-2.5 rounded-xl text-[14px] font-semibold
                   transition-all duration-200 ease-out active:scale-[0.98]
                   ${item.active
                     ? "bg-white text-[#0b0b0c] shadow-lg shadow-white/5"

@@ -17,6 +17,7 @@ import PriceOverview from "./Pages/PriceOverview";
 import Connection from "./components/Connection";
 import LeaderboardPage from "./Pages/LeaderboardPage";
 import DocsPage from "./Pages/DocsPage";
+import TermsPage from "./Pages/TermsPage";
 
 // CSS Imports
 import "slick-carousel/slick/slick.css";
@@ -89,6 +90,7 @@ const App = () => {
           <Route path="/checkout" element={<CosmicCheckout />} />
           <Route path="/docs" element={<DocsPage />} />
           <Route path="/docs/:slug" element={<DocsPage />} />
+          <Route path="/terms" element={<TermsPage />} />
         </Routes>
       </div>
       <Toaster />

@@ -15,6 +15,7 @@ import Newpricepllan from "../components/Newpricepllan";
 import CAT from "../components/CAT";
 import Footer from "../components/Footer";
 
+
 const LandingPage = ({ theme, setTheme }) => {
   // Removed isSignedIn check from here
   const { user } = useUser();
