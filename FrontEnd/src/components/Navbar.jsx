@@ -209,14 +209,14 @@ const Navbar = ({ forceLight = false }) => {
                             </div>
                         </div>
 
-                        <Link to="/customers" className="text-[13px] font-medium hover:opacity-60 transition-opacity">
-                            Customers
+                        <Link to="/terms" className="text-[13px] font-medium hover:opacity-60 transition-opacity">
+                            Terms & Conditions
                         </Link>
                         <Link to="/priceoverview" className="text-[13px] font-medium hover:opacity-60 transition-opacity">
                             Pricing
                         </Link>
                         <Link to="/resources" className="text-[13px] font-medium hover:opacity-60 transition-opacity">
-                            Interview Simulator
+                            FAQ
                         </Link>
                     </div>
 
@@ -281,7 +281,7 @@ const Navbar = ({ forceLight = false }) => {
                 <div className="flex flex-col gap-6 text-white/90 mt-8 text-[15px] font-medium">
                     <Link onClick={() => setSidebarOpen(false)} to="/products" className="hover:text-white transition-colors">Products</Link>
                     <Link onClick={() => setSidebarOpen(false)} to="/integrations" className="hover:text-white transition-colors">Integrations</Link>
-                    <Link onClick={() => setSidebarOpen(false)} to="/customers" className="hover:text-white transition-colors">Customers</Link>
+                    <Link onClick={() => setSidebarOpen(false)} to="/terms" className="hover:text-white transition-colors">Terms & Conditions</Link>
                     <Link onClick={() => setSidebarOpen(false)} to="/price" className="hover:text-white transition-colors">Pricing</Link>
                     <Link onClick={() => setSidebarOpen(false)} to="/resources" className="hover:text-white transition-colors">Resources</Link>
 
