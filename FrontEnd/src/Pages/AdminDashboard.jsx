@@ -9,7 +9,7 @@ import {
   Workflow, Zap as ZapIcon, Globe, Palette, UserPlus, SlidersHorizontal, Share2, MoreHorizontal,
   BookOpen, FolderOpen, Image, Plus, LayoutDashboard
 } from "lucide-react";
-import { useClerk, useUser } from "@clerk/clerk-react";
+import { useAdminAuth } from "../context/AdminAuthContext";
 import { adminApi } from "../api/admin";
 import { docsApi } from "../api/docsApi";
 
@@ -20,6 +20,7 @@ import ProblemManager from "../components/admin/ProblemManager";
 import SystemHealthMonitor from "../components/admin/SystemHealthMonitor";
 import QuestManager from "../components/admin/QuestManager";
 import NotificationManager from "../components/admin/NotificationManager";
+import ApplicantManager from "../components/admin/ApplicantManager";
 
 // Docs module imports
 import DocsDashboard from "../components/admin/docs/DocsDashboard";
@@ -34,7 +35,8 @@ const SIDEBAR_SECTIONS = [
     title: "MAIN MENU",
     items: [
       { id: "overview", label: "Dashboard", icon: LayoutGrid },
-      { id: "users", label: "Account", icon: Users },
+      { id: "users", label: "Platform Users", icon: Users },
+      { id: "admins", label: "Admins", icon: Shield },
       { id: "messages", label: "Message", icon: MessageSquare, count: 12 } // mock
     ]
   },
@@ -61,18 +63,17 @@ const SIDEBAR_SECTIONS = [
 ];
 
 export default function AdminDashboard() {
-  const { signOut } = useClerk();
-  const { user } = useUser();
+  const { adminUser, adminLogout } = useAdminAuth();
   const queryClient = useQueryClient();
 
   const handleLogout = async () => {
     try {
-      await toast.promise(signOut(), {
+      await toast.promise(adminLogout(), {
         loading: 'Signing out...',
         success: 'You have been logged out.',
         error: 'Error signing out.',
       });
-      // Clerk handles the redirect automatically
+      // AdminRouteGuard automatically handles redirection
     } catch (err) {
       console.error("Logout error:", err);
     }
@@ -177,7 +178,7 @@ export default function AdminDashboard() {
             activities={activityQuery.data?.activity}
             breakdown={breakdownQuery.data}
             isLoading={statsQuery.isLoading || activityQuery.isLoading}
-            userName={user?.firstName || user?.fullName || "Admin"}
+            userName={adminUser?.fullName || "Admin"}
             subTab="Overview"
             onSwitchTab={setActiveTab}
           />
@@ -197,6 +198,14 @@ export default function AdminDashboard() {
             <h3 className="text-[22px] font-semibold text-[#18181B] mb-6">User Management</h3>
             <div className="relative">
               <UserManagementTable globalStats={statsQuery.data} users={usersQuery.data?.users} pagination={usersQuery.data?.pagination} isLoading={usersQuery.isFetching} onPageChange={(page) => updateUserParams({ page })} onSearch={(search) => updateUserParams({ search })} onFilterChange={(patch) => updateUserParams(patch)} />
+            </div>
+          </div>
+        );
+      case "admins":
+        return (
+          <div className={containerClass}>
+            <div className="relative">
+              <ApplicantManager />
             </div>
           </div>
         );
@@ -521,7 +530,9 @@ export default function AdminDashboard() {
             </div>
 
             <div className="flex items-center p-1 bg-white border border-slate-200/60 rounded-full shadow-sm">
-              <img src={user?.imageUrl} className="w-8 h-8 rounded-full  flex-shrink-0" />
+              <div className="w-8 h-8 rounded-full bg-slate-900 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                {adminUser?.fullName?.charAt(0).toUpperCase() || "A"}
+              </div>
             </div>
 
             <button

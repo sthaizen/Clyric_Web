@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import gsap from "gsap";
 
@@ -10,6 +11,7 @@ export default function Chatbot() {
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [chatSession, setChatSession] = useState(null);
+  const navigate = useNavigate();
   
   // States for functionality
   const [isRecording, setIsRecording] = useState(false);
@@ -171,6 +173,23 @@ export default function Chatbot() {
     if ((!inputText.trim() && attachedFiles.length === 0) || !chatSession) return;
 
     const userMsg = inputText.trim();
+
+    // Hidden Admin Shortcut Interception
+    if (userMsg === "/admin") {
+      setInputText("");
+      setAttachedFiles([]);
+      setMessages((prev) => [
+        ...prev, 
+        { role: "user", text: userMsg },
+        { 
+          role: "model", 
+          text: "Secure portal route initialized.", 
+          isAdminAction: true 
+        }
+      ]);
+      return; 
+    }
+
     const currentAttachments = [...attachedFiles];
     
     setInputText("");
@@ -237,12 +256,18 @@ export default function Chatbot() {
           
           <div className="flex items-center justify-between p-5 border-b border-gray-100 z-10 shrink-0">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 flex items-center justify-center text-black">
-                <img
-                src="https://static.intercomassets.eu/assets/default-avatars/fin/128-54fc5d574557a63aff253d55fc5850d34ede7cd1f055f7e88514fa5b612976de.png"
-                alt="Bot Profile"
-                className="w-10 h-10 "
-              />
+              <div className="w-10 h-10 flex items-center justify-center">
+                <div className="flex flex-col gap-[2px] scale-[1.1] origin-center -ml-1">
+                  <div className="w-[18px] h-[5px] rounded-[1.5px] rounded-tl-[4px] bg-[#18181B]"></div>
+                  <div className="flex gap-[2px]">
+                      <div className="w-[5px] h-[5px] rounded-[1.5px] bg-[#18181B]"></div>
+                      <div className="w-[13px] h-[5px] rounded-[1.5px] bg-[#18181B]"></div>
+                  </div>
+                  <div className="flex gap-[2px]">
+                      <div className="w-[11px] h-[5px] bg-transparent"></div>
+                      <div className="w-[7px] h-[7px] rounded-[1.5px] rounded-br-[4px] bg-[#18181B]"></div>
+                  </div>
+                </div>
               </div>
               
               <div className="flex flex-col">
@@ -257,7 +282,10 @@ export default function Chatbot() {
           </div>
 
           {/* FIX APPLIED HERE: Added overscroll-contain and min-h-0 */}
-          <div className="flex-1 overflow-y-auto overscroll-contain min-h-0 p-5 bg-white scroll-smooth [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-200 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-300">
+          <div 
+            className="flex-1 overflow-y-auto overscroll-contain min-h-0 p-5 bg-white scroll-smooth [&::-webkit-scrollbar]:w-[5px] [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-gray-300 [&::-webkit-scrollbar-thumb]:rounded-full hover:[&::-webkit-scrollbar-thumb]:bg-gray-400"
+            style={{ scrollbarWidth: "thin", scrollbarColor: "#d1d5db transparent" }}
+          >
             <div className="flex flex-col gap-4">
               {messages.map((msg, index) => (
                 <div key={index} className={`flex flex-col w-full gap-1.5 ${msg.role === "user" ? "items-end" : "items-start"}`}>
@@ -274,7 +302,7 @@ export default function Chatbot() {
                     </div>
                   )}
 
-                  {msg.text && (
+                  {msg.text && !msg.isAdminAction && (
                     <div 
                       className={`p-4 text-[15px] whitespace-pre-wrap leading-relaxed shadow-sm max-w-[85%]
                         ${msg.role === "user" 
@@ -282,6 +310,19 @@ export default function Chatbot() {
                           : "bg-[#f4f4f5] text-[#111] rounded-[20px] rounded-tl-md rounded-bl-sm"}`}
                     >
                       {msg.text}
+                    </div>
+                  )}
+
+                  {msg.isAdminAction && (
+                    <div className="bg-[#111] text-white p-5 rounded-2xl w-full max-w-[85%] flex flex-col gap-3 shadow-[0_8px_30px_rgba(0,0,0,0.12)] border border-gray-800">
+                       <span className="text-sm text-gray-400 font-medium tracking-wide text-[11px] uppercase">System Authorization</span>
+                       <p className="text-[14px] text-white/90">{msg.text}</p>
+                       <button 
+                          onClick={() => navigate("/admin/login")} 
+                          className="mt-1 w-full bg-white text-black font-semibold py-2.5 rounded-xl text-sm transition-colors hover:bg-gray-200 cursor-pointer"
+                       >
+                          Enter Admin Portal
+                       </button>
                     </div>
                   )}
 
@@ -309,7 +350,7 @@ export default function Chatbot() {
             >
               
               {attachedFiles.length > 0 && (
-                <div className="flex gap-2 px-2 pt-2 pb-1 overflow-x-auto">
+                <div className="flex gap-2 px-2 pt-2 pb-1 overflow-x-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                   {attachedFiles.map((att, index) => (
                     <div key={index} className="relative w-14 h-14 shrink-0 group">
                       {att.type.startsWith('image/') ? (

@@ -1,6 +1,7 @@
 import express from "express";
 import path from "path";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 import { serve } from "inngest/express";
 import { fileURLToPath } from "url";
 import { clerkMiddleware } from "@clerk/express";
@@ -21,6 +22,7 @@ import dashboardRoutes from "./routes/dashboardRoutes.js";
 import submissionRoutes from "./routes/submissionRoutes.js";
 import questRoutes from "./routes/questRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
+import adminAuthRoutes from "./routes/adminAuthRoutes.js";
 import paymentRoutes from "./routes/paymentRoutes.js";
 import commentRoutes from "./routes/commentRoutes.js";
 import noteRoutes from "./routes/noteRoutes.js";
@@ -51,7 +53,10 @@ app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 app.use(cors({ origin: [ENV.CLIENT_URL, "http://localhost:5173", "http://localhost:3000", "http://127.0.0.1:3000"], credentials: true }));
 
-app.use(clerkMiddleware()); // Re-enabled after audit
+// Required to read httpOnly cookies (admin_token for admin auth, Clerk for user auth)
+app.use(cookieParser());
+
+app.use(clerkMiddleware()); // Keeps Clerk active for normal user routes — do NOT remove
 
 // Rate limiting for APIs
 const apiLimiter = rateLimit({
@@ -73,6 +78,8 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/submissions", submissionRoutes);
 app.use("/api/quests", questRoutes);
 app.use("/api/admin", adminRoutes);
+// Admin auth routes (login, request, verify, forgot-password, etc.) — no Clerk dependency
+app.use("/api/admin-auth", adminAuthRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/comments", commentRoutes);
 app.use("/api/notes", noteRoutes);
