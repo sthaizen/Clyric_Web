@@ -30,4 +30,14 @@ export const ENV={
     KHALTI_PUBLIC_KEY: process.env.KHALTI_PUBLIC_KEY,
     KHALTI_INITIATE_URL: process.env.KHALTI_INITIATE_URL,
     KHALTI_LOOKUP_URL: process.env.KHALTI_LOOKUP_URL,
+
+    // --- Admin Custom Auth (separate from Clerk) ---
+    ADMIN_JWT_SECRET: process.env.ADMIN_JWT_SECRET,
+
+    // --- SMTP (for admin email verification, approval, reset) ---
+    SMTP_HOST: process.env.SMTP_HOST,
+    SMTP_PORT: parseInt(process.env.SMTP_PORT || "587", 10),
+    SMTP_USER: process.env.SMTP_USER,
+    SMTP_PASS: process.env.SMTP_PASS,
+    SMTP_FROM: process.env.SMTP_FROM,
 }

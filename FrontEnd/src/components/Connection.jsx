@@ -14,25 +14,25 @@ const Connection = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isSignup, setIsSignup] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
-const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const slides = [
-  {
-    title: "Practice Smarter.\nPrepare Confidently.\nSucceed Anywhere.",
-    description:
-      "From coding challenges to AI-powered mock interviews, our platform helps you practice effectively and prepare for real-world interviews from anywhere."
-  },
-  {
-    title: "Real Interviews.\nStructured Practice.\nMeasurable Progress.",
-    description:
-      "Access realistic interview simulations, timed coding challenges, and performance analytics designed to mirror real technical and behavioral interviews."
-  },
-  {
-    title: "Track Progress.\nIdentify Weaknesses.\nImprove Faster.",
-    description:
-      "Monitor your interview readiness with detailed reports, feedback insights, and continuous improvement tracking tailored to your preparation journey."
-  }
-];
+    {
+      title: "Practice Smarter.\nPrepare Confidently.\nSucceed Anywhere.",
+      description:
+        "From coding challenges to AI-powered mock interviews, our platform helps you practice effectively and prepare for real-world interviews from anywhere."
+    },
+    {
+      title: "Real Interviews.\nStructured Practice.\nMeasurable Progress.",
+      description:
+        "Access realistic interview simulations, timed coding challenges, and performance analytics designed to mirror real technical and behavioral interviews."
+    },
+    {
+      title: "Track Progress.\nIdentify Weaknesses.\nImprove Faster.",
+      description:
+        "Monitor your interview readiness with detailed reports, feedback insights, and continuous improvement tracking tailored to your preparation journey."
+    }
+  ];
 
 
   useEffect(() => {
@@ -64,7 +64,7 @@ const navigate = useNavigate();
           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id="geometric" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
-                <polygon points="50,0 100,50 50,100 0,50" fill="none" stroke="currentColor" strokeWidth="0.5" className="text-blue-400"/>
+                <polygon points="50,0 100,50 50,100 0,50" fill="none" stroke="currentColor" strokeWidth="0.5" className="text-blue-400" />
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#geometric)" />
@@ -105,9 +105,8 @@ const navigate = useNavigate();
             {slides.map((_, index) => (
               <div
                 key={index}
-                className={`w-12 h-1 rounded-full transition-all duration-500 ${
-                  index === currentSlide ? 'bg-white' : 'bg-white opacity-30'
-                }`}
+                className={`w-12 h-1 rounded-full transition-all duration-500 ${index === currentSlide ? 'bg-white' : 'bg-white opacity-30'
+                  }`}
               ></div>
             ))}
           </div>
@@ -116,7 +115,7 @@ const navigate = useNavigate();
         {/* Back button */}
         <button
           type="button"
-           onClick={() => navigate("/")}
+          onClick={() => navigate("/")}
           className="absolute top-8 right-8 z-20 flex items-center space-x-2 text-white transition-colors cursor-pointer"
         >
           <ArrowLeft size={20} />
@@ -229,7 +228,7 @@ const navigate = useNavigate();
               {/* Sign up link */}
               <p className="mt-6 text-center text-sm text-gray-600">
                 Don't have an account?{' '}
-                <button 
+                <button
                   onClick={() => setIsSignup(true)}
                   className="text-blue-600 font-medium cursor-pointer"
                 >
@@ -354,7 +353,7 @@ const navigate = useNavigate();
               {/* Login link */}
               <p className="mt-6 text-center text-sm text-gray-600">
                 Already have an account?{' '}
-                <button 
+                <button
                   onClick={() => setIsSignup(false)}
                   className="text-blue-600 font-medium cursor-pointer"
                 >

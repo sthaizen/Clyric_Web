@@ -174,7 +174,7 @@ const Hero = () => {
 
           <div className="flex flex-wrap items-center gap-4 opacity-0">
             <Link
-              to="/connection"
+              to="/admin/login"
               className="inline-flex items-center justify-center bg-white text-[#222222] font-semibold rounded-full hover:bg-gray-100 transition-colors"
               style={{ padding: '14px 32px', fontSize: '15px' }}
             >

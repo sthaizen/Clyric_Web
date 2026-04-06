@@ -13,11 +13,17 @@ import ProblemPage from "./Pages/ProblemPage";
 import Servicess from "./Pages/Servicess";
 import CodingEnvironemt from "./Pages/CodingEnvironemt";
 import AdminDashboard from "./Pages/AdminDashboard";
+import AdminLoginPage from "./Pages/AdminLoginPage";
+import AdminChangePasswordPage from "./Pages/AdminChangePasswordPage";
 import PriceOverview from "./Pages/PriceOverview";
 import Connection from "./components/Connection";
 import LeaderboardPage from "./Pages/LeaderboardPage";
 import DocsPage from "./Pages/DocsPage";
 import TermsPage from "./Pages/TermsPage";
+
+// Admin Auth (no Clerk)
+import { AdminAuthProvider } from "./context/AdminAuthContext";
+import AdminRouteGuard from "./components/admin/AdminRouteGuard";
 
 // CSS Imports
 import "slick-carousel/slick/slick.css";
@@ -46,19 +52,14 @@ const App = () => {
         socket.connect();
       }
 
-      // Auto-navigation for Admin
-      if (user.publicMetadata?.role === "admin") {
-        const currentPath = window.location.pathname;
-        if (currentPath === "/" || currentPath === "/dashboard") {
-          navigate("/admin");
-        }
-      }
+      // NOTE: Admin auto-redirect via Clerk has been removed.
+      // Admins now log in at /admin/login using a separate custom auth system.
 
       return () => {
         socket.off("connect", onConnect);
       };
     }
-  }, [isLoaded, isSignedIn, user?.id, user?.publicMetadata?.role, navigate]);
+  }, [isLoaded, isSignedIn, user?.id, navigate]);
 
   if (!isLoaded) return null;
 
@@ -84,7 +85,18 @@ const App = () => {
           <Route path="/connection" element={<Connection />} />
           <Route path="/service" element={<Servicess />} />
           <Route path="/coding" element={<CodingEnvironemt />} />
-          <Route path="/admin" element={<AdminDashboard />} />
+          {/* ─── Admin Routes (custom auth — no Clerk) ─── */}
+          <Route path="/admin/login" element={<AdminAuthProvider><AdminLoginPage /></AdminAuthProvider>} />
+          <Route path="/admin/reset-password" element={<AdminAuthProvider><AdminLoginPage /></AdminAuthProvider>} />
+          <Route path="/admin/change-password" element={<AdminAuthProvider><AdminChangePasswordPage /></AdminAuthProvider>} />
+          <Route path="/admin" element={
+            <AdminAuthProvider>
+              <AdminRouteGuard>
+                <AdminDashboard />
+              </AdminRouteGuard>
+            </AdminAuthProvider>
+          } />
+          
           <Route path="/priceoverview" element={<PriceOverview />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/checkout" element={<CosmicCheckout />} />

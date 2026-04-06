@@ -10,7 +10,7 @@ import {
   duplicatePage,
   uploadDocImage
 } from "../controllers/docsController.js";
-import { adminRoute } from "../middleware/adminMiddleware.js";
+import { adminJwtAuth } from "../middleware/adminJwtAuth.js";
 import multer from "multer";
 
 const router = express.Router();
@@ -25,17 +25,17 @@ const upload = multer({
 router.get("/categories", getCategories);
 router.get("/pages", getPages);
 
-// Admin routes
-router.post("/categories", adminRoute, upsertCategory);
-router.delete("/categories/:id", adminRoute, deleteCategory);
+// Admin routes (protected by custom JWT — no Clerk)
+router.post("/categories", adminJwtAuth, upsertCategory);
+router.delete("/categories/:id", adminJwtAuth, deleteCategory);
 
-router.post("/pages", adminRoute, upsertPage);
-router.post("/pages/bulk-delete", adminRoute, bulkDeletePages);
-router.post("/pages/:id/duplicate", adminRoute, duplicatePage);
-router.delete("/pages/:id", adminRoute, deletePage);
+router.post("/pages", adminJwtAuth, upsertPage);
+router.post("/pages/bulk-delete", adminJwtAuth, bulkDeletePages);
+router.post("/pages/:id/duplicate", adminJwtAuth, duplicatePage);
+router.delete("/pages/:id", adminJwtAuth, deletePage);
 
 // Image uploading
-router.post("/upload", adminRoute, upload.single("image"), uploadDocImage);
+router.post("/upload", adminJwtAuth, upload.single("image"), uploadDocImage);
 
 
 

@@ -1,5 +1,6 @@
 import express from "express";
-import { adminRoute } from "../middleware/adminMiddleware.js";
+import { adminJwtAuth } from "../middleware/adminJwtAuth.js";
+import { adminMasterOnly } from "../middleware/adminMasterOnly.js";
 import {
   getAdminStats,
   getAdminUsers,
@@ -21,11 +22,19 @@ import {
   deleteNotification,
   getSystemHealth,
 } from "../controllers/adminController.js";
+import {
+  approveApplicant,
+  rejectApplicant,
+  suspendAdmin,
+  reactivateAdmin,
+  listAdminAccounts,
+  deleteAdminAccount,
+} from "../controllers/adminAuthController.js";
 
 const router = express.Router();
 
-// All routes are protected by adminRoute middleware
-router.use(adminRoute);
+// ─── All routes protected by custom admin JWT (no Clerk) ─────────────────────
+router.use(adminJwtAuth);
 
 // Dashboard overview stats
 router.get("/stats", getAdminStats);
@@ -63,5 +72,20 @@ router.delete("/notifications/:id", deleteNotification);
 
 // System health check
 router.get("/health", getSystemHealth);
+
+// ─── Admin account management (master admin only) ─────────────────────────────
+// List all admin accounts / applicants (optionally filter by ?status=pending_approval)
+router.get("/accounts", adminMasterOnly, listAdminAccounts);
+
+// Applicant approval / rejection
+router.patch("/applicants/:id/approve", adminMasterOnly, approveApplicant);
+router.patch("/applicants/:id/reject", adminMasterOnly, rejectApplicant);
+
+// Admin suspension / reactivation
+router.patch("/admins/:id/suspend", adminMasterOnly, suspendAdmin);
+router.patch("/admins/:id/reactivate", adminMasterOnly, reactivateAdmin);
+
+// Remove an admin or application entirely
+router.delete("/accounts/:id", adminMasterOnly, deleteAdminAccount);
 
 export default router;
