@@ -30,7 +30,7 @@ const FaqCTASection = () => {
     return (
         <section
             ref={sectionRef}
-            className="w-full py-16 md:py-24 bg-[#d9dcfa] flex justify-center px-6 md:px-12"
+            className="w-full py-16 md:py-24 bg-[#f7f8fe] flex justify-center px-6 md:px-12"
         >
             <div className="relative w-full max-w-[1440px] aspect-[1515/661] min-h-[500px] rounded-[19px] overflow-hidden">
 
@@ -47,25 +47,24 @@ const FaqCTASection = () => {
 
                 {/* Content Card - Pinned to Right as per layout inspection */}
                 <div
-                    ref={cardRef}
-                    className="absolute inset-y-0 right-0 w-full md:w-[60%] lg:w-[55%] flex items-center justify-end md:pr-12 lg:pr-16"
+                    className="absolute inset-y-0 right-0 w-full md:w-[60%] lg:w-[55%] flex items-center justify-end md:pr-12 lg:pr-8 "
                 >
-                    <div className="bg-[#D8DCFA] rounded-[18px] p-10 md:p-16 lg:p-20 w-[95%] md:w-full max-w-[750px] shadow-2xl">
-                        <h2 className="text-[32px] md:text-[42px] lg:text-[54px] font-normal leading-[1.15] text-[#303452] tracking-tight">
-                            Compliance doesn't <br /> have to be complicated.
+                    <div className="bg-[#D8DCFA] rounded-[18px] p-10 md:p-16 lg:p-20 w-[95%] md:w-full max-w-[750px] shadow-2xl ml-20">
+                        <h2 className="text-[32px] md:text-[32px] lg:text-[38px] font-normal leading-[1.15] text-[#303452] tracking-tight mb-40">
+                            Learning doesn't <br /> have to be complicated.
                         </h2>
 
-                        <p className="mt-6 text-[#303452] text-[16px] md:text-[20px] leading-relaxed max-w-[550px]">
-                            Not even in HR. We will show you how easy it is to roll out your individual benefits programme.
+                        <p className="mt-6 text-[#303452] text-[16px] md:text-[16px] leading-relaxed max-w-[550px]">
+                            Not even for beginners. We will show you how easy it is to start your coding journey on Clyric.
                         </p>
 
                         <div className="mt-10 flex flex-wrap gap-4">
                             <Link
-                                to="/book"
+                                to="/problems"
                                 className="inline-flex items-center justify-center bg-[#303452] text-white font-medium rounded-full hover:bg-opacity-90 transition-colors"
                                 style={{ padding: '14px 32px', fontSize: '15px' }}
                             >
-                                Book a meeting now
+                                Start practicing for free
                             </Link>
                         </div>
                     </div>

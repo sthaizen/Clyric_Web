@@ -50,76 +50,81 @@ const BenefitSection = () => {
     const benefits = [
         {
             icon: (
+                // Users — "A platform for all"
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 12 20 22 4 22 4 12"></polyline>
-                    <rect x="2" y="7" width="20" height="5"></rect>
-                    <line x1="12" y1="22" x2="12" y2="7"></line>
-                    <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"></path>
-                    <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"></path>
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                 </svg>
             ),
-            title: "A benefit for all",
-            desc: "You can reach every employee with this subsidy."
+            title: "A platform for all",
+            desc: "You can reach every developer with this platform."
         },
         {
             icon: (
+                // Repeat/loop — "Unlimited practice"
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="3" y="3" width="14" height="14" rx="2" ry="2"></rect>
-                    <path d="M7 21h14a2 2 0 0 0 2-2V7"></path>
-                    <path d="M7.5 10l2 2 4.5-4.5"></path>
+                    <polyline points="17 1 21 5 17 9"></polyline>
+                    <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                    <polyline points="7 23 3 19 7 15"></polyline>
+                    <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
                 </svg>
             ),
-            title: "Unrestricted use",
-            desc: "You can reach every employee with this subsidy."
+            title: "Unlimited practice",
+            desc: "Solve as many problems as you want daily."
         },
         {
             icon: (
+                // Trending up — "Up to 10x faster growth"
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
-                    <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
-                    <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
-                    <circle cx="18" cy="18" r="4" fill="#e6e8f4"></circle>
-                    <path d="M18 16v4M16 18h4"></path>
+                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline>
+                    <polyline points="17 6 23 6 23 12"></polyline>
                 </svg>
             ),
-            title: "Up to €600 more net",
-            desc: "You can reach every employee with this subsidy."
+            title: "Up to 10x faster growth",
+            desc: "You can track every milestone with built-in analytics."
         },
         {
             icon: (
+                // CPU chip — "AI-powered & smart"
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="12" y1="2" x2="12" y2="6"></line>
-                    <line x1="12" y1="18" x2="12" y2="22"></line>
-                    <line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line>
-                    <line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line>
-                    <line x1="2" y1="12" x2="6" y2="12"></line>
-                    <line x1="18" y1="12" x2="22" y2="12"></line>
-                    <line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line>
-                    <line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line>
+                    <rect x="4" y="4" width="16" height="16" rx="2"></rect>
+                    <rect x="9" y="9" width="6" height="6"></rect>
+                    <line x1="9" y1="1" x2="9" y2="4"></line>
+                    <line x1="15" y1="1" x2="15" y2="4"></line>
+                    <line x1="9" y1="20" x2="9" y2="23"></line>
+                    <line x1="15" y1="20" x2="15" y2="23"></line>
+                    <line x1="20" y1="9" x2="23" y2="9"></line>
+                    <line x1="20" y1="14" x2="23" y2="14"></line>
+                    <line x1="1" y1="9" x2="4" y2="9"></line>
+                    <line x1="1" y1="14" x2="4" y2="14"></line>
                 </svg>
             ),
-            title: "Automated & simple",
-            desc: "Submit the internet contract once, costs are automatically reimbursed every month."
+            title: "AI-powered & smart",
+            desc: "Submit your solution once, feedback is automatically generated with every attempt."
         },
         {
             icon: (
+                // Briefcase — "Interview-ready"
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <line x1="19" y1="5" x2="5" y2="19"></line>
-                    <circle cx="6.5" cy="6.5" r="2.5"></circle>
-                    <circle cx="17.5" cy="17.5" r="2.5"></circle>
+                    <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                    <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
                 </svg>
             ),
-            title: "Tax-optimised",
-            desc: "Submit the internet contract once, costs are automatically reimbursed every month."
+            title: "Interview-ready",
+            desc: "Practice real interview questions once, skills are automatically sharpened every session."
         },
         {
             icon: (
+                // Refresh with arrow — "Always improving"
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    <path d="M21.5 2v6h-6"></path>
+                    <path d="M21.34 15.57a10 10 0 1 1-.57-8.38"></path>
                 </svg>
             ),
-            title: "Naturally compliant",
-            desc: "Save >40 % employer costs thanks to social security exemption and 25 % flat-rate tax."
+            title: "Always improving",
+            desc: "Save 40% of prep time thanks to structured roadmaps, AI hints and curated problems."
         }
     ];
 
@@ -129,10 +134,10 @@ const BenefitSection = () => {
                 {/* Header */}
                 <div ref={headerRef} className="max-w-2xl flex flex-col gap-6">
                     <span className="text-xs tracking-[0.15em] uppercase font-semibold text-[#303452]">
-                        THE NEW WORK BENEFIT
+                        THE CLYRIC PLATFORM ADVANTAGE
                     </span>
                     <h2 className="text-[36px] md:text-[44px] leading-[1.15] font-normal tracking-tight text-[#303452]">
-                        Promote modern<br />working with fast internet.
+                        Sharpen your skills<br />with structured daily practice.
                     </h2>
                 </div>
 

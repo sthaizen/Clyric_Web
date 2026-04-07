@@ -8,6 +8,7 @@ import Footer from '../components/Footer';
 import BenefitSection from '../components/BenefitSection';
 import WhyClyricSection from '../components/WhyClyricSection';
 import FaqCTASection from '../components/FaqCTASection';
+import Questions from '../components/Questions';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -93,12 +94,12 @@ const Faq = ({ theme, setTheme }) => {
     }, []);
 
     const cards = [
-        { title: "Blog", desc: "The latest news, \"how to\" guides, and more in the Clyric blog." },
-        { title: "Whitepaper", desc: "All the important information in compact form as free white papers." },
-        { title: "Customer case studies", desc: "Real success stories from our customers." },
+        { title: "Blog", desc: "The latest coding tips, interview breakdowns, and more in the Clyric blog." },
+        { title: "Roadmaps", desc: "All the essential study paths in compact form as free roadmaps." },
+        { title: "Developer success stories", desc: "Real growth stories from our developers." },
         { title: "Glossary", desc: "The most important terms explained at a glance." },
-        { title: "Help Center", desc: "Everything you need to know about using Clyric in your workflow." },
-        { title: "Webinars and Events", desc: "Experts, Partners and valuable live exchanges." }
+        { title: "Help Center", desc: "Everything you need to know about solving problems on the platform." },
+        { title: "Contests and Events", desc: "Competitions, hackathons and valuable live coding sessions." }
     ];
 
     return (
@@ -126,12 +127,12 @@ const Faq = ({ theme, setTheme }) => {
                     <div className="absolute inset-0 w-full h-[120vh] z-0 pointer-events-none overflow-hidden">
                         <img
                             ref={bgImageRef}
-                            src="https://images.unsplash.com/photo-1714974528704-befac88c2fd6?q=80&w=2064&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                            src="https://images.pexels.com/photos/5686014/pexels-photo-5686014.jpeg"
                             alt="Background"
                             className="w-full h-full object-cover object-center origin-center will-change-transform"
                         />
 
-                        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent z-10"></div>
+
                         <div className="absolute bottom-0 left-0 right-0 h-[60%] bg-gradient-to-t from-[#0A0B0E] via-[#0A0B0E]/80 to-transparent z-10"></div>
                     </div>
 
@@ -159,7 +160,7 @@ const Faq = ({ theme, setTheme }) => {
                             {cards.map((card, idx) => (
                                 <div
                                     key={idx}
-                                    className="faq-card group relative bg-white/[0.03] hover:bg-[#ebebe4] transition-colors duration-500 backdrop-blur-md border border-white/10 rounded-[14px] p-8 md:p-10 flex flex-col justify-end min-h-[190px] cursor-pointer overflow-hidden"
+                                    className="faq-card group relative bg-white/[0.03] hover:bg-[#ebebe4] transition-colors duration-500 backdrop-blur-sm border border-white/10 rounded-[14px] p-8 md:p-10 flex flex-col justify-end min-h-[190px] cursor-pointer overflow-hidden"
                                 >
                                     {/* Subtle Hover Glow */}
                                     <div className="absolute inset-0 bg-gradient-to-br from-white/[0.05] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none"></div>
@@ -192,6 +193,7 @@ const Faq = ({ theme, setTheme }) => {
                 <BenefitSection />
                 <WhyClyricSection />
                 <FaqCTASection />
+                <Questions />
                 <div className="bg-[#0A0B0E]">
                     <Footer />
                 </div>

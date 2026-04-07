@@ -69,11 +69,11 @@ const WhyClyricSection = () => {
                     </span>
 
                     <h2 className="text-[32px] md:text-[48px] leading-[1.2] font-normal tracking-tight text-[#303452] max-w-[800px]">
-                        Legally compliant benefits with relevance and high flexibility
+                        Structured practice built with purpose and real impact
                     </h2>
 
                     <p className="text-[15px] md:text-[17px] leading-[1.7] text-[#303452] font-light max-w-[850px]">
-                        Like all Clyric Benefits, the Internet flat rate is easy to use, flexible in its daily application, absolutely legally compliant and makes sense in the lives of employees today.
+                        Like all Clyric features, the problem bank is easy to navigate, flexible in daily use, constantly updated with new challenges and makes sense in the journey of developers today.
                     </p>
                 </div>
             </div>
