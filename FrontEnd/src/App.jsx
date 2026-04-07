@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Route, Routes, Navigate, useNavigate } from "react-router-dom";
+import ScrollToTop from "./components/ScrollToTop";
 import ReactLenis from "lenis/react";
 import { Toaster } from "react-hot-toast";
 import { useUser } from "@clerk/clerk-react";
@@ -20,6 +21,7 @@ import Connection from "./components/Connection";
 import LeaderboardPage from "./Pages/LeaderboardPage";
 import DocsPage from "./Pages/DocsPage";
 import TermsPage from "./Pages/TermsPage";
+import Faq from "./Pages/FAQ";
 
 // Admin Auth (no Clerk)
 import { AdminAuthProvider } from "./context/AdminAuthContext";
@@ -31,6 +33,7 @@ import "slick-carousel/slick/slick-theme.css";
 import SessionPage from "./Pages/SessionPage";
 import CosmicCheckout from "./Pages/CheckOutPage";
 import PaymentListener from "./components/PaymentListener";
+import AboutUs from "./Pages/AboutUs";
 
 const App = () => {
   const { isSignedIn, isLoaded, user } = useUser();
@@ -66,6 +69,7 @@ const App = () => {
   return (
     <ReactLenis root>
       <div className="root-container dark:bg-black relative min-h-screen w-full">
+        <ScrollToTop />
         <PaymentListener />
         <Routes>
           {/* Main Landing Page Route */}
@@ -96,13 +100,15 @@ const App = () => {
               </AdminRouteGuard>
             </AdminAuthProvider>
           } />
-          
+
           <Route path="/priceoverview" element={<PriceOverview />} />
           <Route path="/leaderboard" element={<LeaderboardPage />} />
           <Route path="/checkout" element={<CosmicCheckout />} />
           <Route path="/docs" element={<DocsPage />} />
           <Route path="/docs/:slug" element={<DocsPage />} />
           <Route path="/terms" element={<TermsPage />} />
+          <Route path="/aboutus" element={<AboutUs theme={theme} setTheme={setTheme} />} />
+          <Route path="/faq" element={<Faq theme={theme} setTheme={setTheme} />} />
         </Routes>
       </div>
       <Toaster />

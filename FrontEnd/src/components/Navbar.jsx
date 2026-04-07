@@ -62,8 +62,8 @@ const Navbar = ({ forceLight = false }) => {
                             onMouseEnter={() => setActiveMenu('products')}
                             onMouseLeave={() => setActiveMenu(null)}
                         >
-                            <Link to="/problems" className="text-[13px] font-medium hover:opacity-60 transition-opacity">
-                                Problems
+                            <Link to="/docs" className="text-[13px] font-medium hover:opacity-60 transition-opacity">
+                                Documentation
                             </Link>
 
                             <div
@@ -134,8 +134,8 @@ const Navbar = ({ forceLight = false }) => {
                             onMouseEnter={() => setActiveMenu('integrations')}
                             onMouseLeave={() => setActiveMenu(null)}
                         >
-                            <Link to="/docs" className="text-[13px] font-medium hover:opacity-60 transition-opacity">
-                                Documentation
+                            <Link to="/terms" className="text-[13px] font-medium hover:opacity-60 transition-opacity">
+                                Terms & Conditions
                             </Link>
 
                             <div
@@ -209,13 +209,13 @@ const Navbar = ({ forceLight = false }) => {
                             </div>
                         </div>
 
-                        <Link to="/terms" className="text-[13px] font-medium hover:opacity-60 transition-opacity">
-                            Terms & Conditions
+                        <Link to="/aboutus" className="text-[13px] font-medium hover:opacity-60 transition-opacity">
+                            About Us
                         </Link>
                         <Link to="/priceoverview" className="text-[13px] font-medium hover:opacity-60 transition-opacity">
                             Pricing
                         </Link>
-                        <Link to="/resources" className="text-[13px] font-medium hover:opacity-60 transition-opacity">
+                        <Link to="/faq" className="text-[13px] font-medium hover:opacity-60 transition-opacity">
                             FAQ
                         </Link>
                     </div>

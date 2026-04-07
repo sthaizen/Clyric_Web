@@ -71,14 +71,14 @@ const CAT = () => {
             ref={headingRef}
             className="text-[28px] leading-normal font-normal text-black dm-sans2"
           >
-            Ready to Explore WebHosting?
+            Ready to Start Coding?
           </h1>
           <p
             ref={textRef}
             className="text-lg leading-normal font-normal text-[#4f4f53] dm-sans"
           >
-            Start your digital journey today with expert hosting solutions,
-            effortless setup, for an unforgettable online experience.
+            Start your coding journey today with expert AI guidance,
+            structured problems, for an unforgettable learning experience.
           </p>
         </div>
 

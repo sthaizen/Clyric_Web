@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import assets from "../assets/assets";
+import { useSubscription } from '../hooks/useSubscription';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -23,6 +24,8 @@ const Hero = () => {
   const cardRef = useRef(null);
   const bgImageRef = useRef(null);
   const brightOverlayRef = useRef(null);
+
+  const { tier } = useSubscription();
 
   // Marquee Refs
   const track1Ref = useRef(null);
@@ -173,20 +176,32 @@ const Hero = () => {
             No tool-juggling. Just practice, review, and visible progress.          </p>
 
           <div className="flex flex-wrap items-center gap-4 opacity-0">
-            <Link
-              to="/admin/login"
-              className="inline-flex items-center justify-center bg-white text-[#222222] font-semibold rounded-full hover:bg-gray-100 transition-colors"
-              style={{ padding: '14px 32px', fontSize: '15px' }}
-            >
-              Book a mock session
-            </Link>
-            <Link
-              to="/problems"
-              className="inline-flex items-center justify-center bg-white/10 backdrop-blur-md text-white font-semibold rounded-full hover:bg-white/20 transition-colors"
-              style={{ padding: '14px 32px', fontSize: '15px' }}
-            >
-              Start practicing free
-            </Link>
+            {tier === 'free' ? (
+              <>
+                <Link
+                  to="/admin/login"
+                  className="inline-flex items-center justify-center bg-white text-[#222222] font-semibold rounded-full hover:bg-gray-100 transition-colors"
+                  style={{ padding: '14px 32px', fontSize: '15px' }}
+                >
+                  Book a mock session
+                </Link>
+                <Link
+                  to="/problems"
+                  className="inline-flex items-center justify-center bg-white/10 backdrop-blur-md text-white font-semibold rounded-full hover:bg-white/20 transition-colors"
+                  style={{ padding: '14px 32px', fontSize: '15px' }}
+                >
+                  Start practicing free
+                </Link>
+              </>
+            ) : (
+              <Link
+                to="/problems"
+                className="inline-flex items-center justify-center bg-white text-[#222222] font-semibold rounded-full hover:bg-gray-100 transition-colors"
+                style={{ padding: '14px 32px', fontSize: '15px' }}
+              >
+                Start practicing
+              </Link>
+            )}
           </div>
         </div>
 

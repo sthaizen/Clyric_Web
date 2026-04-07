@@ -49,9 +49,11 @@ export default function TermsPage() {
   const scrollToId = (id) => {
     const element = document.getElementById(id);
     if (element) {
-      element.scrollIntoView({ behavior: "smooth", block: "start" });
+      const navbarHeight = 100;
+      const top = element.getBoundingClientRect().top + window.scrollY - navbarHeight;
+      window.scrollTo({ top, behavior: "smooth" });
       setActiveSection(id);
-      setSidebarOpen(false); // Close mobile sidebar on click
+      setSidebarOpen(false);
     }
   };
 
