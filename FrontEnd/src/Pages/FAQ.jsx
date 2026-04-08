@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -21,7 +21,6 @@ const Faq = ({ theme, setTheme }) => {
     const brightOverlayRef = useRef(null);
     const gridRef = useRef(null);
 
-    const [isLoaded, setIsLoaded] = useState(false);
 
     useEffect(() => {
         let ctx = gsap.context(() => {
@@ -38,7 +37,6 @@ const Faq = ({ theme, setTheme }) => {
                     { scale: 1, filter: 'brightness(1)', duration: 1.2, ease: 'power3.out' },
                     0
                 )
-                .call(() => setIsLoaded(true), null, "-=1.1")
                 // Fade in Navbar
                 .fromTo(navWrapperRef.current,
                     { y: -20, opacity: 0 },
@@ -105,7 +103,7 @@ const Faq = ({ theme, setTheme }) => {
     return (
         <div className="relative w-full bg-[#0A0B0E] font-sans selection:bg-white/20">
             {/* Initial Load Overlay */}
-            <div ref={brightOverlayRef} className="absolute inset-0 bg-[#0A0B0E] z-[150] pointer-events-none"></div>
+            <div ref={brightOverlayRef} className="fixed inset-0 bg-[#0A0B0E] z-[150] pointer-events-none"></div>
 
             {/* Navbar */}
             <div ref={navWrapperRef} className="sticky top-0 w-full z-[100] opacity-0">
@@ -113,7 +111,7 @@ const Faq = ({ theme, setTheme }) => {
             </div>
 
             {/* Floating Chatbot Global */}
-            <div>
+            <div ref={chatWrapperRef} className="opacity-0">
                 <Chatbot />
             </div>
 
