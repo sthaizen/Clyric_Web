@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import ActiveSessionsSkeleton from "./skeletons/ActiveSessionsSkeleton";
 import {
   ArrowRightIcon,
   Code2Icon,
@@ -132,10 +133,7 @@ function ActiveSessions({ sessions, isLoading, isUserInSession }) {
       {/* LIST BODY */}
       <div className="px-5 pb-5 flex flex-col max-h-[310px] overflow-y-auto custom-scrollbar">
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center flex-grow text-gray-500">
-            <Loader2Icon className="w-8 h-8 animate-spin text-indigo-500 mb-3" />
-            <span className="text-sm">Finding active sessions...</span>
-          </div>
+          <ActiveSessionsSkeleton />
         ) : sessions?.length > 0 ? (
           <div className="space-y-3 mt-2">
             {sessions.map((session) => {

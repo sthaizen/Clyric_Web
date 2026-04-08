@@ -1,4 +1,5 @@
-import { HistoryIcon, Loader2Icon } from "lucide-react";
+import { HistoryIcon } from "lucide-react";
+import RecentSessionsSkeleton from "./skeletons/RecentSessionsSkeleton";
 // Assuming you keep these imports for the populated state when sessions exist
 import { Code2, Clock, Users } from "lucide-react"; 
 import { getDifficultyBadgeClass } from "../lib/utils";
@@ -22,11 +23,7 @@ function RecentSessions({ sessions, isLoading }) {
       {/* BODY GRID / LIST */}
       <div className="px-5 pb-5 flex-1 flex flex-col">
         {isLoading ? (
-          /* Exact Loading State from Screenshot */
-          <div className="flex flex-col items-center justify-center flex-grow text-gray-500 min-h-[150px]">
-            <Loader2Icon className="w-8 h-8 animate-spin text-indigo-500 mb-3" />
-            <span className="text-sm">Finding active sessions...</span> 
-          </div>
+          <RecentSessionsSkeleton />
         ) : sessions?.length > 0 ? (
           
           /* UPDATED: Added max-h-[380px], overflow-y-auto, and styled the scrollbar slightly */
