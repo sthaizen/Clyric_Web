@@ -7,6 +7,7 @@ import { useAnalytics } from "../hooks/useAnalytics.js";
 import { useDashboard } from "../hooks/useDashboard.js";
 import { CodeIcon, ActivityIcon, ChevronDown, Search, X, Camera, BarChart3 } from "lucide-react";
 import { useSubscription } from "../hooks/useSubscription.js";
+import { useUpdateProfile } from "../hooks/useUpdateProfile";
 
 // Existing Components
 import WelcomeSection from "../components/WelcomeSection";
@@ -51,6 +52,7 @@ function DashboardPage() {
 
   const { data: dashboardData, isLoading: loadingDashboard } = useDashboard(user?.id, selectedYear, dashboardRefreshKey);
   const { tier, showUpgradeToast, canAccess } = useSubscription();
+  const updateProfileMutation = useUpdateProfile();
   const createSessionMutation = useCreateSession();
   const { data: activeSessionsData, isLoading: loadingActiveSessions } = useActiveSessions();
   const { data: recentSessionsData, isLoading: loadingRecentSessions } = useMyRecentSessions();
@@ -90,7 +92,11 @@ function DashboardPage() {
   };
 
   const handleSaveProfile = async () => {
-    // TODO: Add your API call here
+    await updateProfileMutation.mutateAsync({
+      name: draftData.name,
+      nickname: draftData.nickname,
+      description: draftData.description,
+    });
     setProfileData(draftData);
     setIsEditModalOpen(false);
   };
@@ -539,7 +545,7 @@ function DashboardPage() {
               </div>
               <div className="px-6 py-4 border-t border-[#231c2f] flex justify-end gap-3 bg-[#151518]">
                 <button onClick={() => setIsEditModalOpen(false)} className="px-4 py-2 rounded-lg text-sm font-medium text-gray-400 hover:text-white transition-colors">Cancel</button>
-                <button onClick={handleSaveProfile} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg text-sm font-medium transition-colors">Save Changes</button>
+                <button onClick={handleSaveProfile} disabled={updateProfileMutation.isPending} className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors">{updateProfileMutation.isPending ? "Saving..." : "Save Changes"}</button>
               </div>
             </div>
           </div>
