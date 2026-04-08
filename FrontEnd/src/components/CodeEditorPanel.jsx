@@ -277,6 +277,12 @@ function CodeEditorPanel({
           }}
         />
       </div>
+
+      {/* Keyboard shortcuts hint strip */}
+      <div className="flex items-center gap-4 px-3 py-1 bg-[#111113] border-t border-[#1b1b1f] text-gray-600 text-[11px] select-none">
+        <span>Run: <kbd className="font-mono bg-[#1b1b1f] border border-[#2c2c35] rounded px-1">Ctrl+Enter</kbd></span>
+        <span>Submit: <kbd className="font-mono bg-[#1b1b1f] border border-[#2c2c35] rounded px-1">Ctrl+Shift+Enter</kbd></span>
+      </div>
     </div>
   );
 }

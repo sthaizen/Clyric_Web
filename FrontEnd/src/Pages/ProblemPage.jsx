@@ -156,6 +156,21 @@ function ProblemPage() {
     setIsTimerActive(false);
   }, [timerMode]);
 
+  // Keyboard shortcuts: Ctrl+Enter = Run, Ctrl+Shift+Enter = Submit
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.ctrlKey && e.shiftKey && e.key === "Enter") {
+        e.preventDefault();
+        if (!isSubmitting) handleSubmitCode();
+      } else if (e.ctrlKey && e.key === "Enter") {
+        e.preventDefault();
+        if (!isRunning) handleRunCode();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isRunning, isSubmitting, handleRunCode, handleSubmitCode]);
+
   const toggleTimer = () => {
     if (timerMode === 'timer' && !isTimerActive && timeRemaining === 0) {
       const totalSeconds = (parseInt(timerHours) || 0) * 3600 + (parseInt(timerMinutes) || 0) * 60;
