@@ -207,6 +207,37 @@ function DashboardPage() {
               <BarChart3 size={14} />
               {showAnalytics ? 'Dashboard' : 'View Analytics'}
             </button>
+
+            {/* Streak Badge */}
+            {!loadingDashboard && dashboardData?.overview?.currentStreak > 0 && (
+              <button
+                onClick={() => {
+                  setShowAnalytics(true);
+                  setDashboardRefreshKey(k => k + 1);
+                }}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  background: "#2a1a0a",
+                  border: "1px solid #ff6b2b44",
+                  borderRadius: 20,
+                  padding: "5px 14px",
+                  cursor: "pointer",
+                  transition: "all 0.2s ease",
+                }}
+                title="View streak details in Analytics"
+              >
+                <span style={{ fontSize: 16 }}>🔥</span>
+                <span style={{ color: "#ff6b2b", fontWeight: 700, fontSize: 14 }}>
+                  {dashboardData.overview.currentStreak}
+                </span>
+                <span style={{ color: "#9ca3af", fontSize: 12 }}>
+                  day streak
+                </span>
+              </button>
+            )}
+
             <SignedOut>
               <SignInButton mode="modal">
                 <button className="text-[13px] font-medium hover:opacity-60 transition-opacity">
