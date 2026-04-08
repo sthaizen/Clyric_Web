@@ -215,7 +215,7 @@ const Navbar = ({ forceLight = false }) => {
                         <Link to="/priceoverview" className="text-[13px] font-medium hover:opacity-60 transition-opacity">
                             Pricing
                         </Link>
-                        <Link to="/faq" className="text-[13px] font-medium hover:opacity-60 transition-opacity">
+                        <Link to="/FAQ" className="text-[13px] font-medium hover:opacity-60 transition-opacity">
                             FAQ
                         </Link>
                     </div>
