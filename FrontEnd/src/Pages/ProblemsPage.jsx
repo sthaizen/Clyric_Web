@@ -13,6 +13,7 @@ import QuestWidget from '../components/quests/QuestWidget';
 import QuestDashboardView from '../components/quests/QuestDashboardView';
 import QuestLockedView from '../components/quests/QuestLockedView';
 import { useSubscription } from '../hooks/useSubscription';
+import ProblemsTableSkeleton from '../components/skeletons/ProblemsTableSkeleton';
 
 const COMPANIES = [
   { name: "Amazon", count: 1943 }, { name: "Uber", count: 372 },
@@ -548,7 +549,7 @@ export default function LeetCodeClone() {
                 </div>
 
                 {isLoading ? (
-                  <div style={{ padding: 40, textAlign: 'center', color: '#6b7280' }}>Loading problems...</div>
+                  <ProblemsTableSkeleton rows={15} />
                 ) : filteredProblems.length === 0 ? (
                   <div style={{ padding: 40, textAlign: 'center', color: '#6b7280' }}>No problems found matching your filters.</div>
                 ) : filteredProblems.map((problem, idx) => {
