@@ -103,7 +103,8 @@ function ProblemPage() {
         const defaultCodes = {};
         if (problemData && problemData.starterCode) {
           Object.entries(problemData.starterCode).forEach(([lang, src]) => {
-            defaultCodes[lang] = src;
+            const saved = localStorage.getItem(`clyric_autosave_${problemData.slug}_${lang}`);
+            defaultCodes[lang] = saved || src;
           });
         }
         setCodePerLanguage(defaultCodes);
@@ -605,6 +606,7 @@ function ProblemPage() {
                     onToggleMaximize={handleToggleMaximize}
                     isMaximized={layoutMode === "editor-only"}
                     allowedLanguages={getAllowedLanguages()}
+                    problemSlug={currentProblemId}
                   />
                 </Panel>
                 <PanelResizeHandle className="h-2 cursor-row-resize hover:bg-[#3e3e42]/50 transition-colors" />
@@ -685,6 +687,7 @@ function ProblemPage() {
                     onToggleMaximize={handleToggleMaximize}
                     isMaximized={layoutMode === "editor-only"}
                     allowedLanguages={getAllowedLanguages()}
+                    problemSlug={currentProblemId}
                   />
                 </Panel>
                 <PanelResizeHandle className="h-2 cursor-row-resize hover:bg-[#3e3e42]/50 transition-colors" />
@@ -722,6 +725,7 @@ function ProblemPage() {
               onToggleMaximize={handleToggleMaximize}
               isMaximized={true}
               allowedLanguages={getAllowedLanguages()}
+              problemSlug={currentProblemId}
             />
           </div>
         )}

@@ -19,11 +19,17 @@ function CodeEditorPanel({
   settings, // Added settings prop
   allowedLanguages, // Array of language keys the current user can use
   upgradeTierLabel, // e.g. "Career Plus" — shown in the locked tooltip
+  problemSlug = "",
 }) {
   const isRemoteUpdate = useRef(false);
   const [editorInstance, setEditorInstance] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+
+  // Auto-save state
+  const [saveStatus, setSaveStatus] = useState("idle"); // "idle" | "saving" | "saved"
+  const saveTimerRef = useRef(null);
+  const savedTimerRef = useRef(null);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -166,6 +172,27 @@ function CodeEditorPanel({
     }
   }, [settings]);
 
+  // Auto-save code to localStorage
+  useEffect(() => {
+    if (!code || !problemSlug || !selectedLanguage || code.trim() === "") return;
+
+    setSaveStatus("saving");
+    if (saveTimerRef.current) clearTimeout(saveTimerRef.current);
+    if (savedTimerRef.current) clearTimeout(savedTimerRef.current);
+
+    saveTimerRef.current = setTimeout(() => {
+      const key = `clyric_autosave_${problemSlug}_${selectedLanguage}`;
+      localStorage.setItem(key, code);
+      setSaveStatus("saved");
+      savedTimerRef.current = setTimeout(() => setSaveStatus("idle"), 3000);
+    }, 1500);
+
+    return () => {
+      clearTimeout(saveTimerRef.current);
+      clearTimeout(savedTimerRef.current);
+    };
+  }, [code, problemSlug, selectedLanguage]);
+
   return (
     <div className="h-full flex flex-col bg-[#111113] relative">
       <div className="flex items-center justify-between px-3 py-1.5 bg-[#1b1b1f] border-b border-[#111113]">
@@ -226,6 +253,14 @@ function CodeEditorPanel({
         </div>
 
         <div className="flex items-center gap-3 text-gray-400 px-2">
+          {/* Auto-save indicator */}
+          {saveStatus !== "idle" && (
+            <span className={`text-[11px] transition-all duration-300 ${
+              saveStatus === "saving" ? "text-gray-500" : "text-emerald-500"
+            }`}>
+              {saveStatus === "saving" ? "Saving..." : "Saved ✓"}
+            </span>
+          )}
           <Bookmark className="w-4 h-4 cursor-pointer hover:text-white transition-colors" />
           <Code className="w-4 h-4 cursor-pointer hover:text-white transition-colors" />
 
