@@ -108,7 +108,7 @@ const App = () => {
           <Route path="/docs/:slug" element={<DocsPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/aboutus" element={<AboutUs theme={theme} setTheme={setTheme} />} />
-          <Route path="/faq" element={<Faq theme={theme} setTheme={setTheme} />} />
+          <Route path="/FAQ" element={<Faq theme={theme} setTheme={setTheme} />} />
         </Routes>
       </div>
       <Toaster />
