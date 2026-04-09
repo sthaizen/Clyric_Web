@@ -157,21 +157,6 @@ function ProblemPage() {
     setIsTimerActive(false);
   }, [timerMode]);
 
-  // Keyboard shortcuts: Ctrl+Enter = Run, Ctrl+Shift+Enter = Submit
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.ctrlKey && e.shiftKey && e.key === "Enter") {
-        e.preventDefault();
-        if (!isSubmitting) handleSubmitCode();
-      } else if (e.ctrlKey && e.key === "Enter") {
-        e.preventDefault();
-        if (!isRunning) handleRunCode();
-      }
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [isRunning, isSubmitting, handleRunCode, handleSubmitCode]);
-
   const toggleTimer = () => {
     if (timerMode === 'timer' && !isTimerActive && timeRemaining === 0) {
       const totalSeconds = (parseInt(timerHours) || 0) * 3600 + (parseInt(timerMinutes) || 0) * 60;
@@ -402,6 +387,21 @@ function ProblemPage() {
     }
   };
 
+  // 👇 MOVED: Keyboard shortcuts now run AFTER functions are initialized 👇
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.ctrlKey && e.shiftKey && e.key === "Enter") {
+        e.preventDefault();
+        if (!isSubmitting) handleSubmitCode();
+      } else if (e.ctrlKey && e.key === "Enter") {
+        e.preventDefault();
+        if (!isRunning) handleRunCode();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [isRunning, isSubmitting, handleRunCode, handleSubmitCode]);
+
   const handleToggleMaximize = () => {
     if (layoutMode === "editor-only") {
       setLayoutMode(previousLayoutMode || "default");
@@ -426,13 +426,13 @@ function ProblemPage() {
   if (lockedDifficulty) {
     return (
       <div className="h-screen bg-[#111113] flex flex-col overflow-hidden">
-        <ProblemNavbar 
-           isPrevDisabled={true} isNextDisabled={true} // disable nav in locked state
-           setIsLayoutMenuOpen={() => {}} setIsSettingsModalOpen={() => {}}
+        <ProblemNavbar
+          isPrevDisabled={true} isNextDisabled={true} // disable nav in locked state
+          setIsLayoutMenuOpen={() => { }} setIsSettingsModalOpen={() => { }}
         />
         <div className="flex-1 flex flex-col items-center justify-center gap-6 bg-[#1b1b1f] text-center px-4">
           <div className="w-20 h-20 rounded-full bg-[#ff375f]/10 flex items-center justify-center ring-1 ring-[#ff375f]/20">
-             <Lock className="w-8 h-8 text-[#ff375f]" strokeWidth={1.5} />
+            <Lock className="w-8 h-8 text-[#ff375f]" strokeWidth={1.5} />
           </div>
           <div className="space-y-2">
             <h2 className="text-2xl font-bold text-white tracking-tight">Difficulty Locked</h2>
@@ -441,15 +441,15 @@ function ProblemPage() {
             </p>
           </div>
           <div className="flex flex-col sm:flex-row gap-4 w-full max-w-[400px]">
-            <button 
-               onClick={() => navigate("/problems")}
-               className="flex-1 px-8 py-3 bg-white/5 hover:bg-white/10 text-white font-semibold rounded-xl border border-white/10 transition-all active:scale-95"
+            <button
+              onClick={() => navigate("/problems")}
+              className="flex-1 px-8 py-3 bg-white/5 hover:bg-white/10 text-white font-semibold rounded-xl border border-white/10 transition-all active:scale-95"
             >
               Back to Overview
             </button>
-            <button 
-               onClick={() => navigate("/pricing")}
-               className="flex-1 px-8 py-3 bg-[#ff375f] hover:bg-[#ff1b47] text-white font-semibold rounded-xl transition-all shadow-lg hover:shadow-[#ff375f]/20 active:scale-95"
+            <button
+              onClick={() => navigate("/pricing")}
+              className="flex-1 px-8 py-3 bg-[#ff375f] hover:bg-[#ff1b47] text-white font-semibold rounded-xl transition-all shadow-lg hover:shadow-[#ff375f]/20 active:scale-95"
             >
               Upgrade Now
             </button>

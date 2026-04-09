@@ -209,7 +209,7 @@ function DashboardPage() {
             </button>
 
             {/* Streak Badge */}
-            {!loadingDashboard && dashboardData?.overview?.currentStreak > 0 && (
+            {false && !loadingDashboard && dashboardData?.overview?.currentStreak > 0 && (
               <button
                 onClick={() => {
                   setShowAnalytics(true);
