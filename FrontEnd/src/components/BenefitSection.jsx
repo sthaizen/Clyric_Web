@@ -42,7 +42,7 @@ const BenefitSection = () => {
                     }
                 }
             );
-        }, sectionRef);
+        }, sectionRef.current);
 
         return () => ctx.revert();
     }, []);

@@ -126,7 +126,7 @@ export default function Questions() {
             }
 
             ScrollTrigger.refresh();
-        }, sectionRef);
+        }, sectionRef.current);
 
         return () => ctx.revert();
     }, [items.length]);

@@ -22,7 +22,7 @@ const FaqCTASection = () => {
                     once: true
                 }
             });
-        }, sectionRef);
+        }, sectionRef.current);
 
         return () => ctx.revert();
     }, []);

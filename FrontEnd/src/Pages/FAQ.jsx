@@ -23,56 +23,78 @@ const Faq = ({ theme, setTheme }) => {
 
 
     useEffect(() => {
+        if (!heroRef.current) return;
+
         let ctx = gsap.context(() => {
             const loadTl = gsap.timeline({ defaults: { ease: 'power4.out' } });
 
-            loadTl
-                .to(brightOverlayRef.current, {
+            // 1. Initial Overlay Fade-out (Crucial for fixing black screen)
+            if (brightOverlayRef.current) {
+                loadTl.to(brightOverlayRef.current, {
                     opacity: 0,
                     duration: 1,
                     ease: 'power2.inOut'
-                }, 0)
-                .fromTo(bgImageRef.current,
+                }, 0);
+            }
+
+            // 2. Background Image Animation
+            if (bgImageRef.current) {
+                loadTl.fromTo(bgImageRef.current,
                     { scale: 1.3, filter: 'brightness(1.2)' },
                     { scale: 1, filter: 'brightness(1)', duration: 1.2, ease: 'power3.out' },
                     0
-                )
-                // Fade in Navbar
-                .fromTo(navWrapperRef.current,
+                );
+            }
+
+            // 3. Navbar Animation
+            if (navWrapperRef.current) {
+                loadTl.fromTo(navWrapperRef.current,
                     { y: -20, opacity: 0 },
                     { y: 0, opacity: 1, duration: 1 },
                     "-=1.3"
-                )
-                // Animate Main Text Content
-                .fromTo(contentRef.current.children,
+                );
+            }
+
+            // 4. Main Text Content Animation
+            if (contentRef.current && contentRef.current.children.length > 0) {
+                loadTl.fromTo(contentRef.current.children,
                     { y: 40, opacity: 0 },
                     { y: 0, opacity: 1, duration: 1.2, stagger: 0.15 },
                     "-=1.1"
-                )
-                // Animate Grid Cards
-                .fromTo(gridRef.current.children,
+                );
+            }
+
+            // 5. Grid Cards Animation
+            if (gridRef.current && gridRef.current.children.length > 0) {
+                loadTl.fromTo(gridRef.current.children,
                     { y: 40, opacity: 0 },
                     { y: 0, opacity: 1, duration: 1.2, stagger: 0.1 },
                     "-=0.9"
-                )
-                // Fade in Chatbot
-                .fromTo(chatWrapperRef.current,
+                );
+            }
+
+            // 6. Chatbot Animation
+            if (chatWrapperRef.current) {
+                loadTl.fromTo(chatWrapperRef.current,
                     { x: 40, opacity: 0 },
                     { x: 0, opacity: 1, duration: 1.2, ease: 'power3.out' },
                     "-=1.2"
                 );
+            }
 
             // --- 3. Parallax & Scale Scroll Effect ---
-            gsap.to(bgImageRef.current, {
-                yPercent: 15,
-                ease: 'none',
-                scrollTrigger: {
-                    trigger: heroRef.current,
-                    start: 'top top',
-                    end: 'bottom top',
-                    scrub: true,
-                }
-            });
+            if (bgImageRef.current) {
+                gsap.to(bgImageRef.current, {
+                    yPercent: 15,
+                    ease: 'none',
+                    scrollTrigger: {
+                        trigger: heroRef.current,
+                        start: 'top top',
+                        end: 'bottom top',
+                        scrub: true,
+                    }
+                });
+            }
 
             gsap.to(heroRef.current, {
                 scale: 0.94,
@@ -86,7 +108,7 @@ const Faq = ({ theme, setTheme }) => {
                 }
             });
 
-        }, heroRef);
+        }, heroRef.current); // Use .current for scope
 
         return () => ctx.revert();
     }, []);
@@ -107,7 +129,7 @@ const Faq = ({ theme, setTheme }) => {
 
             {/* Navbar */}
             <div ref={navWrapperRef} className="sticky top-0 w-full z-[100] opacity-0">
-                <Navbar theme={theme} setTheme={setTheme} />
+                <Navbar />
             </div>
 
             {/* Floating Chatbot Global */}
@@ -136,7 +158,7 @@ const Faq = ({ theme, setTheme }) => {
 
                     {/* Content Layer */}
                     <div className="relative z-20 w-full max-w-[1640px] mx-auto px-6 md:px-12 pt-24 md:pt-32 flex-1 flex flex-col">
-                        <div ref={contentRef} className="flex flex-col items-start text-left max-w-3xl mb-16 mt-35">
+                        <div ref={contentRef} className="flex flex-col items-start text-left max-w-3xl mb-16 mt-32">
                             {/* Icon */}
                             <div className="w-14 h-14 rounded-2xl bg-white/5 backdrop-blur-xl border border-white/10 flex items-center justify-center mb-8">
                                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">

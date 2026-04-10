@@ -41,7 +41,7 @@ const WhyClyricSection = () => {
                     }
                 }
             );
-        }, sectionRef);
+        }, sectionRef.current);
 
         return () => ctx.revert();
     }, []);

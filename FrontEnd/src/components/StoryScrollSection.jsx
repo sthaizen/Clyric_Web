@@ -29,7 +29,7 @@ const StoryScrollSection = () => {
                 { opacity: 1, scale: 1, duration: 0.2, ease: "power2.out" }
             )
                 .to(ballRef.current, {
-                    y: () => contentWrapperRef.current.offsetHeight - (window.innerWidth < 768 ? 80 : 120),
+                    y: () => contentWrapperRef.current ? (contentWrapperRef.current.offsetHeight - (window.innerWidth < 768 ? 80 : 120)) : 0,
                     ease: "none",
                     duration: 1
                 }, 0)
@@ -39,7 +39,7 @@ const StoryScrollSection = () => {
                     duration: 0.8
                 }, 0.2);
 
-        }, containerRef);
+        }, containerRef.current);
 
         return () => ctx.revert();
     }, []);

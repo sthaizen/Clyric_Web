@@ -30,6 +30,19 @@ export const initiatePayment = async (req, res) => {
             return res.status(400).json({ success: false, message: "Invalid Gateway" });
         }
 
+        // Check for existing active subscription to enforce single-plan policy
+        const activeSub = await Subscription.findOne({
+            userId: user._id,
+            status: "active"
+        });
+        
+        if (activeSub) {
+            return res.status(400).json({
+                success: false,
+                message: "You already have an active subscription. Please cancel it first before purchasing a new plan."
+            });
+        }
+
         const transactionUuid = uuidv4();
 
         // 1. Create a pending transaction

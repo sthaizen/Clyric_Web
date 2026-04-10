@@ -50,7 +50,6 @@ export default function AdminOverviewTab({ stats, activities, breakdown, isLoadi
   const [typeFilter, setTypeFilter] = useState("All");
   const [currency, setCurrency] = useState("NPR");
   const [showCurrencyDropdown, setShowCurrencyDropdown] = useState(false);
-  const [showStats, setShowStats] = useState(true);
   const [selectedActivityIds, setSelectedActivityIds] = useState([]);
   const [deletedActivityIds, setDeletedActivityIds] = useState(new Set());
   const [currentPage, setCurrentPage] = useState(1);
@@ -58,7 +57,6 @@ export default function AdminOverviewTab({ stats, activities, breakdown, isLoadi
   const [exporting, setExporting] = useState(false);
 
   const handleToggleStats = (val) => {
-    setShowStats(val);
     setCurrency(val ? "USD" : "NPR");
   };
 
@@ -81,8 +79,9 @@ export default function AdminOverviewTab({ stats, activities, breakdown, isLoadi
       headerRow.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1E1E1E" } };
       headerRow.height = 22;
 
-      const curr = showStats ? "USD" : "NPR";
-      const rate = showStats ? CONVERSION_RATE : 1;
+      const isUSD = currency === "USD";
+      const curr = isUSD ? "USD" : "NPR";
+      const rate = isUSD ? CONVERSION_RATE : 1;
       const toDisplay = (n) => (parseFloat(n) / rate).toFixed(2);
 
       [
@@ -323,18 +322,20 @@ export default function AdminOverviewTab({ stats, activities, breakdown, isLoadi
 
           <div className="h-6 w-px bg-slate-200 mx-1"></div>
 
-          <div className="flex items-center gap-3 ml-1">
-            <span className="text-[13px] font-bold text-slate-900">USD Converter</span>
-            <div
-              onClick={() => handleToggleStats(!showStats)}
-              className={`w-9 h-5 rounded-full relative cursor-pointer transition-all ${showStats ? 'bg-orange-500' : 'bg-slate-300'}`}
-            >
-              <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-sm transition-all ${showStats ? 'right-0.5' : 'left-0.5'}`}></div>
+          <button 
+            onClick={() => handleToggleStats(currency !== "USD")}
+            className="flex items-center gap-3 ml-2 hover:bg-slate-50 p-1 px-2 rounded-xl transition-all group"
+          >
+            <span className="text-[11px] font-bold uppercase tracking-widest text-slate-400 group-hover:text-slate-900 transition-colors">Currency</span>
+            <div className={`w-9 h-5 rounded-full relative transition-all duration-300 ${currency === "USD" ? 'bg-orange-500 shadow-[0_0_10px_rgba(249,115,22,0.2)]' : 'bg-slate-200'}`}>
+              <div className={`absolute top-0.5 w-4 h-4 bg-white rounded-full shadow-md transition-all duration-300 transform ${currency === "USD" ? 'translate-x-4' : 'translate-x-0.5'}`}></div>
             </div>
-            {showStats && (
-              <span className="text-[10px] font-black text-indigo-500 bg-indigo-50 px-1.5 py-0.5 rounded-md uppercase tracking-wider">USD</span>
-            )}
-          </div>
+            <div className="flex items-center">
+              <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-md uppercase tracking-wider transition-all ${currency === "USD" ? 'bg-orange-50 text-orange-600 border border-orange-100' : 'bg-slate-100 text-slate-400 border border-slate-200 opacity-60'}`}>
+                {currency}
+              </span>
+            </div>
+          </button>
         </div>
 
         <div className="flex items-center gap-3">
@@ -398,7 +399,7 @@ export default function AdminOverviewTab({ stats, activities, breakdown, isLoadi
             </span>
           </div>
           <div className="flex flex-col">
-            <span className="text-[32px] font-bold text-slate-900 leading-tight">{fmt(totalRevenue, currency).split('.')[0]}</span>
+            <span className="text-[32px] font-bold text-slate-900 leading-tight tracking-tight">{fmt(totalRevenue, currency)}</span>
             <div className="flex items-center gap-1 mt-2">
               <span className="text-[11px] font-bold text-slate-300">vs last month</span>
               <span className="text-[11px] font-bold text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded-md flex items-center gap-0.5">
@@ -434,7 +435,7 @@ export default function AdminOverviewTab({ stats, activities, breakdown, isLoadi
             </span>
           </div>
           <div className="flex flex-col">
-            <span className="text-[32px] font-bold text-slate-900 leading-tight">{fmt(arpu, currency).split('.')[0]}</span>
+            <span className="text-[32px] font-bold text-slate-900 leading-tight tracking-tight">{fmt(arpu, currency)}</span>
             <div className="flex items-center gap-1 mt-2">
               <span className="text-[11px] font-bold text-slate-300">vs last month</span>
               <span className="text-[11px] font-bold text-emerald-500 bg-emerald-50 px-1.5 py-0.5 rounded-md flex items-center gap-0.5">
