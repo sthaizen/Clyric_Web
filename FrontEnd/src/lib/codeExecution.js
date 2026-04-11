@@ -15,13 +15,16 @@ const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:3000/api") + 
  * @param {string} stdin - optional standard input (e.g. from sample test cases)
  * @returns {Promise<{success:boolean, verdict:string, stdout:string, stderr:string, compileError:string, runtimeError:string, executionTime:number}>}
  */
-export async function runCode(language, code, stdin = "") {
+export async function runCode(language, code, stdin = "", token = null) {
   try {
+    const headers = {
+      "Content-Type": "application/json",
+    };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
     const response = await fetch(`${API_URL}/run`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
       body: JSON.stringify({ language, code, stdin }),
     });
 
@@ -52,13 +55,16 @@ export async function runCode(language, code, stdin = "") {
  * @param {string} code - source code
  * @returns {Promise<{success:boolean, verdict:string, testCasesPassed:number, totalTestCases:number, executionTime:number, results:Array}>}
  */
-export async function submitCode(problemId, language, code) {
+export async function submitCode(problemId, language, code, token = null) {
   try {
+    const headers = {
+      "Content-Type": "application/json",
+    };
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+
     const response = await fetch(`${API_URL}/submit`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers,
       body: JSON.stringify({ problemId, language, code }),
     });
 

@@ -373,7 +373,8 @@ function SessionPage() {
     setIsRunning(true);
     setOutput({ type: "running" });
 
-    const result = await runCode(selectedLanguage, code, "");
+    const token = await getToken();
+    const result = await runCode(selectedLanguage, code, "", token);
     const results = [];
     let allPassed = true;
     let anyError = !!(result.compileError || result.runtimeError);
@@ -430,7 +431,8 @@ function SessionPage() {
     setIsSubmitting(true);
     setOutput({ type: "submitting" });
 
-    const result = await submitCode(currentProblemId, selectedLanguage, code);
+    const token = await getToken();
+    const result = await submitCode(currentProblemId, selectedLanguage, code, token);
     setOutput({ type: "submit", ...result });
     setIsSubmitting(false);
 

@@ -265,7 +265,8 @@ function ProblemPage() {
     setIsRunning(true);
     setOutput({ type: "running" });
 
-    const result = await runCode(selectedLanguage, currentCode, "");
+    const token = await getToken();
+    const result = await runCode(selectedLanguage, currentCode, "", token);
 
     const results = [];
     let allPassed = true;
@@ -351,7 +352,8 @@ function ProblemPage() {
     setIsSubmitting(true);
     setOutput({ type: "submitting" });
 
-    const result = await submitCode(currentProblemId, selectedLanguage, currentCode);
+    const token = await getToken();
+    const result = await submitCode(currentProblemId, selectedLanguage, currentCode, token);
 
     setOutput({
       type: "submit",

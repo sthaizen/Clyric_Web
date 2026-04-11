@@ -9,13 +9,13 @@ import { FileText, Download, LogOut, CheckCircle2, XCircle, Clock, Code2, BarCha
  *  - problem:        { title, difficulty, slug }
  *  - timeElapsed:    number (seconds) from the stopwatch
  *  - timeRemaining:  number (seconds left if countdown mode was used)
- *  - timerMode:      "stopwatch" | "timer"
+ *  - timerMode:      "stopwatch" | "timer"what the in th session is going on you dyam wna
  *  - language:       string  (e.g. "javascript")
  *  - runCount:       number
  *  - submitCount:    number
  *  - lastVerdict:    string  (e.g. "Accepted", "Wrong Answer", null)
  *  - sessionId:      string
- *  - hostName:       string
+ *  - hostName:       string, 
  *  - participantName:string
  *  - onClose:        () => void  (navigate to dashboard)
  */
@@ -47,22 +47,22 @@ export default function SessionReportModal({
     timerMode === "stopwatch"
       ? timeElapsed
       : timerMode === "timer" && timeElapsed > 0
-      ? timeElapsed
-      : 0;
+        ? timeElapsed
+        : 0;
 
   const verdictColor =
     lastVerdict === "Accepted"
       ? "text-emerald-400"
       : lastVerdict
-      ? "text-red-400"
-      : "text-gray-400";
+        ? "text-red-400"
+        : "text-gray-400";
 
   const difficultyColor =
     problem?.difficulty === "easy"
       ? "text-emerald-400"
       : problem?.difficulty === "medium"
-      ? "text-amber-400"
-      : "text-red-400";
+        ? "text-amber-400"
+        : "text-red-400";
 
   const now = new Date();
   const dateStr = now.toLocaleDateString("en-US", {
@@ -133,8 +133,8 @@ export default function SessionReportModal({
       problem?.difficulty === "easy"
         ? [52, 211, 153]
         : problem?.difficulty === "medium"
-        ? [251, 191, 36]
-        : [248, 113, 113]
+          ? [251, 191, 36]
+          : [248, 113, 113]
     );
     y += 8;
 
@@ -150,8 +150,8 @@ export default function SessionReportModal({
       lastVerdict === "Accepted"
         ? [52, 211, 153]
         : lastVerdict
-        ? [248, 113, 113]
-        : [140, 140, 155]
+          ? [248, 113, 113]
+          : [140, 140, 155]
     );
     y += 8;
 
