@@ -21,8 +21,8 @@ const RecommendedConnections = () => {
         Recommended Peer Connections
       </h2>
 
-      {/* Container with hidden scrollbar */}
-      <div className="flex-1 flex flex-col gap-3 overflow-y-auto no-scrollbar">
+      {/* Container with scrollbar - restricted to ~3 users height */}
+      <div className="flex flex-col gap-3 overflow-y-auto custom-scrollbar max-h-[200px] pr-2">
         {peers.length === 0 ? (
           <div className="flex-1 flex flex-col items-center justify-center text-center p-4">
             <p className="text-sm text-gray-400">No recent peers found.</p>
@@ -31,7 +31,7 @@ const RecommendedConnections = () => {
           peers.map((peer) => (
             <div
               key={peer.id}
-              className="flex items-center justify-between p-2 rounded-xl transition-colors hover:bg-white/[0.02] "
+              className="flex items-center justify-between p-2 rounded-xl transition-colors hover:bg-white/[0.02] shrink-0"
             >
               <div className="flex items-center gap-4 min-w-0">
                 {/* Avatar */}
@@ -60,15 +60,6 @@ const RecommendedConnections = () => {
                     </span>
                   </div>
                   <div className="flex items-center gap-3">
-                    {/* <div className={`px-2 py-0.5 rounded border w-fit ${peer.isOnline
-                      ? 'bg-green-500/10 border-green-500/20'
-                      : 'bg-red-500/10 border-red-500/20'
-                      }`}>
-                      <span className={`text-[10px] font-medium uppercase tracking-wide truncate block max-w-[140px] ${peer.isOnline ? 'text-green-400' : 'text-red-400'
-                        }`}>
-                        {peer.isOnline ? 'Online' : 'Offline'}
-                      </span>
-                    </div> */}
                     {peer.collabCount > 0 && (
                       <span className="text-[11px] text-white font-medium flex items-center gap-1">
                         <UsersIcon className="w-3 h-3 text-[#fbba00] " />
@@ -80,7 +71,6 @@ const RecommendedConnections = () => {
               </div>
 
               {/* Action */}
-
               <button className="shrink-0 px-5 py-2 rounded-lg bg-[#232329]/50 hover:bg-[#2a2a32] transition-colors border border-white/[0.05] active:scale-95">
                 <span className="text-[13px] text-white font-medium">
                   Chat
@@ -93,8 +83,19 @@ const RecommendedConnections = () => {
 
       <style dangerouslySetInnerHTML={{
         __html: `
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 5px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(255, 255, 255, 0.2);
+        }
       `}} />
     </div>
   );
