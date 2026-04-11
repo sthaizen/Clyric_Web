@@ -13,6 +13,7 @@ import confetti from "canvas-confetti";
 // WebRTC Video
 import useWebRTCSession from "../hooks/useWebRTCSession.js";
 import WebRTCVideoUI from "../components/WebRTCVideoUI.jsx";
+import { socket } from "../lib/socket.js";
 
 // Components & UI
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
@@ -20,6 +21,7 @@ import ProblemDescription from "../components/ProblemDescription";
 import OutputPanel from "../components/OutputPanel";
 import CodeEditorPanel from "../components/CodeEditorPanel";
 import ProblemNavbar from "../components/ProblemNavbar";
+import SessionReportModal from "../components/SessionReportModal";
 
 // Icons (Trimmed down to only what is used in the main body)
 import {
@@ -27,7 +29,11 @@ import {
   X,
   EyeOff,
   LogOutIcon,
-  Loader2
+  Loader2,
+  NotebookPen,
+  ChevronDown,
+  Lightbulb,
+  Send
 } from "lucide-react";
 
 function SessionPage() {
@@ -41,6 +47,12 @@ function SessionPage() {
   const [isRunning, setIsRunning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // --- SESSION REPORT ---
+  const [showReport, setShowReport] = useState(false);
+  const [runCount, setRunCount] = useState(0);
+  const [submitCount, setSubmitCount] = useState(0);
+  const [lastVerdict, setLastVerdict] = useState(null);
+
   const { data: sessionData, isLoading: loadingSession, refetch } = useSessionById(id);
   const joinSessionMutation = useJoinSession();
   const endSessionMutation = useEndSession();
@@ -48,6 +60,50 @@ function SessionPage() {
   const session = sessionData?.session;
   const isHost = session?.host?.clerkId === user?.id;
   const isParticipant = session?.participant?.clerkId === user?.id;
+
+  // --- HOST SCRATCHPAD ---
+  const [scratchpadOpen, setScratchpadOpen] = useState(false);
+  const [scratchpadText, setScratchpadText] = useState("");
+  const scratchpadSaveTimer = useRef(null);
+  const [scratchpadSaved, setScratchpadSaved] = useState(false);
+
+  // Load scratchpad from localStorage when session is ready (isHost is now in scope)
+  useEffect(() => {
+    if (!id || !isHost) return;
+    const saved = localStorage.getItem(`clyric_scratchpad_${id}`);
+    if (saved) setScratchpadText(saved);
+  }, [id, isHost]);
+
+  // Auto-save scratchpad to localStorage
+  const handleScratchpadChange = (text) => {
+    setScratchpadText(text);
+    setScratchpadSaved(false);
+    if (scratchpadSaveTimer.current) clearTimeout(scratchpadSaveTimer.current);
+    scratchpadSaveTimer.current = setTimeout(() => {
+      localStorage.setItem(`clyric_scratchpad_${id}`, text);
+      setScratchpadSaved(true);
+      setTimeout(() => setScratchpadSaved(false), 2000);
+    }, 800);
+  };
+
+  // --- HINT DELIVERY ---
+  const [hintInput, setHintInput] = useState("");
+  const [hintSending, setHintSending] = useState(false);
+  const [receivedHint, setReceivedHint] = useState(null);
+
+  useEffect(() => {
+    const handleReceiveHint = ({ hint }) => setReceivedHint(hint);
+    socket.on("receive-hint", handleReceiveHint);
+    return () => socket.off("receive-hint", handleReceiveHint);
+  }, []);
+
+  const handleSendHint = () => {
+    const trimmed = hintInput.trim();
+    if (!trimmed || !session?.callId) return;
+    socket.emit("send-hint", { roomId: session.callId, hint: trimmed });
+    setHintInput("");
+    toast.success("Hint sent to participant!", { icon: "💡" });
+  };
 
   const {
     localStream,
@@ -132,11 +188,11 @@ function SessionPage() {
     joinSessionMutation.mutate(id, { onSuccess: refetch });
   }, [session, user, loadingSession, isHost, isParticipant, id]);
 
-  // Redirect on completion
+  // Show report when session is completed (participant side, or any observer)
   useEffect(() => {
     if (!session || loadingSession) return;
-    if (session.status === "completed") navigate("/dashboard");
-  }, [session, loadingSession, navigate]);
+    if (session.status === "completed") setShowReport(true);
+  }, [session, loadingSession]);
 
   // Update code when problem loads or language changes
   useEffect(() => {
@@ -164,20 +220,50 @@ function SessionPage() {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
   // --- TIMER LOGIC ---
+  // Helper: emit current timer state to room (host only)
+  const emitTimerSync = (patch) => {
+    if (!isHost || !session?.callId) return;
+    socket.emit("sync-timer", {
+      roomId: session.callId,
+      timerState: patch,
+    });
+  };
+
+  // Participant: listen for timer state from host
+  useEffect(() => {
+    if (isHost) return; // host drives the timer, never receives
+    const handleTimerSync = (state) => {
+      if (state.timerMode   !== undefined) setTimerMode(state.timerMode);
+      if (state.isTimerActive !== undefined) setIsTimerActive(state.isTimerActive);
+      if (state.timeElapsed  !== undefined) setTimeElapsed(state.timeElapsed);
+      if (state.timeRemaining !== undefined) setTimeRemaining(state.timeRemaining);
+    };
+    socket.on("receive-timer-sync", handleTimerSync);
+    return () => socket.off("receive-timer-sync", handleTimerSync);
+  }, [isHost]);
+
   useEffect(() => {
     let interval = null;
     if (isTimerActive) {
       interval = setInterval(() => {
         if (timerMode === 'stopwatch') {
-          setTimeElapsed(prev => prev + 1);
+          setTimeElapsed(prev => {
+            const next = prev + 1;
+            // Sync every second so participant's display stays in lock-step
+            emitTimerSync({ timeElapsed: next });
+            return next;
+          });
         } else if (timerMode === 'timer') {
           setTimeRemaining(prev => {
             if (prev <= 1) {
               setIsTimerActive(false);
+              emitTimerSync({ isTimerActive: false, timeRemaining: 0 });
               toast("Time's up!", { icon: '⏰' });
               return 0;
             }
-            return prev - 1;
+            const next = prev - 1;
+            emitTimerSync({ timeRemaining: next });
+            return next;
           });
         }
       }, 1000);
@@ -196,19 +282,29 @@ function SessionPage() {
       const totalSeconds = (parseInt(timerHours) || 0) * 3600 + (parseInt(timerMinutes) || 0) * 60;
       if (totalSeconds > 0) {
         setTimeRemaining(totalSeconds);
+        const nextActive = true;
+        setIsTimerActive(nextActive);
+        emitTimerSync({ timerMode, isTimerActive: nextActive, timeRemaining: totalSeconds, timeElapsed });
+        return;
       } else {
         toast.error("Please enter a valid time");
         return;
       }
     }
-    setIsTimerActive(!isTimerActive);
+    const nextActive = !isTimerActive;
+    setIsTimerActive(nextActive);
+    emitTimerSync({ timerMode, isTimerActive: nextActive, timeRemaining, timeElapsed });
   };
 
   const resetTimer = () => {
     setIsTimerActive(false);
     setTimeElapsed(0);
     setTimeRemaining(0);
+    emitTimerSync({ timerMode, isTimerActive: false, timeElapsed: 0, timeRemaining: 0 });
   };
+
+  // Low time threshold: red warning when < 5 min remain in countdown
+  const isLowTime = timerMode === 'timer' && isTimerActive && timeRemaining > 0 && timeRemaining < 300;
 
   const formatTime = (totalSeconds) => {
     const h = Math.floor(totalSeconds / 3600);
@@ -308,6 +404,7 @@ function SessionPage() {
 
     setOutput({ type: "run", verdict: finalVerdict, results, executionTime: result.executionTime });
     setIsRunning(false);
+    setRunCount(c => c + 1);
 
     if (allPassed && !anyError) toast.success("Accepted! Output matches expected.");
     else toast.error(finalVerdict === "Wrong Answer" ? "Wrong Answer. Output does not match expected." : (finalVerdict || "Error"));
@@ -349,6 +446,8 @@ function SessionPage() {
 
     // Track analytics
     const actualVerdict = result.success && result.verdict === "Accepted" ? "Accepted" : result.verdict || "Error";
+    setLastVerdict(actualVerdict);
+    setSubmitCount(c => c + 1);
     if (user?.id && currentProblem?.slug) {
       trackProblemEvent({
         userId: user.id,
@@ -366,7 +465,7 @@ function SessionPage() {
 
   const handleEndSession = () => {
     if (window.confirm("Are you sure you want to end this session? All participants will be notified.")) {
-      endSessionMutation.mutate(id, { onSuccess: () => navigate("/dashboard") });
+      endSessionMutation.mutate(id, { onSuccess: () => setShowReport(true) });
     }
   };
 
@@ -398,6 +497,45 @@ function SessionPage() {
 
   return (
     <div className="h-screen bg-[#111113] flex flex-col overflow-hidden">
+
+      {/* POST-SESSION REPORT MODAL */}
+      {showReport && (
+        <SessionReportModal
+          problem={currentProblem}
+          timeElapsed={timeElapsed}
+          timeRemaining={timeRemaining}
+          timerMode={timerMode}
+          language={selectedLanguage}
+          runCount={runCount}
+          submitCount={submitCount}
+          lastVerdict={lastVerdict}
+          sessionId={id}
+          hostName={session?.host?.name}
+          participantName={session?.participant?.name}
+          onClose={() => navigate("/dashboard")}
+        />
+      )}
+
+      {/* PARTICIPANT HINT BANNER — floating overlay at bottom-center */}
+      {receivedHint && !isHost && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[9999] max-w-lg w-full px-4 animate-in slide-in-from-bottom-4 duration-300">
+          <div className="bg-[#1c1c44] border border-indigo-500/40 rounded-xl p-4 shadow-2xl flex items-start gap-3 backdrop-blur-sm">
+            <div className="shrink-0 w-8 h-8 rounded-full bg-indigo-500/20 flex items-center justify-center">
+              <Lightbulb className="w-4 h-4 text-indigo-400" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[11px] font-semibold text-indigo-400 uppercase tracking-wider mb-1">Hint from Interviewer</p>
+              <p className="text-gray-200 text-sm leading-relaxed">{receivedHint}</p>
+            </div>
+            <button
+              onClick={() => setReceivedHint(null)}
+              className="shrink-0 text-gray-500 hover:text-gray-300 transition-colors mt-0.5"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* RENDER THE EXTERNAL NAVBAR */}
       <ProblemNavbar
@@ -433,6 +571,7 @@ function SessionPage() {
         toggleTimer={toggleTimer}
         resetTimer={resetTimer}
         formatTime={formatTime}
+        isLowTime={isLowTime}
       />
 
       {/* MAIN WORKSPACE */}
@@ -605,7 +744,7 @@ function SessionPage() {
             </div>
 
             {/* WebRTC Video UI */}
-            <div className="flex-1 bg-transparent p-2 overflow-hidden flex flex-col">
+            <div className="flex-1 bg-transparent p-2 overflow-hidden flex flex-col min-h-0">
               <WebRTCVideoUI
                 localStream={localStream}
                 remoteStream={remoteStream}
@@ -625,6 +764,57 @@ function SessionPage() {
                 remoteImageUrl={isHost ? session?.participant?.profileImage : session?.host?.profileImage}
               />
             </div>
+
+            {/* HOST-ONLY SCRATCHPAD */}
+            {isHost && (
+              <div className="shrink-0 border-t border-[#27272a]">
+                {/* Toggle header */}
+                <button
+                  onClick={() => setScratchpadOpen(o => !o)}
+                  className="w-full flex items-center justify-between px-3 py-2 text-xs font-medium text-gray-400 hover:text-gray-200 hover:bg-[#27272a]/50 transition-colors"
+                >
+                  <span className="flex items-center gap-1.5">
+                    <NotebookPen className="w-3.5 h-3.5" />
+                    Interviewer Notes
+                    {scratchpadSaved && <span className="text-emerald-500 text-[10px] ml-1">Saved ✓</span>}
+                  </span>
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${scratchpadOpen ? "rotate-180" : ""}`} />
+                </button>
+
+                {/* Collapsible content: hint sender + notes */}
+                {scratchpadOpen && (
+                  <div className="px-2 pb-2 flex flex-col gap-2">
+                    {/* Send Hint row */}
+                    <div className="flex gap-1.5">
+                      <input
+                        type="text"
+                        value={hintInput}
+                        onChange={(e) => setHintInput(e.target.value)}
+                        onKeyDown={(e) => e.key === "Enter" && handleSendHint()}
+                        placeholder="Type a hint to send..."
+                        className="flex-1 bg-[#111113] text-gray-300 text-[12px] placeholder-gray-600 rounded-lg border border-[#27272a] px-2.5 py-1.5 focus:outline-none focus:border-indigo-500/50 transition-colors"
+                      />
+                      <button
+                        onClick={handleSendHint}
+                        disabled={!hintInput.trim() || hintSending}
+                        title="Send hint to participant"
+                        className="shrink-0 w-8 h-8 flex items-center justify-center rounded-lg bg-indigo-500/10 hover:bg-indigo-500/25 text-indigo-400 border border-indigo-500/20 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      >
+                        <Send className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    {/* Private notes textarea */}
+                    <textarea
+                      value={scratchpadText}
+                      onChange={(e) => handleScratchpadChange(e.target.value)}
+                      placeholder="Private notes (only you can see this)..."
+                      rows={4}
+                      className="w-full bg-[#111113] text-gray-300 text-[12px] placeholder-gray-600 rounded-lg border border-[#27272a] p-2.5 resize-none focus:outline-none focus:border-[#3f3f46] transition-colors leading-relaxed"
+                    />
+                  </div>
+                )}
+              </div>
+            )}
           </Panel>
 
         </PanelGroup>

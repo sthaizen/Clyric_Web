@@ -62,6 +62,7 @@ export default function ProblemNavbar({
   toggleTimer,
   resetTimer,
   formatTime,
+  isLowTime,
 
   // --- NEW: AI Chat State ---
   isAiChatOpen,
@@ -240,7 +241,7 @@ export default function ProblemNavbar({
               onClick={() => setIsTimerOpen(!isTimerOpen)}
               className={`p-1.5 px-2 rounded-lg transition-colors flex items-center justify-center gap-1.5 ${isTimerOpen ? 'bg-[#3e3e42] text-blue-500' : 'text-gray-400 hover:text-white hover:bg-[#3e3e42]'}`}
             >
-              {showNavTime && <span className="text-[13px] font-mono text-gray-200">{currentNavTime}</span>}
+              {showNavTime && <span className={`text-[13px] font-mono font-semibold transition-colors ${isLowTime ? 'text-red-400 animate-pulse' : 'text-gray-200'}`}>{currentNavTime}</span>}
               <Timer className="w-[18px] h-[18px]" />
             </button>
 
@@ -270,7 +271,7 @@ export default function ProblemNavbar({
                     className={`border border-[#3e3e42] rounded-lg transition-all flex flex-col items-center justify-center cursor-pointer ${timerMode === 'timer' ? 'flex-1 bg-[#3e3e42]/20' : 'w-[75px] hover:bg-[#3e3e42]/40'}`}
                   >
                     {timerMode === 'timer' && (isTimerActive || timeRemaining > 0) ? (
-                      <span className="text-2xl font-mono text-white tracking-wider font-medium">{formatTime(timeRemaining)}</span>
+                      <span className={`text-2xl font-mono tracking-wider font-medium transition-colors ${isLowTime ? 'text-red-400 animate-pulse' : 'text-white'}`}>{formatTime(timeRemaining)}</span>
                     ) : (
                       <>
                         <History className={`w-7 h-7 ${timerMode === 'timer' ? 'text-[#f59e0b] mb-3' : 'text-[#f59e0b]/60 mb-1'}`} />
