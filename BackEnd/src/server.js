@@ -13,7 +13,6 @@ import { ENV } from "./lib/env.js";
 import { connectDB } from "./lib/db.js";
 import { inngest, functions } from "./lib/inngest.js";
 import { protectRoute } from "./middleware/protectRoute.js";
-import chatRoutes from "./routes/chatRoutes.js";
 import sessionRoutes from "./routes/sessionRoutes.js";
 import codeExecutionRoutes from "./routes/codeExecutionRoutes.js";
 import problemRoutes from "./routes/problemRoutes.js";
@@ -70,7 +69,6 @@ const apiLimiter = rateLimit({
 app.use("/api", apiLimiter);
 
 app.use("/api/inngest", serve({ client: inngest, functions }));
-app.use("/api/chat", chatRoutes);
 app.use("/api/sessions", sessionRoutes);
 app.use("/api/code", codeExecutionRoutes);
 app.use("/api/problems", problemRoutes);

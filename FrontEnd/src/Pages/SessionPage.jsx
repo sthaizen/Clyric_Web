@@ -10,10 +10,9 @@ import { runCode, submitCode } from "../lib/codeExecution.js";
 import toast from "react-hot-toast";
 import confetti from "canvas-confetti";
 
-// Stream Video
-import useStreamClient from "../hooks/useStreamClient.js";
-import { StreamCall, StreamVideo } from "@stream-io/video-react-sdk";
-import VideoCallUI from "../components/VideoCallUI.jsx";
+// WebRTC Video
+import useWebRTCSession from "../hooks/useWebRTCSession.js";
+import WebRTCVideoUI from "../components/WebRTCVideoUI.jsx";
 
 // Components & UI
 import { Panel, PanelGroup, PanelResizeHandle } from "react-resizable-panels";
@@ -27,7 +26,6 @@ import {
   ChevronRight,
   X,
   EyeOff,
-  PhoneOffIcon,
   LogOutIcon,
   Loader2
 } from "lucide-react";
@@ -51,12 +49,21 @@ function SessionPage() {
   const isHost = session?.host?.clerkId === user?.id;
   const isParticipant = session?.participant?.clerkId === user?.id;
 
-  const { call, channel, chatClient, isInitializingCall, streamClient } = useStreamClient(
-    session,
-    loadingSession,
-    isHost,
-    isParticipant
-  );
+  const {
+    localStream,
+    remoteStream,
+    connectionState,
+    isInitializingCall,
+    isMuted,
+    isCameraOff,
+    isSharingScreen,
+    remoteIsMuted,
+    remoteIsCameraOff,
+    toggleMute,
+    toggleCamera,
+    toggleScreenShare,
+    leaveCall,
+  } = useWebRTCSession(session, loadingSession, isHost, isParticipant);
 
   const [currentProblem, setCurrentProblem] = useState(null);
   const [loadingProblem, setLoadingProblem] = useState(true);
@@ -597,34 +604,26 @@ function SessionPage() {
               )}
             </div>
 
-            {/* Stream Call UI */}
-            <div className="flex-1 bg-transparent p-2 overflow-auto flex flex-col">
-              {isInitializingCall ? (
-                <div className="h-full flex items-center justify-center">
-                  <div className="text-center">
-                    <Loader2 className="w-8 h-8 mx-auto animate-spin text-[#2cbb5d] mb-3" />
-                    <p className="text-sm text-gray-300">Connecting...</p>
-                  </div>
-                </div>
-              ) : !streamClient || !call ? (
-                <div className="h-full flex items-center justify-center p-4">
-                  <div className="bg-[#111113] rounded-xl border border-[#3e3e42] p-6 text-center shadow-lg w-full">
-                    <div className="w-12 h-12 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
-                      <PhoneOffIcon className="w-6 h-6 text-red-500" />
-                    </div>
-                    <h2 className="text-[15px] font-semibold text-gray-200">Connection Failed</h2>
-                    <p className="text-[12px] text-gray-400 mt-1">Unable to connect to call</p>
-                  </div>
-                </div>
-              ) : (
-                <div className="h-full flex-1 rounded-md overflow-hidden bg-black relative">
-                  <StreamVideo client={streamClient}>
-                    <StreamCall call={call}>
-                      <VideoCallUI chatClient={chatClient} channel={channel} />
-                    </StreamCall>
-                  </StreamVideo>
-                </div>
-              )}
+            {/* WebRTC Video UI */}
+            <div className="flex-1 bg-transparent p-2 overflow-hidden flex flex-col">
+              <WebRTCVideoUI
+                localStream={localStream}
+                remoteStream={remoteStream}
+                connectionState={isInitializingCall ? "initializing" : connectionState}
+                isMuted={isMuted}
+                isCameraOff={isCameraOff}
+                remoteIsMuted={remoteIsMuted}
+                remoteIsCameraOff={remoteIsCameraOff}
+                isSharingScreen={isSharingScreen}
+                onToggleMute={toggleMute}
+                onToggleCamera={toggleCamera}
+                onToggleScreenShare={toggleScreenShare}
+                onLeave={() => { leaveCall(); navigate("/dashboard"); }}
+                localLabel={user?.firstName || "You"}
+                remoteLabel={isHost ? (session?.participant?.name || "Participant") : (session?.host?.name || "Host")}
+                localImageUrl={user?.imageUrl}
+                remoteImageUrl={isHost ? session?.participant?.profileImage : session?.host?.profileImage}
+              />
             </div>
           </Panel>
 

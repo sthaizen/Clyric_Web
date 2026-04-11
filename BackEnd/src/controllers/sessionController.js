@@ -1,4 +1,4 @@
-import { chatClient, streamClient } from "../lib/streamTemp.js";
+// Stream SDK removed — video is now handled by WebRTC via Socket.IO signaling
 import Session from "../models/Session.js";
 import ProblemAnalytics from "../models/ProblemAnalytics.js";
 import AdvancedProblem from "../models/AdvancedProblem.js";
@@ -124,24 +124,8 @@ export async function createSession(req, res) {
 
     const session = await Session.create(sessionData);
 
-    await streamClient.video.call("default", callId).getOrCreate({
-      data: {
-        created_by_id: clerkId,
-        custom: {
-          problem,
-          difficulty,
-          sessionId: session._id.toString(),
-        },
-      },
-    });
-
-    const channel = chatClient.channel("messaging", callId, {
-      name: `${problem} Session`,
-      created_by_id: clerkId,
-      members: [clerkId],
-    });
-
-    await channel.create();
+    // WebRTC: no external call object needs to be created.
+    // Signaling is handled via Socket.IO; callId acts as the room identifier.
 
     // Track for graph
     trackSessionJoin(userId.toString(), problem, true);
@@ -227,8 +211,7 @@ export async function joinSession(req, res) {
     session.participant = userId;
     await session.save();
 
-    const channel = chatClient.channel("messaging", session.callId);
-    await channel.addMembers([clerkId]);
+    // WebRTC: participant joins signaling room via Socket.IO on the frontend.
 
     // Track for graph
     trackSessionJoin(userId.toString(), session.problem, false);
@@ -281,8 +264,7 @@ export async function joinSessionByCode(req, res) {
     session.participant = userId;
     await session.save();
 
-    const channel = chatClient.channel("messaging", session.callId);
-    await channel.addMembers([clerkId]);
+    // WebRTC: participant joins signaling room via Socket.IO on the frontend.
 
     // Track for graph
     trackSessionJoin(userId.toString(), session.problem, false);
@@ -313,13 +295,8 @@ export async function endSession(req,res){
       return res.status(400).json({ message: "Session is already completed" });
     }
 
-    // delete stream video call
-    const call = streamClient.video.call("default", session.callId);
-    await call.delete({ hard: true });
-
-    // delete stream chat channel
-    const channel = chatClient.channel("messaging", session.callId);
-    await channel.delete();
+    // WebRTC: peers are notified via Socket.IO (webrtc-peer-left / session polling).
+    // No external resources to delete.
 
     session.status = "completed";
     await session.save();
