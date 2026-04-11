@@ -115,6 +115,21 @@ export const setupSocket = (server) => {
       socket.to(roomId).emit("webrtc-peer-left", { socketId: socket.id });
       console.log(`[WebRTC] ${socket.id} left video room: ${roomId}`);
     });
+
+    // ── Hint Delivery ─────────────────────────────────────────────────────────
+    // Host sends a hint message; server relays it only to the other peer in the room.
+    socket.on("send-hint", ({ roomId, hint }) => {
+      if (!roomId || !hint) return;
+      socket.to(roomId).emit("receive-hint", { hint });
+      console.log(`[Hint] Hint sent in room ${roomId}: "${hint}"`);
+    });
+
+    // ── Timer Sync ────────────────────────────────────────────────────────────
+    // Host broadcasts timer state changes to the room. Pure relay.
+    socket.on("sync-timer", ({ roomId, timerState }) => {
+      if (!roomId || !timerState) return;
+      socket.to(roomId).emit("receive-timer-sync", timerState);
+    });
     // ──────────────────────────────────────────────────────────────────────────
 
     socket.on("disconnect", async () => {
