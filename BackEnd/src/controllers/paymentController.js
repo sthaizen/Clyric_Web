@@ -62,10 +62,15 @@ export const initiatePayment = async (req, res) => {
         // 2. Prepare gateway-specific initiation
         if (gateway === "esewa") {
             // eSewa v2 requires success_url and failure_url
-            // We point these to our BACKEND verification routes
+            // Always prefer ENV.BACKEND_URL in production to avoid localhost leakage
             const forwardedProto = req.headers["x-forwarded-proto"]?.split(",")?.[0];
             const requestBaseUrl = `${forwardedProto || req.protocol}://${req.get("host")}`;
-            const backendUrl = ENV.BACKEND_URL || requestBaseUrl;
+            const backendUrl = (ENV.NODE_ENV === "production" && ENV.BACKEND_URL) 
+                ? ENV.BACKEND_URL 
+                : (ENV.BACKEND_URL || requestBaseUrl);
+                
+            console.log(`[Payment] Initiating eSewa with Backend URL: ${backendUrl}`);
+
             const successUrl = `${backendUrl}/api/payments/verify/esewa`;
             const failureUrl = `${backendUrl}/api/payments/verify/esewa?reason=cancelled`;
 
@@ -80,7 +85,11 @@ export const initiatePayment = async (req, res) => {
         }
 
         if (gateway === "khalti") {
-            const returnUrl = `${ENV.CLIENT_URL}/dashboard?gateway=khalti&plan=${planId}`;
+            const clientUrl = (ENV.NODE_ENV === "production" && ENV.CLIENT_URL)
+                ? ENV.CLIENT_URL
+                : (ENV.CLIENT_URL || "http://localhost:5173");
+            const returnUrl = `${clientUrl}/dashboard?gateway=khalti&plan=${planId}`;
+            console.log(`[Payment] Initiating Khalti with Return URL: ${returnUrl}`);
             
             const khaltiRes = await initiateKhalti(
                 plan.amount,
