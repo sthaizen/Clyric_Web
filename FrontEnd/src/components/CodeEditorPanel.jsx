@@ -67,13 +67,14 @@ function CodeEditorPanel({
     return () => {
       socket.off("sync-code", handleSyncCode);
       socket.off("sync-language", handleSyncLanguage);
-      socket.disconnect();
+      // Do NOT disconnect here — the socket is shared with WebRTC signaling
+      // and other app-level features. Let App.jsx manage the lifecycle.
     };
   }, [roomId, user, onCodeChange, onRemoteLanguageChange]);
 
   const handleLocalCodeChange = (newCode) => {
     if (onCodeChange) onCodeChange(newCode);
-    
+
     // Emit only if it's a local edit
     if (roomId && !isRemoteUpdate.current) {
       socket.emit("code-update", { roomId, code: newCode });
@@ -82,11 +83,11 @@ function CodeEditorPanel({
   };
 
   const wrapLanguageChange = (e) => {
-     if (onLanguageChange) onLanguageChange(e);
-     if (roomId) {
-        socket.emit("language-update", { roomId, language: e.target.value });
-        // Optionally emit the starter code too if that's the desired behavior
-     }
+    if (onLanguageChange) onLanguageChange(e);
+    if (roomId) {
+      socket.emit("language-update", { roomId, language: e.target.value });
+      // Optionally emit the starter code too if that's the desired behavior
+    }
   };
 
   const handleEditorWillMount = (monaco) => {
@@ -152,7 +153,7 @@ function CodeEditorPanel({
     if (!editorInstance) return;
 
     const editor = editorInstance;
-    
+
     // Update global editor options
     editor.updateOptions({
       fontSize: settings?.fontSize || 14,
@@ -203,13 +204,13 @@ function CodeEditorPanel({
 
           <div className="flex items-center text-[13px] text-gray-300 relative" ref={dropdownRef}>
             <button
-               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-               className="flex items-center gap-2 bg-[#111113] hover:bg-[#8a6bfe]/10 text-gray-300 py-1.5 px-3 rounded-md border border-[#ffffff0a] transition-all duration-200 outline-none min-w-[120px]"
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="flex items-center gap-2 bg-[#111113] hover:bg-[#8a6bfe]/10 text-gray-300 py-1.5 px-3 rounded-md border border-[#ffffff0a] transition-all duration-200 outline-none min-w-[120px]"
             >
-              <img 
-                 src={LANGUAGE_CONFIG[selectedLanguage]?.logo} 
-                 alt="" 
-                 className="w-4 h-4 object-contain opacity-90"
+              <img
+                src={LANGUAGE_CONFIG[selectedLanguage]?.logo}
+                alt=""
+                className="w-4 h-4 object-contain opacity-90"
               />
               <span className="flex-1 text-left font-medium">
                 {LANGUAGE_CONFIG[selectedLanguage]?.name}
@@ -218,32 +219,32 @@ function CodeEditorPanel({
             </button>
 
             {isDropdownOpen && (
-               <div className="absolute top-full left-0 mt-1.5 w-[160px] bg-[#1b1b1f] border border-[#ffffff10] rounded-xl shadow-2xl overflow-hidden z-[50] animate-in fade-in zoom-in-95 duration-100">
-                 {Object.entries(LANGUAGE_CONFIG).map(([key, lang]) => {
-                   const isLocked = allowedLanguages && !allowedLanguages.includes(key);
-                   const isSelected = selectedLanguage === key;
-                   return (
-                     <button
-                        key={key}
-                        disabled={isLocked}
-                        onClick={() => {
-                          wrapLanguageChange({ target: { value: key } });
-                          setIsDropdownOpen(false);
-                        }}
-                        className={`w-full flex items-center justify-between px-3 py-2.5 text-left transition-colors duration-150
+              <div className="absolute top-full left-0 mt-1.5 w-[160px] bg-[#1b1b1f] border border-[#ffffff10] rounded-xl shadow-2xl overflow-hidden z-[50] animate-in fade-in zoom-in-95 duration-100">
+                {Object.entries(LANGUAGE_CONFIG).map(([key, lang]) => {
+                  const isLocked = allowedLanguages && !allowedLanguages.includes(key);
+                  const isSelected = selectedLanguage === key;
+                  return (
+                    <button
+                      key={key}
+                      disabled={isLocked}
+                      onClick={() => {
+                        wrapLanguageChange({ target: { value: key } });
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`w-full flex items-center justify-between px-3 py-2.5 text-left transition-colors duration-150
                            ${isSelected ? 'bg-[#8a6bfe]/20 text-[#8a6bfe]' : 'text-gray-400 hover:bg-[#ffffff0a]'}
                            ${isLocked ? 'opacity-40 cursor-not-allowed filter grayscale' : 'cursor-pointer'}
                         `}
-                     >
-                       <div className="flex items-center gap-2.5">
-                         <img src={lang.logo} alt="" className="w-4 h-4 object-contain" />
-                         <span className="text-[13px] font-medium">{lang.name}</span>
-                       </div>
-                       {isLocked && <Lock className="w-3.5 h-3.5 text-gray-500" />}
-                     </button>
-                   );
-                 })}
-               </div>
+                    >
+                      <div className="flex items-center gap-2.5">
+                        <img src={lang.logo} alt="" className="w-4 h-4 object-contain" />
+                        <span className="text-[13px] font-medium">{lang.name}</span>
+                      </div>
+                      {isLocked && <Lock className="w-3.5 h-3.5 text-gray-500" />}
+                    </button>
+                  );
+                })}
+              </div>
             )}
           </div>
 
@@ -255,9 +256,8 @@ function CodeEditorPanel({
         <div className="flex items-center gap-3 text-gray-400 px-2">
           {/* Auto-save indicator */}
           {saveStatus !== "idle" && (
-            <span className={`text-[11px] transition-all duration-300 ${
-              saveStatus === "saving" ? "text-gray-500" : "text-emerald-500"
-            }`}>
+            <span className={`text-[11px] transition-all duration-300 ${saveStatus === "saving" ? "text-gray-500" : "text-emerald-500"
+              }`}>
               {saveStatus === "saving" ? "Saving..." : "Saved ✓"}
             </span>
           )}
@@ -313,11 +313,8 @@ function CodeEditorPanel({
         />
       </div>
 
-      {/* Keyboard shortcuts hint strip */}
-      <div className="flex items-center gap-4 px-3 py-1 bg-[#111113] border-t border-[#1b1b1f] text-gray-600 text-[11px] select-none">
-        <span>Run: <kbd className="font-mono bg-[#1b1b1f] border border-[#2c2c35] rounded px-1">Ctrl+Enter</kbd></span>
-        <span>Submit: <kbd className="font-mono bg-[#1b1b1f] border border-[#2c2c35] rounded px-1">Ctrl+Shift+Enter</kbd></span>
-      </div>
+
+
     </div>
   );
 }

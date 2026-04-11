@@ -1,7 +1,6 @@
 import { Inngest } from "inngest"
 import { connectDB } from "./db.js"
 import User from "../models/User.js"
-import { upsertStreamUser, deleteStreamUser } from "./streamTemp.js";
 
 export const inngest = new Inngest({ id: "Clyric" });
 
@@ -22,14 +21,7 @@ const syncUser = inngest.createFunction(
         }
 
         await User.create(newUser)
-
-        await upsertStreamUser({
-            id: newUser.clerkId.toString(),
-            name: newUser.name,
-            image: newUser.profileImage,
-        })
-
-        // send welcome email to the user
+        // Stream sync removed — WebRTC uses Clerk auth directly
     }
 )
 
@@ -43,8 +35,7 @@ const deleteUserFromDb = inngest.createFunction(
         const { id } = event.data
 
         await User.deleteOne({ clerkId: id })
-
-        await deleteStreamUser(id.toString())
+        // Stream user sync removed — WebRTC uses Clerk auth directly
     }
 )
 

@@ -68,6 +68,55 @@ export const setupSocket = (server) => {
         socket.to(roomId).emit("sync-language", language);
     });
 
+    // ─── WebRTC Signaling ─────────────────────────────────────────────────────
+    // Pure relay: server never inspects payloads, just forwards to room peers.
+    // roomId here is the session callId (already stored on Session model).
+
+    socket.on("join-video-room", async (roomId) => {
+      socket.join(roomId);
+
+      // Count peers already in the room (subtract self).
+      const socketsInRoom = await io.in(roomId).allSockets();
+      const peersAlreadyPresent = socketsInRoom.size - 1;
+
+      // Notify existing peers that someone new joined.
+      socket.to(roomId).emit("webrtc-peer-joined", { socketId: socket.id });
+
+      // Tell the joining socket about pre-existing peers.
+      // This lets the host create an offer even if the participant joined first.
+      if (peersAlreadyPresent > 0) {
+        socket.emit("webrtc-peers-present", { count: peersAlreadyPresent });
+      }
+
+      console.log(`[WebRTC] ${socket.id} joined video room: ${roomId} (${peersAlreadyPresent} peer(s) already present)`);
+    });
+
+    socket.on("webrtc-offer", ({ roomId, offer }) => {
+      // Forward SDP offer to all other peers in the room.
+      socket.to(roomId).emit("webrtc-offer", { offer, from: socket.id });
+    });
+
+    socket.on("webrtc-answer", ({ roomId, answer }) => {
+      // Forward SDP answer to all other peers in the room.
+      socket.to(roomId).emit("webrtc-answer", { answer, from: socket.id });
+    });
+
+    socket.on("webrtc-ice-candidate", ({ roomId, candidate }) => {
+      // Relay ICE candidates to peers.
+      socket.to(roomId).emit("webrtc-ice-candidate", { candidate, from: socket.id });
+    });
+
+    socket.on("webrtc-media-state", ({ roomId, type, isOff }) => {
+      socket.to(roomId).emit("webrtc-media-state", { from: socket.id, type, isOff });
+    });
+
+    socket.on("webrtc-leave", (roomId) => {
+      // Peer explicitly leaving the video call (not just socket disconnect).
+      socket.to(roomId).emit("webrtc-peer-left", { socketId: socket.id });
+      console.log(`[WebRTC] ${socket.id} left video room: ${roomId}`);
+    });
+    // ──────────────────────────────────────────────────────────────────────────
+
     socket.on("disconnect", async () => {
       console.log("User disconnected:", socket.id);
       const userId = socket.userId;
