@@ -13,8 +13,10 @@ export const setAuthToken = (token) => {
 };
 
 axiosInstance.interceptors.request.use((config) => {
-    // 1. Attach Auth Token if available
-    if (authToken) {
+    // 1. Attach Auth Token if available (exclude admin routes)
+    const isAdminRoute = config.url && (config.url.startsWith('admin') || config.url.startsWith('/admin'));
+    
+    if (authToken && !isAdminRoute) {
         config.headers.Authorization = `Bearer ${authToken}`;
     }
 
