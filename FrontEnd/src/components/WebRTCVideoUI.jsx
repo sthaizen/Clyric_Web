@@ -11,8 +11,7 @@ import {
   WifiOffIcon,
   AlertTriangleIcon,
   CameraOffIcon,
-  UserPlusIcon,
-  CopyIcon
+  UserPlusIcon
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -223,11 +222,6 @@ function WebRTCVideoUI({
 }) {
   const hasRemote = !!remoteStream || connectionState === "connecting";
 
-  const handleInvite = () => {
-    navigator.clipboard.writeText(window.location.href);
-    toast.success("Session link copied to clipboard!");
-  };
-
   return (
     <div className="h-full flex flex-col gap-3 bg-[#09090b] rounded-xl overflow-hidden relative p-3">
 
@@ -268,13 +262,6 @@ function WebRTCVideoUI({
                     </div>
                     <h3 className="text-gray-200 font-semibold mb-2">No one else is here yet</h3>
                     <p className="text-gray-400 text-sm mb-6 max-w-[250px]">Invite people to join you in this session!</p>
-                    <button 
-                      onClick={handleInvite}
-                      className="px-5 py-2.5 bg-white text-black text-sm font-semibold rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2"
-                    >
-                      <CopyIcon className="w-4 h-4" />
-                      Copy Invite Link
-                    </button>
                   </div>
                 )}
             </div>
