@@ -1,6 +1,6 @@
 import express from "express";
 import { getLeaderboard, getMyRank } from "../controllers/leaderboardController.js";
-import { requireAuth } from "@clerk/express";
+import { protectRoute } from "../middleware/protectRoute.js";
 
 const router = express.Router();
 
@@ -8,6 +8,6 @@ const router = express.Router();
 router.get("/", getLeaderboard);
 
 // Protected — get the logged-in user's rank
-router.get("/me", requireAuth(), getMyRank);
+router.get("/me", protectRoute, getMyRank);
 
 export default router;

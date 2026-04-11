@@ -31,6 +31,7 @@ import userRoutes from "./routes/userRoutes.js";
 import { checkExpiredSubscriptions } from "./services/subscriptionService.js";
 
 const app = express();
+app.set("trust proxy", 1); // Required for Render and other proxies to work with rate-limiting and auth
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

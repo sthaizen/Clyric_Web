@@ -1,5 +1,5 @@
 import express from "express";
-import { requireAuth } from "@clerk/express";
+import { protectRoute } from "../middleware/protectRoute.js";
 import {
   getComments,
   addComment,
@@ -13,12 +13,12 @@ const router = express.Router();
 router.get("/:problemId", getComments);
 
 // Add a comment or reply (auth required)
-router.post("/:problemId", requireAuth(), addComment);
+router.post("/:problemId", protectRoute, addComment);
 
 // Delete a comment (auth required, only owner)
-router.delete("/:commentId", requireAuth(), deleteComment);
+router.delete("/:commentId", protectRoute, deleteComment);
 
 // Toggle like on a comment (auth required)
-router.post("/:commentId/like", requireAuth(), toggleLike);
+router.post("/:commentId/like", protectRoute, toggleLike);
 
 export default router;

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { requireAuth } from "@clerk/express";
+import { protectRoute } from "../middleware/protectRoute.js";
 import Submission from "../models/Submission.js";
 import ProblemAnalytics from "../models/ProblemAnalytics.js";
 
@@ -7,13 +7,9 @@ const router = Router();
 
 // GET /api/submissions/solved-status
 // Returns all solved problems with time data for the current user
-router.get("/solved-status", requireAuth(), async (req, res) => {
+router.get("/solved-status", protectRoute, async (req, res) => {
   try {
-    const userId = req.auth.userId;
-
-    if (!userId) {
-      return res.status(401).json({ success: false, error: "Unauthorized" });
-    }
+    const userId = req.user.clerkId;
 
     const solvedProblems = await ProblemAnalytics.find({
       userId,
@@ -40,14 +36,10 @@ router.get("/solved-status", requireAuth(), async (req, res) => {
 
 // GET /api/submissions/:problemSlug
 // Retrieves all accepted submissions for a given problem for the logged-in user
-router.get("/:problemSlug", requireAuth(), async (req, res) => {
+router.get("/:problemSlug", protectRoute, async (req, res) => {
   try {
     const { problemSlug } = req.params;
-    const userId = req.auth.userId;
-
-    if (!userId) {
-      return res.status(401).json({ success: false, error: "Unauthorized" });
-    }
+    const userId = req.user.clerkId;
 
     const submissions = await Submission.find({
       userId,
