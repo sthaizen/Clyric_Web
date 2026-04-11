@@ -5,17 +5,27 @@ const axiosInstance = axios.create({
     withCredentials: true
 });
 
+// A small utility to allow React components to inject the Clerk token
+let authToken = null;
+
+export const setAuthToken = (token) => {
+    authToken = token;
+};
+
 axiosInstance.interceptors.request.use((config) => {
-    // If the endpoint is like "/admin/stats" and baseURL has a path (like "/api"),
-    // Axios will natively drop the "/api" making it just "/admin/stats".
-    // Stripping the leading slash fixes this by making it relative.
+    // 1. Attach Auth Token if available
+    if (authToken) {
+        config.headers.Authorization = `Bearer ${authToken}`;
+    }
+
+    // 2. Fix URL construction (Vite baseURL + relative path)
     if (config.url && config.url.startsWith('/')) {
         config.url = config.url.substring(1);
     }
-    // Also ensure the baseURL ends with a slash so simple relative paths append properly.
     if (config.baseURL && !config.baseURL.endsWith('/')) {
         config.baseURL += '/';
     }
+
     return config;
 });
 
