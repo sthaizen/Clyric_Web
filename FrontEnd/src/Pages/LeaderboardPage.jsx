@@ -246,7 +246,7 @@ export default function LeaderboardPage() {
             { label: 'Dashboard', link: '/dashboard' },
             { label: 'Problems', link: '/problems' },
             { label: 'Contest', link: '/leaderboard', active: true },
-            { label: 'Discuss', link: '/discuss' },
+
             { label: 'Pricing', link: '/priceoverview', gold: true },
           ].map(({ label, link, active, caret, gold }) => (
             <a

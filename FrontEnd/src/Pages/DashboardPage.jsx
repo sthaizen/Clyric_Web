@@ -154,7 +154,7 @@ function DashboardPage() {
               { label: 'Dashboard', link: '/dashboard', active: true },
               { label: 'Problems', link: '/problems' },
               { label: 'Contest', link: '/leaderboard' },
-              { label: 'Discuss', link: '/discuss' },
+
               { label: 'Pricing', link: '/priceoverview', gold: true },
             ].map(({ label, link, active, caret, gold }) => (
               <a
@@ -524,7 +524,9 @@ function DashboardPage() {
             </div>
           </div>
         </div>
-      </div >
+      </div>
+
+
 
       <CreateSessionModal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)} roomConfig={roomConfig} setRoomConfig={setRoomConfig} onCreateRoom={handleCreateRoom} isCreating={createSessionMutation.isPending} />
 

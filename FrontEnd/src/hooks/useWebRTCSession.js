@@ -317,7 +317,7 @@ function useWebRTCSession(session, loadingSession, isHost, isParticipant) {
       peerJoinedRef.current    = false;
       remoteDescSetRef.current = false;
       setConnectionState("disconnected");
-      toast("The other participant left the call.", { icon: "👋", id: "peer-left" });
+      toast("The other participant left the call.", { id: "peer-left" });
     };
 
     socket.on("webrtc-peer-joined",   onPeerJoined);

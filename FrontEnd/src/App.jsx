@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Route, Routes, Navigate, useNavigate } from "react-router-dom";
+import { Route, Routes, Navigate, useNavigate, useLocation } from "react-router-dom";
 import ScrollToTop from "./components/ScrollToTop";
 import ReactLenis from "lenis/react";
 import { Toaster } from "react-hot-toast";
@@ -35,12 +35,16 @@ import CosmicCheckout from "./Pages/CheckOutPage";
 import PaymentListener from "./components/PaymentListener";
 import AboutUs from "./Pages/AboutUs";
 import ClerkAxiosInterceptor from "./components/ClerkAxiosInterceptor";
+import { MessengerProvider } from "./context/MessengerContext";
+import MessengerTrigger from "./components/messenger/MessengerTrigger";
+import MessengerPanel from "./components/messenger/MessengerPanel";
 
 const App = () => {
   const { isSignedIn, isLoaded, user } = useUser();
   const [theme, setTheme] = useState("light");
 
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     if (isLoaded && isSignedIn && user) {
@@ -69,52 +73,61 @@ const App = () => {
 
   return (
     <ClerkAxiosInterceptor>
-      <ReactLenis root>
-        <div className="root-container dark:bg-black relative min-h-screen w-full">
-          <ScrollToTop />
-          <PaymentListener />
-          <Routes>
-            {/* Main Landing Page Route */}
-            <Route
-              path="/"
-              element={<LandingPage theme={theme} setTheme={setTheme} />}
-            />
+      <MessengerProvider>
+        <ReactLenis root>
+          <div className="root-container dark:bg-black relative min-h-screen w-full">
+            <ScrollToTop />
+            <PaymentListener />
+            <Routes>
+              {/* Main Landing Page Route */}
+              <Route
+                path="/"
+                element={<LandingPage theme={theme} setTheme={setTheme} />}
+              />
 
-            <Route
-              path="/dashboard" element={<DashboardPage />}
-            />
+              <Route
+                path="/dashboard" element={<DashboardPage />}
+              />
 
-            {/* Other Routes */}
-            <Route path="/problems" element={<ProblemsPage />} />
-            <Route path="/problem/:id" element={<ProblemPage />} />
-            <Route path="/session/:id" element={<SessionPage />} />
-            <Route path="/connection" element={<Connection />} />
-            <Route path="/service" element={<Servicess />} />
-            <Route path="/coding" element={<CodingEnvironemt />} />
-            {/* ─── Admin Routes (custom auth — no Clerk) ─── */}
-            <Route path="/admin/login" element={<AdminAuthProvider><AdminLoginPage /></AdminAuthProvider>} />
-            <Route path="/admin/reset-password" element={<AdminAuthProvider><AdminLoginPage /></AdminAuthProvider>} />
-            <Route path="/admin/change-password" element={<AdminAuthProvider><AdminChangePasswordPage /></AdminAuthProvider>} />
-            <Route path="/admin" element={
-              <AdminAuthProvider>
-                <AdminRouteGuard>
-                  <AdminDashboard />
-                </AdminRouteGuard>
-              </AdminAuthProvider>
-            } />
+              {/* Other Routes */}
+              <Route path="/problems" element={<ProblemsPage />} />
+              <Route path="/problem/:id" element={<ProblemPage />} />
+              <Route path="/session/:id" element={<SessionPage />} />
+              <Route path="/connection" element={<Connection />} />
+              <Route path="/service" element={<Servicess />} />
+              <Route path="/coding" element={<CodingEnvironemt />} />
+              {/* ─── Admin Routes (custom auth — no Clerk) ─── */}
+              <Route path="/admin/login" element={<AdminAuthProvider><AdminLoginPage /></AdminAuthProvider>} />
+              <Route path="/admin/reset-password" element={<AdminAuthProvider><AdminLoginPage /></AdminAuthProvider>} />
+              <Route path="/admin/change-password" element={<AdminAuthProvider><AdminChangePasswordPage /></AdminAuthProvider>} />
+              <Route path="/admin" element={
+                <AdminAuthProvider>
+                  <AdminRouteGuard>
+                    <AdminDashboard />
+                  </AdminRouteGuard>
+                </AdminAuthProvider>
+              } />
 
-            <Route path="/priceoverview" element={<PriceOverview />} />
-            <Route path="/leaderboard" element={<LeaderboardPage />} />
-            <Route path="/checkout" element={<CosmicCheckout />} />
-            <Route path="/docs" element={<DocsPage />} />
-            <Route path="/docs/:slug" element={<DocsPage />} />
-            <Route path="/terms" element={<TermsPage />} />
-            <Route path="/aboutus" element={<AboutUs theme={theme} setTheme={setTheme} />} />
-            <Route path="/FAQ" element={<Faq theme={theme} setTheme={setTheme} />} />
-          </Routes>
-        </div>
-        <Toaster />
-      </ReactLenis>
+              <Route path="/priceoverview" element={<PriceOverview />} />
+              <Route path="/leaderboard" element={<LeaderboardPage />} />
+              <Route path="/checkout" element={<CosmicCheckout />} />
+              <Route path="/docs" element={<DocsPage />} />
+              <Route path="/docs/:slug" element={<DocsPage />} />
+              <Route path="/terms" element={<TermsPage />} />
+              <Route path="/aboutus" element={<AboutUs theme={theme} setTheme={setTheme} />} />
+              <Route path="/FAQ" element={<Faq theme={theme} setTheme={setTheme} />} />
+            </Routes>
+
+            {isSignedIn && ["/dashboard", "/problems", "/leaderboard"].some(p => location.pathname === p || location.pathname.startsWith("/problem/")) && (
+              <>
+                <MessengerTrigger />
+                <MessengerPanel />
+              </>
+            )}
+          </div>
+          <Toaster />
+        </ReactLenis>
+      </MessengerProvider>
     </ClerkAxiosInterceptor>
   );
 };

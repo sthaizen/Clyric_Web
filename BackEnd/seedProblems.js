@@ -17,7 +17,7 @@ const seedDatabase = async () => {
       difficulty: "easy",
       timeLimit: 5000,
       outputLimit: 65536,
-      
+
       // Sample test cases
       sampleTestCases: [
         {
@@ -29,17 +29,7 @@ const seedDatabase = async () => {
           expectedOutput: "0"
         }
       ],
-      
-      // Hidden test cases used strictly by the judgeService during submit
-      // Since our runner passes stdin, let's normalize the input to something the runtime script expects.
-      // Wait, in our current setup for JavaScript, we write the exact frontend code.
-      // The frontend code doesn't read standard input natively, it's just a function...
-      // Let's modify the hidden test cases to match whatever the frontend sends.
-      // The frontend currently sends: code + expected output.
-      // Wait, actually, the frontend runs the starter code which has `console.log(maxProfit([7,1,5,3,6,4]));` baked in!
-      // So the user's code inherently runs the test cases itself!
-      // So for this specific frontend implementation (which prints the results), 
-      // the expected output of running the file is the combined console.logs.
+
       testCases: [
         {
           input: "prices = [7,1,5,3,6,4]",

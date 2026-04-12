@@ -1,11 +1,15 @@
 import React from "react";
 import { useRecommendedPeers } from "../../hooks/useRecommendedPeers";
 import { UsersIcon } from "lucide-react";
+import { useMessengerContext } from "../../context/MessengerContext";
 
 
 const RecommendedConnections = () => {
   const { data, isLoading } = useRecommendedPeers();
   const peers = data?.peers || [];
+
+  // Safe to call unconditionally now. If outside provider, openChatWith will be null.
+  const { openChatWith } = useMessengerContext();
 
   if (isLoading) {
     return (
@@ -71,11 +75,15 @@ const RecommendedConnections = () => {
               </div>
 
               {/* Action */}
-              <button className="shrink-0 px-5 py-2 rounded-lg bg-[#232329]/50 hover:bg-[#2a2a32] transition-colors border border-white/[0.05] active:scale-95">
+              {openChatWith && (
+              <button
+                onClick={() => openChatWith(peer)}
+                className="shrink-0 px-5 py-2 rounded-lg bg-[#232329]/50 hover:bg-[#2a2a32] transition-colors border border-white/[0.05] active:scale-95">
                 <span className="text-[13px] text-white font-medium">
                   Chat
                 </span>
               </button>
+              )}
             </div>
           ))
         )}
