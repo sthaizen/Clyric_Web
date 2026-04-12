@@ -40,7 +40,7 @@ export const adminJwtAuth = async (req, res, next) => {
     // Re-fetch from DB on every request to catch status changes (suspension, etc.)
     const admin = await Admin.findById(decoded.adminId).select(
       "-passwordHash -emailVerifyToken -passwordResetToken"
-    );
+    ).lean();
 
     if (!admin) {
       return res.status(401).json({
@@ -53,7 +53,7 @@ export const adminJwtAuth = async (req, res, next) => {
       res.clearCookie("admin_token", {
         httpOnly: true,
         secure: ENV.NODE_ENV === "production",
-        sameSite: "strict",
+        sameSite: ENV.NODE_ENV === "production" ? "none" : "strict",
       });
       return res.status(403).json({
         message: "Admin account is no longer active.",

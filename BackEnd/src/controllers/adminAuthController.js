@@ -349,7 +349,7 @@ export const getAdminStatus = async (req, res) => {
 
     const admin = await Admin.findOne({ email: email.toLowerCase() }).select(
       "status fullName emailVerifiedAt rejectionReason createdAt"
-    );
+    ).lean();
 
     if (!admin) {
       return res
@@ -697,7 +697,8 @@ export const listAdminAccounts = async (req, res) => {
 
     const admins = await Admin.find(filter)
       .select("-passwordHash -emailVerifyToken -passwordResetToken")
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .lean();
 
     res.json({ admins });
   } catch (error) {

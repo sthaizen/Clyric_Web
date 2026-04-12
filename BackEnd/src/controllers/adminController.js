@@ -269,7 +269,8 @@ export const getAdminUsers = async (req, res) => {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limitNum)
-        .select("-__v"),
+        .select("-__v")
+        .lean(),
       User.countDocuments(filter),
     ]);
 
@@ -301,7 +302,7 @@ export const getAdminUsers = async (req, res) => {
     const enriched = users.map((u) => {
       const uStats = subMap[u.clerkId] || { totalSubmissions: 0, acceptedSubmissions: 0, lastActive: u.updatedAt, languages: [] };
       return {
-        ...u.toObject(),
+        ...u,
         levelStats: levelMap[u.clerkId] || { level: 1, exp: 0 },
         analytics: {
           totalSubmissions: uStats.totalSubmissions,
@@ -386,7 +387,8 @@ export const getAdminProblems = async (req, res) => {
         .sort({ createdAt: -1 })
         .skip((pageNum - 1) * limitNum)
         .limit(limitNum)
-        .select("slug title difficulty constraints createdAt"),
+        .select("slug title difficulty constraints createdAt")
+        .lean(),
       AdvancedProblem.countDocuments(filter),
     ]);
 
@@ -425,7 +427,7 @@ export const getAdminProblems = async (req, res) => {
         acceptanceRate: 0,
       };
       return {
-        ...p.toObject(),
+        ...p,
         problemId: p.slug, // mapping slug to problemId for frontend
         difficulty: p.difficulty.toLowerCase(), // mapping "Easy" -> "easy"
         testCaseCount: p.constraints?.length || 0, // placeholder since AdvancedProblem doesn't have testCases array like Problem

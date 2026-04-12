@@ -23,7 +23,13 @@ export const setAuthToken = (token) => {
 
 axiosInstance.interceptors.request.use(async (config) => {
     // 1. If we don't have a token yet, wait for it (avoids "Unauthorized" race condition on page load)
-    const isAdminRoute = config.url && (config.url.startsWith('admin') || config.url.startsWith('/admin'));
+    const url = config.url || "";
+    const isAdminRoute = url.startsWith('admin') || 
+                         url.startsWith('/admin') || 
+                         url.startsWith('docs') || 
+                         url.startsWith('/docs') ||
+                         url.startsWith('admin-auth') ||
+                         url.startsWith('/admin-auth');
     
     if (!authToken && !isAdminRoute) {
         // Wait up to 2 seconds for Clerk to provide the token
