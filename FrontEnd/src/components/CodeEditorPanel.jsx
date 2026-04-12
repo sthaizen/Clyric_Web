@@ -22,9 +22,13 @@ function CodeEditorPanel({
   problemSlug = "",
 }) {
   const isRemoteUpdate = useRef(false);
+  const isDropdownOpen_ref = useRef(false); // just declaring alongside
   const [editorInstance, setEditorInstance] = useState(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+  
+  // Real-time debounce timer
+  const debounceTimerRef = useRef(null);
 
   // Auto-save state
   const [saveStatus, setSaveStatus] = useState("idle"); // "idle" | "saving" | "saved"
@@ -77,7 +81,11 @@ function CodeEditorPanel({
 
     // Emit only if it's a local edit
     if (roomId && !isRemoteUpdate.current) {
-      socket.emit("code-update", { roomId, code: newCode });
+      // Debounce the socket emission to prevent sending 10 keystrokes instantly
+      if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+      debounceTimerRef.current = setTimeout(() => {
+        socket.emit("code-update", { roomId, code: newCode });
+      }, 300);
     }
     isRemoteUpdate.current = false;
   };
