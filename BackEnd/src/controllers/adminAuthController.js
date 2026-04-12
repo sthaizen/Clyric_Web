@@ -42,7 +42,7 @@ const setAdminCookie = (res, token) => {
   res.cookie("admin_token", token, {
     httpOnly: true,
     secure: ENV.NODE_ENV === "production",
-    sameSite: "strict",
+    sameSite: ENV.NODE_ENV === "production" ? "none" : "strict",
     maxAge: 8 * 60 * 60 * 1000, // 8 hours in ms
   });
 };
@@ -309,7 +309,7 @@ export const logoutAdmin = async (req, res) => {
   res.clearCookie("admin_token", {
     httpOnly: true,
     secure: ENV.NODE_ENV === "production",
-    sameSite: "strict",
+    sameSite: ENV.NODE_ENV === "production" ? "none" : "strict",
   });
   res.json({ message: "Logged out successfully." });
 };

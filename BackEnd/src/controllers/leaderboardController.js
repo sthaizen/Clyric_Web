@@ -1,6 +1,7 @@
 import ProblemAnalytics from "../models/ProblemAnalytics.js";
 import User from "../models/User.js";
 import Presence from "../models/Presence.js";
+import { memoryCache } from "../lib/cache.js";
 
 // Scoring weights
 const EASY_WEIGHT = 1;
@@ -8,10 +9,13 @@ const MEDIUM_WEIGHT = 3;
 const HARD_WEIGHT = 5;
 
 /**
- * Builds the full leaderboard via aggregation.
- * Returns an array of ranked users with stats.
+ * Fetches the complete, unfiltered leaderboard array from DB or memory cache.
  */
-async function buildLeaderboard({ search = "", page = 1, limit = 50 }) {
+async function getFullLeaderboard() {
+  const cacheKey = "full_leaderboard";
+  let cachedScoreboard = memoryCache.get(cacheKey);
+  if (cachedScoreboard) return cachedScoreboard;
+
   // Step 1: Aggregate ProblemAnalytics per user
   const userStats = await ProblemAnalytics.aggregate([
     {
@@ -155,6 +159,17 @@ async function buildLeaderboard({ search = "", page = 1, limit = 50 }) {
       const { _hasUser, ...rest } = entry;
       return { ...rest, rank: index + 1 };
     });
+
+  // Save to cache for 60 seconds
+  memoryCache.set(cacheKey, leaderboard, 60);
+  return leaderboard;
+}
+
+/**
+ * Builds the paginated and filtered leaderboard from the cached full leaderboard.
+ */
+async function buildLeaderboard({ search = "", page = 1, limit = 50 }) {
+  let leaderboard = await getFullLeaderboard();
 
   // Step 4: Search filter (by name)
   if (search && search.trim()) {
