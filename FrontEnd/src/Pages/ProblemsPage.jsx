@@ -237,7 +237,7 @@ export default function LeetCodeClone() {
             { label: 'Dashboard', link: '/dashboard' },
             { label: 'Problems', link: '/problems', active: true },
             { label: 'Contest', link: '/leaderboard' },
-            { label: 'Discuss', link: '/discuss' },
+
             { label: 'Pricing', link: '/priceoverview', gold: true },
           ].map(({ label, link, active, caret, gold }) => (
             <a

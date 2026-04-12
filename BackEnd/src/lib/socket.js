@@ -1,6 +1,8 @@
 import { Server } from "socket.io";
 import { ENV } from "./env.js";
 import Presence from "../models/Presence.js";
+import Conversation from "../models/Conversation.js";
+import User from "../models/User.js";
 
 // Map to track number of active connections per userId
 const userConnections = new Map();
@@ -25,6 +27,18 @@ export const setupSocket = (server) => {
       if (socket.userId === userId) return;
 
       socket.userId = userId;
+
+      // Join personal notification room (used for unread badge push)
+      // To get MongoDB _id from clerkId so we can match conversations.participants
+      try {
+        const userDoc = await User.findOne({ clerkId: userId }).select("_id").lean();
+        if (userDoc) {
+          socket.userMongoId = userDoc._id.toString();
+          socket.join(`user:${socket.userMongoId}`);
+        }
+      } catch (e) {
+        console.error("Error resolving userMongoId for socket:", e);
+      }
       
       // Increment connection count
       const currentCount = userConnections.get(userId) || 0;
@@ -133,6 +147,58 @@ export const setupSocket = (server) => {
       socket.to(roomId).emit("receive-timer-sync", timerState);
     });
     // ──────────────────────────────────────────────────────────────────────────
+
+    // ── Chat / Messenger ──────────────────────────────────────────────────────
+    // Join a private conversation room (verified against DB)
+    socket.on("chat:join-room", async ({ conversationId }) => {
+      if (!conversationId) return;
+      try {
+        // Verify socket owner is a participant of this conversation
+        const conversation = await Conversation.findById(conversationId).lean();
+        if (!conversation) return;
+
+        const mongoId = socket.userMongoId;
+        if (!mongoId) return;
+
+        const isParticipant = conversation.participants
+          .map((p) => p.toString())
+          .includes(mongoId);
+
+        if (!isParticipant) {
+          console.warn(`[Chat] Unauthorized room join attempt by ${socket.userId} for conv ${conversationId}`);
+          return;
+        }
+
+        socket.join(`chat:${conversationId}`);
+        console.log(`[Chat] ${socket.userId} joined chat room: ${conversationId}`);
+      } catch (err) {
+        console.error("[Chat] chat:join-room error:", err);
+      }
+    });
+
+    socket.on("chat:leave-room", ({ conversationId }) => {
+      if (!conversationId) return;
+      socket.leave(`chat:${conversationId}`);
+      console.log(`[Chat] ${socket.userId} left chat room: ${conversationId}`);
+    });
+
+    socket.on("chat:typing-start", ({ conversationId }) => {
+      if (!conversationId || !socket.userId) return;
+      socket.to(`chat:${conversationId}`).emit("chat:typing-start", {
+        conversationId,
+        userId: socket.userId,
+        mongoId: socket.userMongoId,
+      });
+    });
+
+    socket.on("chat:typing-stop", ({ conversationId }) => {
+      if (!conversationId || !socket.userId) return;
+      socket.to(`chat:${conversationId}`).emit("chat:typing-stop", {
+        conversationId,
+        userId: socket.userId,
+      });
+    });
+    // ─────────────────────────────────────────────────────────────────────────
 
     socket.on("disconnect", async () => {
       console.log("User disconnected:", socket.id);
