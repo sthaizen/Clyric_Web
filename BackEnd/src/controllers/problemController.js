@@ -1,6 +1,7 @@
 import AdvancedProblem from "../models/AdvancedProblem.js";
 import { getTierPermissions } from "../middleware/subscriptionMiddleware.js";
 import User from "../models/User.js";
+import { memoryCache } from "../lib/cache.js";
 
 /** Helper: resolve user tier from raw clerks userId if user is not yet on req.user */
 async function resolveUserTier(clerkId) {
@@ -37,7 +38,8 @@ export const getProblems = async (req, res) => {
       .sort(sortOpt)
       .skip((page - 1) * limit)
       .limit(Number(limit))
-      .select('slug legacyId title difficulty categoryDisplay categories description constraints expectedOutput examples status');
+      .select('slug legacyId title difficulty categoryDisplay categories description constraints expectedOutput examples status')
+      .lean();
 
     const total = await AdvancedProblem.countDocuments(query);
 
@@ -68,7 +70,7 @@ export const getProblems = async (req, res) => {
 export const getProblemBySlug = async (req, res) => {
   try {
     const { slug } = req.params;
-    const problem = await AdvancedProblem.findOne({ slug, visible: true, status: "published" });
+    const problem = await AdvancedProblem.findOne({ slug, visible: true, status: "published" }).lean();
 
     if (!problem) {
       return res.status(404).json({ message: "Problem not found" });
@@ -111,13 +113,20 @@ export const getProblemBySlug = async (req, res) => {
 // GET /api/problems/meta/topics
 export const getTopicMetadata = async (req, res) => {
   try {
-    const topics = await AdvancedProblem.aggregate([
-      { $match: { visible: true, status: "published" } },
-      { $unwind: "$categories" },
-      { $group: { _id: "$categories", count: { $sum: 1 } } },
-      { $project: { name: "$_id", count: 1, _id: 0 } },
-      { $sort: { count: -1 } }
-    ]);
+    const cacheKey = "topic_metadata";
+    let topics = memoryCache.get(cacheKey);
+    
+    if (!topics) {
+      topics = await AdvancedProblem.aggregate([
+        { $match: { visible: true, status: "published" } },
+        { $unwind: "$categories" },
+        { $group: { _id: "$categories", count: { $sum: 1 } } },
+        { $project: { name: "$_id", count: 1, _id: 0 } },
+        { $sort: { count: -1 } }
+      ]);
+      memoryCache.set(cacheKey, topics, 300); // 5 minutes cache
+    }
+    
     res.json({ topics });
   } catch (error) {
     console.error("Error fetching topic metadata:", error);
