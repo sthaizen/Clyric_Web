@@ -82,7 +82,7 @@ export default function ProblemNavbar({
             </div>
             <div className="flex gap-[2px]">
               <div className="w-[10px] h-[4px] bg-transparent"></div>
-              <div className="w-[6px] h-[6px] rounded-[2px] rounded-br-sm bg-[#F3F3EF]"></div>
+              <div className="w-[6px] h-[6px] rounded-[2px]  bg-[#F3F3EF]"></div>
             </div>
           </div>
           <span className="p-2" style={{ color: '#fff', fontWeight: 700, fontSize: 17, letterSpacing: '-0.2px' }}>Clyric</span>
@@ -396,9 +396,9 @@ export default function ProblemNavbar({
                 </div>
 
                 <div className="h-2 w-full bg-[#111113] rounded-full overflow-hidden shadow-inner">
-                  <div 
+                  <div
                     className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-1000"
-                    style={{ 
+                    style={{
                       width: `${Math.max(5, Math.min(100, (() => {
                         const expiry = new Date(user.publicMetadata.subscriptionExpiry);
                         const now = new Date();
@@ -406,7 +406,7 @@ export default function ProblemNavbar({
                         const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
                         const maxDays = days > 30 ? 60 : 30;
                         return (days / maxDays) * 100;
-                      })()))}%` 
+                      })()))}%`
                     }}
                   />
                 </div>
@@ -420,7 +420,7 @@ export default function ProblemNavbar({
                   </p>
                 </div>
 
-                <button 
+                <button
                   onClick={() => window.location.href = '/price'}
                   className="mt-2 w-full py-2 bg-[#3e3e42]/50 hover:bg-[#3e3e42] text-white text-[12px] font-medium rounded-lg border border-[#3e3e42]/50 transition-colors"
                 >

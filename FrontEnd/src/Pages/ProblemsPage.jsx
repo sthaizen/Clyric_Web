@@ -146,7 +146,7 @@ export default function LeetCodeClone() {
   const handleProblemClick = (e, problem) => {
     e.preventDefault();
     const diff = problem.difficulty.toLowerCase();
-    
+
     // Check if the current tier has permission for this difficulty
     if (permissions && !permissions.allowedDifficulties.includes(diff)) {
       const requiredTier = diff === "medium" ? "code-rooms" : "interview-studio";
@@ -155,7 +155,7 @@ export default function LeetCodeClone() {
       );
       return;
     }
-    
+
     navigate(`/problem/${problem.id}`);
   };
 
@@ -227,7 +227,7 @@ export default function LeetCodeClone() {
               </div>
               <div className="flex gap-[2px]">
                 <div className="w-[10px] h-[4px] bg-transparent"></div>
-                <div className="w-[6px] h-[6px] rounded-[2px] rounded-br-sm bg-[#F3F3EF]"></div>
+                <div className="w-[6px] h-[6px] rounded-[2px]  bg-[#F3F3EF]"></div>
               </div>
             </div>
             <span style={{ color: '#fff', fontWeight: 700, fontSize: 17, letterSpacing: '-0.2px' }}>Clyric</span>
@@ -376,11 +376,11 @@ export default function LeetCodeClone() {
         <aside style={{ width: 200, borderRight: '1px solid #2c2c35', padding: '16px 8px', display: 'flex', flexDirection: 'column', gap: 2, flexShrink: 0, overflowY: 'auto' }}>
           {[
             { icon: <LayoutList size={16} />, label: 'Library', active: activeMainView === 'library', action: () => setActiveMainView('library') },
-            { 
-              icon: <Target size={16} />, 
-              label: 'Quest', 
-              badge: 'New', 
-              active: activeMainView === 'quest', 
+            {
+              icon: <Target size={16} />,
+              label: 'Quest',
+              badge: 'New',
+              active: activeMainView === 'quest',
               action: () => setActiveMainView('quest'),
               locked: !canAccess("canUseQuests")
             },
@@ -559,7 +559,7 @@ export default function LeetCodeClone() {
                   const isSolved = !!solveData;
                   const solveTime = isSolved ? formatSolveTime(solveData.totalTimeSpentSeconds) : null;
                   return (
-                    <div key={problem.id} 
+                    <div key={problem.id}
                       onClick={(e) => handleProblemClick(e, problem)}
                       className="cursor-pointer"
                       style={{

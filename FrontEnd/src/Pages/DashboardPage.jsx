@@ -144,7 +144,7 @@ function DashboardPage() {
                 </div>
                 <div className="flex gap-[2px]">
                   <div className="w-[10px] h-[4px] bg-transparent"></div>
-                  <div className="w-[6px] h-[6px] rounded-[2px] rounded-br-sm bg-[#F3F3EF]"></div>
+                  <div className="w-[6px] h-[6px] rounded-[2px]  bg-[#F3F3EF]"></div>
                 </div>
               </div>
               <span style={{ color: '#fff', fontWeight: 700, fontSize: 17, letterSpacing: '-0.2px' }}>Clyric</span>

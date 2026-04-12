@@ -46,7 +46,7 @@ const Navbar = ({ forceLight = false }) => {
                             </div>
                             <div className="flex gap-[3px]">
                                 <div className="w-[13px] h-[6px] bg-transparent"></div>
-                                <div className={`w-[9px] h-[9px] rounded-[2px] rounded-br-md transition-colors duration-300 ${isLightMode ? 'bg-[#18181B]' : 'bg-[#F3F3EF]'}`}></div>
+                                <div className={`w-[9px] h-[9px] rounded-[2px] rounded-br-sm transition-colors duration-300 ${isLightMode ? 'bg-[#18181B]' : 'bg-[#F3F3EF]'}`}></div>
                             </div>
                         </div>
 
