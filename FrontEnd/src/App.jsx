@@ -121,7 +121,7 @@ const App = () => {
               </Routes>
             </Suspense>
 
-            {isSignedIn && ["/dashboard", "/problems", "/leaderboard"].some(p => location.pathname === p || location.pathname.startsWith("/problem/")) && (
+            {isSignedIn && ["/dashboard", "/problems", "/leaderboard"].some(p => location.pathname === p) && (
               <>
                 <MessengerTrigger />
                 <MessengerPanel />
