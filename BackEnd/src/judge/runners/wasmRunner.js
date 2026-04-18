@@ -16,9 +16,7 @@ export const runWasm = async (sourcePath, inputPath, timeLimit, outputLimit) => 
   const outPath = path.join(cwd, 'program.wasm');
 
   // 1. Compilation Phase
-  // We expect clang from wasi-sdk or emcc to be installed.
-  // For simplicity, we assume emcc is on the path. 
-  // It compiles to pure WASM, without the JS glue code.
+
   const compileResult = await runInProcessSandbox(
     'emcc',
     [
@@ -33,8 +31,7 @@ export const runWasm = async (sourcePath, inputPath, timeLimit, outputLimit) => 
     10000
   );
 
-  // Fallback to standard clang if emcc failed due to missing command (code 1 or ENOENT-style stderr)
-  // Just returning the error if the developer hasn't installed WASM tools yet is standard.
+
   if (compileResult.code !== 0) {
     const errorMsg = compileResult.stderr || compileResult.stdout || "Unknown emcc compilation error";
     return {
@@ -45,7 +42,7 @@ export const runWasm = async (sourcePath, inputPath, timeLimit, outputLimit) => 
     };
   }
 
-  // Verify compilation success
+
   if (!fs.existsSync(outPath)) {
     return {
       compileError: "Compiler produced no .wasm file. Check your emcc installation.",
@@ -53,7 +50,7 @@ export const runWasm = async (sourcePath, inputPath, timeLimit, outputLimit) => 
     };
   }
 
-  // 2. Sandboxed Execution Phase via WASI
+
   const runResult = await runInWasiSandbox(outPath, inputPath, timeLimit);
 
   return runResult;

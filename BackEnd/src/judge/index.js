@@ -10,11 +10,11 @@ import { createTempDirectory, writeFiles } from './helpers/fileHelper.js';
  * Returns a standardized result object containing the execution verdict.
  * 
  * @param {object} params
- * @param {string} params.language - e.g. "javascript"
- * @param {string} params.code     - User's code
- * @param {string} params.stdin    - Optional input to feed to the program
- * @param {number} params.timeLimit- Optional custom time limit (ms)
- * @param {number} params.outputLimit - Optional output limit in bytes
+ * @param {string} params.language
+ * @param {string} params.code    
+ * @param {string} params.stdin    
+ * @param {number} params.timeLimit
+ * @param {number} params.outputLimit 
  * @returns {Promise<object>}
  */
 export const runInJudge = async ({ language, code, stdin = "", timeLimit = null, outputLimit = 65536 }) => {
@@ -40,19 +40,18 @@ export const runInJudge = async ({ language, code, stdin = "", timeLimit = null,
       stdin
     );
 
-    // 3. Delegate to language-specific runner
-    // (This handles compilation if necessary)
+
     const runResult = await config.runner(sourcePath, inputPath, actualTimeLimit, outputLimit);
 
     // 4. Standardize the output verdict
-    let verdict = 'Accepted'; // Default if run completed normally
+    let verdict = 'Accepted'; 
 
     if (runResult.compileError) {
       verdict = 'Compile Error';
     } else if (runResult.isTLE) {
       verdict = 'Time Limit Exceeded';
     } else if (runResult.code !== 0) {
-      // Non-zero exit code usually means runtime exception
+
       verdict = 'Runtime Error';
     }
 
@@ -77,10 +76,6 @@ export const runInJudge = async ({ language, code, stdin = "", timeLimit = null,
   }
 };
 
-/**
- * Format the runtime error clearly. If stderr exists, we use it.
- * If not, but it exited with 137 (SIGKILL) early, we note that it was killed.
- */
 function resultIsRuntimeError(verdict, runResult) {
   if (verdict !== 'Runtime Error') return "";
   if (runResult.stderr && runResult.stderr.trim().length > 0) return runResult.stderr;

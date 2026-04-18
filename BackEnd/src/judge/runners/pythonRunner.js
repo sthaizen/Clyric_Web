@@ -8,9 +8,6 @@ import path from 'path';
 export const runPython = async (sourcePath, inputPath, timeLimit, outputLimit) => {
   const cwd = path.dirname(sourcePath);
 
-  // On Windows this is usually "python", on Ubuntu often "python3".
-  // A production robust system detects this via which/where, 
-  // but we default to python which matches standard Windows Dev setups.
   const command = process.platform === 'win32' ? 'python' : 'python3';
 
   const result = await runInProcessSandbox(

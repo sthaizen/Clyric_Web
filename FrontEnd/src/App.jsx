@@ -60,10 +60,6 @@ const App = () => {
       } else {
         socket.connect();
       }
-
-      // NOTE: Admin auto-redirect via Clerk has been removed.
-      // Admins now log in at /admin/login using a separate custom auth system.
-
       return () => {
         socket.off("connect", onConnect);
       };

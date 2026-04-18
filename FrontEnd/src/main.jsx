@@ -20,9 +20,9 @@ createRoot(document.getElementById('root')).render(
       <QueryClientProvider client={queryClient}>
         <ClerkProvider
           publishableKey={PUBLISHABLE_KEY}
-          signInFallbackRedirectUrl="/dashboard" // Sends users here after sign-in
-          signUpFallbackRedirectUrl="/dashboard" // Sends users here after sign-up
-          afterSignOutUrl="/"                    // Sends users here after they log out
+          signInFallbackRedirectUrl="/dashboard" 
+          signUpFallbackRedirectUrl="/dashboard" 
+          afterSignOutUrl="/"                    
         >
           <App />
         </ClerkProvider>

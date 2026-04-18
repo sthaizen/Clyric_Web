@@ -4,7 +4,6 @@ import User from "../models/User.js";
 
 export const protectRoute = async (req, res, next) => {
     try {
-        // req.auth is populated by clerkMiddleware in server.js
         const auth = req.auth();
         const clerkId = auth.userId;
 

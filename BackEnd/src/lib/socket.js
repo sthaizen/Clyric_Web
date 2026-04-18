@@ -29,7 +29,6 @@ export const setupSocket = (server) => {
       socket.userId = userId;
 
       // Join personal notification room (used for unread badge push)
-      // To get MongoDB _id from clerkId so we can match conversations.participants
       try {
         const userDoc = await User.findOne({ clerkId: userId }).select("_id").lean();
         if (userDoc) {
@@ -39,7 +38,7 @@ export const setupSocket = (server) => {
       } catch (e) {
         console.error("Error resolving userMongoId for socket:", e);
       }
-      
+
       // Increment connection count
       const currentCount = userConnections.get(userId) || 0;
       userConnections.set(userId, currentCount + 1);
@@ -80,8 +79,8 @@ export const setupSocket = (server) => {
     });
 
     socket.on("language-update", ({ roomId, language }) => {
-        // Broadcast to everyone else in the room
-        socket.to(roomId).emit("sync-language", language);
+      // Broadcast to everyone else in the room
+      socket.to(roomId).emit("sync-language", language);
     });
 
     // ─── WebRTC Signaling ─────────────────────────────────────────────────────
@@ -203,11 +202,11 @@ export const setupSocket = (server) => {
     socket.on("disconnect", async () => {
       console.log("User disconnected:", socket.id);
       const userId = socket.userId;
-      
+
       if (userId) {
         const currentCount = userConnections.get(userId) || 0;
         const newCount = Math.max(0, currentCount - 1);
-        
+
         if (newCount === 0) {
           userConnections.delete(userId);
           try {
