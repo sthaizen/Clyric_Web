@@ -2,9 +2,7 @@ import crypto from "crypto";
 import axios from "axios";
 import { ENV } from "../lib/env.js";
 
-/**
- * Single source of truth for payment plans.
- */
+
 export const PLANS = {
     "practice-pack": { label: "Practice Pack", amount: 0 },
     "code-rooms": { label: "Code Rooms", amount: 400 },
@@ -12,14 +10,7 @@ export const PLANS = {
     "career-plus": { label: "Career Plus", amount: 800 },
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ESEWA V2 LOGIC
-// ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * Generates HMAC-SHA256 signature for eSewa v2.
- * Field Order: total_amount,transaction_uuid,product_code
- */
 export const generateEsewaSignature = (total_amount, transaction_uuid, product_code) => {
     const signatureString = `total_amount=${total_amount},transaction_uuid=${transaction_uuid},product_code=${product_code}`;
     const hash = crypto
@@ -29,13 +20,11 @@ export const generateEsewaSignature = (total_amount, transaction_uuid, product_c
     return hash;
 };
 
-/**
- * Prepares the form data for eSewa v2 redirection.
- */
+
 export const prepareEsewaForm = (amount, transactionUuid, successUrl, failureUrl) => {
     // Round to 2 decimal places to be safe with eSewa's parsing
     const roundedAmount = Number(amount).toFixed(2);
-    
+
     const signature = generateEsewaSignature(
         roundedAmount,
         transactionUuid,
@@ -57,9 +46,7 @@ export const prepareEsewaForm = (amount, transactionUuid, successUrl, failureUrl
     };
 };
 
-/**
- * Verifies eSewa v2 transaction via Status API.
- */
+
 export const verifyEsewaStatus = async (total_amount, transaction_uuid) => {
     try {
         const response = await axios.get(ENV.ESEWA_STATUS_URL, {

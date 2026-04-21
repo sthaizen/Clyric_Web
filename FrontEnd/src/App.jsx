@@ -4,7 +4,7 @@ import { Route, Routes, Navigate, useNavigate, useLocation } from "react-router-
 import ScrollToTop from "./components/ScrollToTop";
 import ReactLenis from "lenis/react";
 import { Toaster } from "react-hot-toast";
-import { useUser } from "@clerk/clerk-react";
+import { useUser, SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
 import { socket } from "./lib/socket";
 
 // Page Imports (Lazy Loaded)
@@ -84,7 +84,16 @@ const App = () => {
                 />
 
                 <Route
-                  path="/dashboard" element={<DashboardPage />}
+                  path="/dashboard" element={
+                    <>
+                      <SignedIn>
+                        <DashboardPage />
+                      </SignedIn>
+                      <SignedOut>
+                        <RedirectToSignIn />
+                      </SignedOut>
+                    </>
+                  }
                 />
 
                 {/* Other Routes */}

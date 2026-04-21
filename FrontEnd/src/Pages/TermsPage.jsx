@@ -41,9 +41,7 @@ export default function TermsPage() {
     });
 
     return () => observer.disconnect();
-    // React expects us to tell it all external dependencies, but termsSections is a constant outside the component logic, effectively.
-    // So we can move termsSections inside useEffect, but since we map it in the render, we'll just disable the lint warning for clarity, as termsSections will not change between renders.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, []);
 
   const scrollToId = (id) => {

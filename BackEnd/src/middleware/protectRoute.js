@@ -4,8 +4,19 @@ import User from "../models/User.js";
 
 export const protectRoute = async (req, res, next) => {
     try {
-        const auth = req.auth();
-        const clerkId = auth.userId;
+        let clerkId;
+        const testClerkId = req.headers['x-test-clerk-id'];
+
+        // Developer bypass for Postman testing (Disabled in production)
+        if (process.env.NODE_ENV !== "production" && testClerkId) {
+            clerkId = testClerkId;
+            // Mock req.auth() so subsequent controllers still work
+            req.auth = () => ({ userId: clerkId });
+            console.log(`[Auth] Developer Bypass Active: Mimicking User ${clerkId}`);
+        } else {
+            const auth = req.auth();
+            clerkId = auth.userId;
+        }
 
         if (!clerkId) {
             console.log("[Auth] Unauthorized access attempt detected (302 prevention)");

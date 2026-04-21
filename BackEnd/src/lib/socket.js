@@ -90,15 +90,14 @@ export const setupSocket = (server) => {
     socket.on("join-video-room", async (roomId) => {
       socket.join(roomId);
 
-      // Count peers already in the room (subtract self).
+
       const socketsInRoom = await io.in(roomId).allSockets();
       const peersAlreadyPresent = socketsInRoom.size - 1;
 
-      // Notify existing peers that someone new joined.
+
       socket.to(roomId).emit("webrtc-peer-joined", { socketId: socket.id });
 
-      // Tell the joining socket about pre-existing peers.
-      // This lets the host create an offer even if the participant joined first.
+
       if (peersAlreadyPresent > 0) {
         socket.emit("webrtc-peers-present", { count: peersAlreadyPresent });
       }
@@ -107,17 +106,17 @@ export const setupSocket = (server) => {
     });
 
     socket.on("webrtc-offer", ({ roomId, offer }) => {
-      // Forward SDP offer to all other peers in the room.
+
       socket.to(roomId).emit("webrtc-offer", { offer, from: socket.id });
     });
 
     socket.on("webrtc-answer", ({ roomId, answer }) => {
-      // Forward SDP answer to all other peers in the room.
+
       socket.to(roomId).emit("webrtc-answer", { answer, from: socket.id });
     });
 
     socket.on("webrtc-ice-candidate", ({ roomId, candidate }) => {
-      // Relay ICE candidates to peers.
+
       socket.to(roomId).emit("webrtc-ice-candidate", { candidate, from: socket.id });
     });
 

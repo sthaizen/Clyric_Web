@@ -124,7 +124,36 @@ export const initiatePayment = async (req, res) => {
  */
 export const verifyEsewa = async (req, res) => {
     try {
-        const { data, reason } = req.query;
+        const { data, reason, test, uuid } = req.query;
+
+        // Developer Bypass for testing Success flow in Postman
+        if (process.env.NODE_ENV !== "production" && test === "true" && uuid) {
+            console.log(`[Payment] MOCK Success Bypass triggered for UUID: ${uuid}`);
+            const transaction = await Transaction.findOne({ transactionUuid: uuid });
+            
+            if (!transaction) {
+                return res.status(404).json({ success: false, message: "Transaction not found" });
+            }
+
+            if (transaction.status === "completed") {
+                return res.status(200).json({ success: true, message: "Already verified" });
+            }
+
+            await activateUserSubscription(transaction, "MOCK_ESEWA_VERIFY_REF", { mock: true });
+            return res.status(200).json({ 
+                success: true, 
+                message: "MOCK VERIFICATION SUCCESS: Subscription activated.",
+                transactionUuid: uuid,
+                esewa_data: {
+                    status: "COMPLETE",
+                    total_amount: transaction.amount.toFixed(2),
+                    transaction_uuid: uuid,
+                    ref_id: "MOCK_ESEWA_VERIFY_REF",
+                    transaction_code: "TXN_" + uuid.substring(0, 8).toUpperCase()
+                }
+            });
+        }
+
         if (!data) {
             const failureReason = reason || "no_data_received";
             return res.redirect(`${ENV.CLIENT_URL}/dashboard?payment_status=error&gateway=esewa&reason=${failureReason}`);

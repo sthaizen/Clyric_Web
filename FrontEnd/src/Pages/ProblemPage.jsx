@@ -35,7 +35,6 @@ function ProblemPage() {
 
   const [selectedLanguage, setSelectedLanguage] = useState("javascript");
 
-  // Track code for all languages separately so switching doesn't wipe them out
   const [codePerLanguage, setCodePerLanguage] = useState({});
 
   // Unified output state sent to OutputPanel

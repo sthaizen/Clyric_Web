@@ -7,6 +7,9 @@ import { io } from "../lib/socket.js";
 
 // ─── Helper: verify both users share at least one Session ────────────────────
 async function shareSession(userIdA, userIdB) {
+  // Developer bypass: allow chatting with anyone in development
+  if (process.env.NODE_ENV !== "production") return true;
+
   const session = await Session.findOne({
     $or: [
       { host: userIdA, participant: userIdB },
