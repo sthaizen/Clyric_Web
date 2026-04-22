@@ -101,18 +101,7 @@ export const runCode = async (req, res) => {
   }
 };
 
-/**
- * POST /api/code/submit
- * 
- * Submits user code against all hidden test cases for a problem.
- * Returns full verdict with per-test-case results.
- * 
- * Request body:
- *   { problemId: string, language: string, code: string }
- * 
- * Response:
- *   { success, verdict, testCasesPassed, totalTestCases, executionTime, results[] }
- */
+
 export const submitCode = async (req, res) => {
   try {
     const { problemId, language, code } = req.body;

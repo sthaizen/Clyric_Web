@@ -388,7 +388,6 @@ function ProblemPage() {
     }
   };
 
-  // 👇 MOVED: Keyboard shortcuts now run AFTER functions are initialized 👇
   useEffect(() => {
     const handleKeyDown = (e) => {
       if (e.ctrlKey && e.shiftKey && e.key === "Enter") {
@@ -505,8 +504,8 @@ function ProblemPage() {
         toggleTimer={toggleTimer}
         resetTimer={resetTimer}
         formatTime={formatTime}
-        isAiChatOpen={isAiChatOpen}           // <-- NEW PROP
-        setIsAiChatOpen={setIsAiChatOpen}     // <-- NEW PROP
+        isAiChatOpen={isAiChatOpen}           
+        setIsAiChatOpen={setIsAiChatOpen}     
       />
 
       {/* MAIN WORKSPACE */}

@@ -482,14 +482,11 @@ function SessionPage() {
     );
   }
 
-  // 2. Show "Blank Screen" if session hasn't arrived yet
-  // This prevents the "Not Found" flash. If it stayed blank for longer than 3 seconds, 
-  // we could show an error, but for now we'll just keep it blank as requested.
+
   if (!loadingSession && !session) {
     return <div className="h-screen bg-[#111113]" />;
   }
 
-  // 3. Optional: Problem data failed to load - also show blank or subtle message
   if (session && session.problem && !currentProblem && !loadingProblem) {
     return <div className="h-screen bg-[#111113]" />;
   }

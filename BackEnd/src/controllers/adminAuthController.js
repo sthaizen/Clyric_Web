@@ -91,7 +91,6 @@ export const requestAdminAccess = async (req, res) => {
       emailVerifyExpiry: otpExpiry,
     });
 
-    // 💡 DEV TIP: Print OTP to console in case email sending fails
     console.log(`\n🔑 [DEV MODE] Verification Code for ${admin.email}: ${otp}\n`);
 
     await sendVerificationEmail(admin.email, otp, admin.fullName);

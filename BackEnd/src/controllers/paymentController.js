@@ -58,11 +58,8 @@ export const initiatePayment = async (req, res) => {
                 email: user.email,
             },
         });
-
-        // 2. Prepare gateway-specific initiation
         if (gateway === "esewa") {
-            // eSewa v2 requires success_url and failure_url
-            // Always prefer ENV.BACKEND_URL in production to avoid localhost leakage
+
             const forwardedProto = req.headers["x-forwarded-proto"]?.split(",")?.[0];
             const requestBaseUrl = `${forwardedProto || req.protocol}://${req.get("host")}`;
             const backendUrl = (ENV.NODE_ENV === "production" && ENV.BACKEND_URL) 
@@ -257,10 +254,7 @@ export const verifyKhalti = async (req, res) => {
     }
 };
 
-/**
- * Helper to update user tier and create subscription record.
- * ATOMIC implementation.
- */
+
 async function activateUserSubscription(transaction, gatewayRefId, rawMetadata) {
     const session = await User.startSession();
     session.startTransaction();
@@ -328,10 +322,7 @@ async function activateUserSubscription(transaction, gatewayRefId, rawMetadata) 
     }
 }
 
-/**
- * POST /api/payments/cancel
- * Cancels the active subscription and reverts to free tier.
- */
+
 export const cancelSubscription = async (req, res) => {
     const session = await User.startSession();
     session.startTransaction();
@@ -379,10 +370,7 @@ export const cancelSubscription = async (req, res) => {
     }
 };
 
-/**
- * GET /api/payments/check-first-time
- * Provides frontend with a Boolean to show the 60-day bonus info.
- */
+
 export const checkFirstTimeBuyer = async (req, res) => {
     try {
         const userId = req.user._id;
